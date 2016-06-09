@@ -29,8 +29,8 @@ x <- do.rep(wrapWE(do.one), list(a=2, b=2), .reps=2)
 expect_true(all(unlist(x) == c(4,0,4,0)))
 expect_true(all(sapply(x, function(x){ attr(x, "warn")}) == "this is a warning"))
 
-
 out <- gapply(do.one, a=c(2,1), b=2, .reps=2, .verbose=0)
+expect_true(nrow(out) == 6)
 
 f <- do.one
 param.grid <- expand.grid(a=c(2,1), b=2)
@@ -46,11 +46,18 @@ expect_true(all(as.numeric(names(attr(out,"warn"))) == c(1,2)))
 expect_true(all(is.na(out[out$a==1,"value"])))  # all errors return NA
 expect_true(all(out[out$a==2,"value"] == c(4,0,4,0))) # warnings still return values
 
+do.one <- function(a=1,b=2){
+  if(a==1){ stop("asdf")}
+  if(b==2){warning("this is a warning")}
+  return(c(a-b, a+b))
+}
+out <- gapply(do.one, a=c(2,1), b=2, .reps=2, .verbose=0)
+
 
 do.one <- function(a=1,b=2){c(a+b)}
 out <- gapply(do.one, a=1:2, b=2, .reps=2, .verbose=0)
 grid <- expand.grid(a=1:2,b=2)
-expect_equal(colnames(out), c("a", "b", "rep","key2", "key","value"))
+expect_equal(colnames(out), c("a", "b", "rep", "key","value"))
 expect_equal(nrow(out), nrow(grid)*2)
 expect_equivalent(out$value,c(3,3,4,4))
 expect_equivalent(unique(out[,c("a","b")]), grid)
@@ -59,7 +66,7 @@ expect_equivalent(unique(out[,c("a","b")]), grid)
 ## Names should be assigned by as.data.frame rules (V1, V2)
 do.one <- function(a=1,b=2){c(a+b,a-b)}
 out <- gapply(do.one,.reps=2, a=1:2,b=2,.verbose=0)
-expect_equal(colnames(out),c("a","b","rep", "key2", "key", "value"))
+expect_equal(colnames(out),c("a","b","rep", "key", "value"))
 expect_equivalent(unique(out[,c("a","b")]), grid)
 expect_equal(unique(out$key),c("V1","V2"))
 
@@ -114,7 +121,3 @@ nm = 3 # number of key2s (a+b etc)
 np = 2 # number of performance (minus, plus)
 expect_true(nrow(out) == 3*nm*np)
 
-d <- data.frame(x=1:5)
-f <- function(a, d){a + nrow(d)}
-res <- gapply(f, a=1:5, .args=list(d=d))
-attr(res, "err")

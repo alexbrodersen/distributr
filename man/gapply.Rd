@@ -26,7 +26,8 @@ If \code{3}, prints the arguments and results of the completed condition.}
 Returns non-error results as a \code{data.frame} in long form with the following columns:
 \item{...}{Columns corresponding to grid of parameters given in \code{expand.grid(...)}}
 \item{\code{rep}}{the replication number}
-\item{\code{key}}{the name(s) of the return value(s) of \code{f}}
+\item{\code{key2}}{the rowname(s) of the returned data frame of \code{f} if present}
+\item{\code{key}}{the colname(s) of the returned data frame of \code{f}}
 \item{\code{value}}{the value of \code{f} at a set of parameters, if \code{.eval = FALSE}, returns \code{NA}}
 Errors are captured using \code{try}, converted to character, and available using \code{attr(object, "err")}
 }

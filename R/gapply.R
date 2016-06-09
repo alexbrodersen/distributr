@@ -14,7 +14,8 @@
 #' @return Returns non-error results as a \code{data.frame} in long form with the following columns:
 #' \item{...}{Columns corresponding to grid of parameters given in \code{expand.grid(...)}}
 #' \item{\code{rep}}{the replication number}
-#' \item{\code{key}}{the name(s) of the return value(s) of \code{f}}
+#' \item{\code{key2}}{the rowname(s) of the returned data frame of \code{f} if present}
+#' \item{\code{key}}{the colname(s) of the returned data frame of \code{f}}
 #' \item{\code{value}}{the value of \code{f} at a set of parameters, if \code{.eval = FALSE}, returns \code{NA}}
 #' Errors are captured using \code{try}, converted to character, and available using \code{attr(object, "err")}
 #' @details
@@ -60,22 +61,28 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
 
   rep.grid <- param.grid[rep(1:nrow(param.grid),each=.reps), , drop=F]
   rep.grid$rep  <- rep(1:.reps, times=nrow(param.grid))
+
+  rows.flag <- any(!sapply(sapply(res.l, nrow),is.null))
   gridl <- list()
-  methodl <- list()
-  ## This is necessary so that rows can have different numbers of reps in case of errors
+  key2l <- list()
+
   for(i in 1:length(res.l)){
-    reprow <- as.data.frame(res.l[[i]])
-    nm <- nrow(reprow)
-    methodl[[i]] <- rownames(reprow)
-    gridl[[i]] <- rep.grid[rep(i, nm), ]
+    if(rows.flag){
+      reprow <- as.data.frame(res.l[[i]])
+      key2l[[i]] <- rownames(reprow) # only add a second key if a data frame is returned
+      nm <- nrow(reprow)
+      gridl[[i]] <- rep.grid[rep(i, nm), ]
+    } else {
+      gridl[[i]] <- rep.grid[i, ]
+    }
   }
-  mgrid <- do.call(rbind, gridl)
-  method <- unlist(methodl)
-  mgrid$key2 <- method
+  grid <- do.call(rbind, gridl)
+  key2 <- unlist(key2l)
+  grid$key2 <- key2
 
-  wide <- cbind(mgrid, value)
+  wide <- cbind(grid, value)
+  long <- tidyr::gather(wide,key,value,-(1:(ncol(wide)-ncol(value))))
 
-  long <- tidyr::gather(wide,key,value,-(1:(ncol(param.grid)+2)))
 
   class(long) <- c("gapply", class(long))
   attr(long, "time") <- end-start
