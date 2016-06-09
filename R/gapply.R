@@ -55,12 +55,14 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
   warn.list <- warn[warn.id]
   names(warn.list) <- warn.id
 
-  value <- as.data.frame(do.call(rbind, res.l)) # automatic naming of unnamed returns to V1,V2, etc
+  # automatic naming of unnamed returns to V1,V2, etc
+  value <- as.data.frame(do.call(rbind, res.l))
 
   rep.grid <- param.grid[rep(1:nrow(param.grid),each=.reps), , drop=F]
   rep.grid$rep  <- rep(1:.reps, times=nrow(param.grid))
   gridl <- list()
   methodl <- list()
+  ## This is necessary so that rows can have different numbers of reps in case of errors
   for(i in 1:length(res.l)){
     reprow <- as.data.frame(res.l[[i]])
     nm <- nrow(reprow)

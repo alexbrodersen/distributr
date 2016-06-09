@@ -19,19 +19,20 @@ Some common applications for distributed computing in statistics are
 - Monte Carlo simulations (e.g. comparing methods)
 - meta-parameter tuning for machine learning
 - distributed data analysis
+- computationally intensive workflows and pipelines.
 
 The motivation for the package is to exploit the fact that the tasks are embarrassingly parallel and modular. Data is generated or loaded, then one or more analyses are carried out on the data, and the performance is measured. These steps can be done all at once or in separate steps. Often the analysis or data generating functions are applied to a 'grid' of their parameters (e.g. tuning machine learning algorithms, or generating data under different conditions). This process is often carried out repeatedly (e.g. cv-folds, bootstrap replications, or Monte-Carlo replications). 
 
 The main problem the package solves is providing a convenient interface for generating the 'glue' code that's necessary to carry out these tasks on a distributed computing cluster. A good abstraction could cover 80-90\% of the common tasks in these applications, and make using large clusters less painful to use and more fun. Some of the features of such a framework would be:
 
-- easily modifying simulations, adding conditions/replications without recomputation
+- easily modifying the workflow, adding conditions/replications without recomputation
 - tidy results 
 - memorable interface
 - catching errors and warnings
 - balancing memory use and run time
 - works on multiple schedulers (SGE, Torque), or specific back ends like Amazon EC2 or Hadoop
 
-Below, I describe a simple function that covers a basic case, and a modular solution that is more flexible. The single function (`gapply`) is easy to remember and use, but is not easily extendable. The modular solution enables easily modifying the simulations and is similar in spirit to `ggplot2`.
+Below, I describe a simple function that covers a basic workflow, and a modular solution that is more flexible. The single function (`gapply`) is easy to remember and use, but is not easily extendable. The modular solution enables easy modification of the workflow and is similar in spirit to `ggplot2`.
 
 # gapply
 
@@ -97,12 +98,13 @@ sim <- grid(f, arg1=c(1,2), arg2=c(T, F)) +
 ```
 
 - `grid` takes a user applied function, allows it to be applied to a grid of its parameters, and specifies the output on which it is applied.
-- `+` specifies options and additional functions to be used in the simulation. Options/functions are added together to form the simulation plan, like layers of a plot are added in `ggplot2`.
+- `+` specifies options and additional functions to be used in the workflow.
+Options/functions are added together to form the function graph or workflow, like layers of a plot are added in `ggplot2`.
 - `reps` specifies the number of replications
 - `tidy` tidies output at the given level, otherwise list is returned
 - `seed` sets seed at given levels using L'Ecuyer-CMRG RNG for reproducibility
-- `save` specifies what levels the output is saved
-- `sge` is the backend on which the simulation is run, other backends are possible
+- `save` specifies at what levels the output is saved
+- `sge` is the backend on which the workflow is run, other backends are possible
 
 To specify which functions are applied to the results of other functions, the following arguments are specified in `grid`:
 
@@ -138,7 +140,7 @@ plotmat(M, pos = c(1, 2, 4), name = names, lwd= 1, relsize=1,
 
 ### Operations on `sim`
 
-It would be convenient to summarize the simulation in terms of the parameter grid and the function  graph. 
+It would be convenient to summarize the workflow in terms of the parameter grid and the function  graph. 
 
 - `plot` plots the function graph (as above)
 - `summary` summarizes the grid of parameters
@@ -168,7 +170,7 @@ warnings(res)
 
 ### Adding new conditions 
 
-New functions can be added to the simulation at different levels. Below I show examples of adding new functions at all levels. The figure shows what gets recomputed.
+New functions can be added to the workflow at different levels. Below I show examples of adding new functions at all levels. The figure shows what gets recomputed.
 
 
 ```{r, eval=F}
@@ -257,9 +259,9 @@ cv.tune %>% group_by(n.trees, shrinkage, interaction.depth) %>%
 
 There has been a lot of good work already done in this vein, which has influenced and motivated the current design. 
 
-BatchJobs and BatchExperiments (ref) support a fully asynchronous workflow, and support various backends including SGE, Torque, and SSH. This is a feat. However, I struggled learning the framework and getting something simple like distributed cross-validation to work cleanly out of the box. The interface is maximally flexible with many of the features described above. But it was difficult to use and remember the function names and argument structure. I also found it difficult to reason about errors when they occurred.
+BatchJobs and BatchExperiments (ref) support a fully asynchronous workflow, and support various backends including SGE, Torque, and SSH. This is a feat. The interface is maximally flexible with many of the features described above. But it was difficult to use and remember the function names and argument structure. I also found it difficult to reason about errors when they occurred.
 
-Other options include
+Other work in R includes
 
 - `simsalapar`. Not asynchronous, not extendable/modular enough for many tasks, but good for simple cases.
 - `ezsim` Not asynchronous, designed around the estimator/parameter metaphor. Specific to Monte Carlo simulation in statistics.
@@ -269,4 +271,6 @@ Other options include
 - `mlr`, `caret`; specifically designed for tuning machine learning models
 - I contributed to `simsem`, a framework for Monte Carlo simulations with structural equation models. It also is not asynchronous, and focuses only on this class of models.
 - Many other examples for simulating data under specific models.
+
+
 
