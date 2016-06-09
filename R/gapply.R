@@ -3,12 +3,12 @@
 #' gapply (grid apply) applies a function to a grid of it's parameters in parallel, optionally for a given number of replications
 #'
 #' @param f function to be evaluated. The function must return a (named) value or (named) vector of values.
-#' @param ... named arguments to \code{f} in the form \code{key=c(value1,value2, ...)} etc. 
+#' @param ... named arguments to \code{f} in the form \code{key=c(value1,value2, ...)} etc.
 #' A grid of parameter values will be generated from values given to each named argument, as \code{expand.grid(...)}
 #' @param .reps times the function should be evaluated
 #' @param .mc.cores attempts to split function evaluations over given number of cores
-#' @param .verbose If \code{1} (default), prints a \code{.} with every completed condition. 
-#' If \code{2}, prints the arguments corresponding to the completed condition. 
+#' @param .verbose If \code{1} (default), prints a \code{.} with every completed condition.
+#' If \code{2}, prints the arguments corresponding to the completed condition.
 #' If \code{3}, prints the arguments and results of the completed condition.
 #' @param .eval If \code{TRUE} (default), evaluates \code{f}. If \code{FALSE}, does not evaluate \code{f} and returns \code{NA} for \code{value}.
 #' @return Returns non-error results as a \code{data.frame} in long form with the following columns:
@@ -17,12 +17,12 @@
 #' \item{\code{key}}{the name(s) of the return value(s) of \code{f}}
 #' \item{\code{value}}{the value of \code{f} at a set of parameters, if \code{.eval = FALSE}, returns \code{NA}}
 #' Errors are captured using \code{try}, converted to character, and available using \code{attr(object, "err")}
-#' @details 
+#' @details
 #' The attributes of the object include \code{grid} (the grid of parameter values), \code{time} (elapsed time), and \code{err} (list of errors).
-#' 
-#' If the values returned by \code{f} are not named, they will be named according to the rules of \code{as.data.frame}, typically \code{V1, V2, ...}. 
-#' 
-#' The function application to each combination of meta-parameters (not replications) are distributed in parallel via \code{mclapply} and will not work in Windows. 
+#'
+#' If the values returned by \code{f} are not named, they will be named according to the rules of \code{as.data.frame}, typically \code{V1, V2, ...}.
+#'
+#' The function application to each combination of meta-parameters (not replications) are distributed in parallel via \code{mclapply} and will not work in Windows.
 #' @examples
 #' do.one <- function(a=1,b=2){c(sum=a+b,sub=a-b)}
 #' gapply(do.one, a=1:4,b=2:3, .reps=5)
@@ -35,26 +35,26 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
   param.ls <- split(param.grid, 1:nrow(param.grid))
   names(param.ls) <- NULL
   start <- proc.time()
-  res.l <- parallel::mclapply(param.ls, do.rep, f=wrapWE(f), 
-                            .reps=.reps, mc.cores=.mc.cores, .verbose=.verbose, 
+  res.l <- parallel::mclapply(param.ls, do.rep, f=wrapWE(f),
+                            .reps=.reps, mc.cores=.mc.cores, .verbose=.verbose,
                             .eval=.eval, .rep.cores=1)
   end <- proc.time()
-  
+
 
   # take off one level of nesting and make sure all elements are data.frame
   res.l <- unlist(res.l, recursive=FALSE)
   rc <- length(res.l) # reps * conditions
-  
+
   err <- lapply(res.l, function(r){attr(r, "err")})
   err.id <-  which(unlist(lapply(err, function(x){!is.null(x)})))
   err.list <- err[err.id]
   names(err.list) <- err.id
-  
+
   warn <- lapply(res.l, function(r){attr(r, "warn")})
   warn.id <- which(unlist(lapply(warn, function(x){!is.null(x)})))
   warn.list <- warn[warn.id]
   names(warn.list) <- warn.id
-  
+
   value <- as.data.frame(do.call(rbind, res.l)) # automatic naming of unnamed returns to V1,V2, etc
 
   rep.grid <- param.grid[rep(1:nrow(param.grid),each=.reps), , drop=F]
@@ -69,12 +69,12 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
   }
   mgrid <- do.call(rbind, gridl)
   method <- unlist(methodl)
-  mgrid$method <- method
+  mgrid$key2 <- method
 
   wide <- cbind(mgrid, value)
-  
+
   long <- tidyr::gather(wide,key,value,-(1:(ncol(param.grid)+2)))
-  
+
   class(long) <- c("gapply", class(long))
   attr(long, "time") <- end-start
   attr(long, "arg.names") <- colnames(param.grid)
@@ -96,8 +96,8 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
 #' @param .reps the number of times the function should be evaluated
 #' @param .rep.cores Apply repeates in parallel using mclapply
 #' @param .eval If \code{TRUE} (default), evaluates \code{f}. If \code{FALSE}, does not evaluate \code{f}.
-#' @param .verbose If \code{1} (default), prints a \code{.} with every completed condition. 
-#' If \code{2}, prints the arguments corresponding to the completed condition. 
+#' @param .verbose If \code{1} (default), prints a \code{.} with every completed condition.
+#' If \code{2}, prints the arguments corresponding to the completed condition.
 #' If \code{3}, prints the arguments and results of the completed condition.
 #' @export
 #' @importFrom parallel mclapply
@@ -107,7 +107,7 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
 do.rep <- function(f,..., .reps,.verbose=1,.rep.cores=1, .eval=T){
   if(.verbose %in% c(2,3) & .eval){cat(paste(names(...),"=", ...),fill=T)}
   if(.eval){
-    res.l <- parallel::mclapply(1:(.reps),function(r, f, ...){ 
+    res.l <- parallel::mclapply(1:(.reps),function(r, f, ...){
       do.call(f,...)}, f=f, ..., mc.cores=.rep.cores)
   } else {
     nothing <- function(...){c(NA)}
