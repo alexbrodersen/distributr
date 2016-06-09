@@ -1,0 +1,272 @@
+---
+title: "distributr prototype"
+author: "Patrick Miller"
+date: "June 7, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(xtable)
+library(diagram)
+
+knitr::opts_chunk$set(echo = TRUE, eval=F)
+```
+
+The motivation for this package is to provide a flexible but fun interface for distributed computing on large computing clusters. It's my impression that cluster resources are usually shared, and jobs are administered using a job manager like Sun Grid Engine or Torque. This produces an 'asynchronous' work flow were users specify jobs/resources, submit jobs, and collect results. These jobs can often take days or weeks to complete. I've found it to be unpleasant to learn the idiosyncrasies of these systems. I've also found myself copying 'glue' code I use from one project to another.
+
+Some common applications for distributed computing in statistics are
+
+- Monte Carlo simulations (e.g. comparing methods)
+- meta-parameter tuning for machine learning
+- distributed data analysis
+
+The motivation for the package is to exploit the fact that the tasks are embarrassingly parallel and modular. Data is generated or loaded, then one or more analyses are carried out on the data, and the performance is measured. These steps can be done all at once or in separate steps. Often the analysis or data generating functions are applied to a 'grid' of their parameters (e.g. tuning machine learning algorithms, or generating data under different conditions). This process is often carried out repeatedly (e.g. cv-folds, bootstrap replications, or Monte-Carlo replications). 
+
+The main problem the package solves is providing a convenient interface for generating the 'glue' code that's necessary to carry out these tasks on a distributed computing cluster. A good abstraction could cover 80-90\% of the common tasks in these applications, and make using large clusters less painful to use and more fun. Some of the features of such a framework would be:
+
+- easily modifying simulations, adding conditions/replications without recomputation
+- tidy results 
+- memorable interface
+- catching errors and warnings
+- balancing memory use and run time
+- works on multiple schedulers (SGE, Torque), or specific back ends like Amazon EC2 or Hadoop
+
+Below, I describe a simple function that covers a basic case, and a modular solution that is more flexible. The single function (`gapply`) is easy to remember and use, but is not easily extendable. The modular solution enables easily modifying the simulations and is similar in spirit to `ggplot2`.
+
+# gapply
+
+This function (_grid_ apply) covers the basic use case of repeatedly applying a function over a grid of it's parameters in parallel. The function written by the user generates and loads data, performs analyses, and returns results. An implementation of `gapply` is available on github, which I use regularly.
+
+```{r, eval=TRUE}
+# devtools::install_github("patr1ckm/patr1ckm")
+library(patr1ckm) 
+do.one <- function(n, mu, sd){ mean(rnorm(n, mu, sd)) }
+
+sim <- gapply(do.one, n = c(50, 100, 500), mu = c(1,5), sd = c(1, 5, 10), 
+              .reps=50, .mc.cores=5)
+```
+
+
+Using multiple performance criteria and multiple methods can be handled by returning a `data.frame` in `do.one`. The row and column names are mapped to variables in the results. We can also catch warnings and errors.
+
+```{r, eval=TRUE}
+do.one <- function(a=1,b=2){
+  if(a==1){ stop("asdf")}
+  if(b==2){warning("this is a warning")}
+  return(data.frame(perf=c(a+b, a-b)))
+}
+
+sim <- gapply(do.one, a=c(2,1), b=2, .reps=2, .verbose=0)
+```
+
+```{r, eval=FALSE}
+res <- summary(sim) 
+attr(out, "err")   # to be replaced by errors(sim)
+attr(out, "warn")  # to be replaced by warnings(sim)
+```
+### Execution on SGE
+
+I've implemented and used this code for on a computing cluster that uses Sun Grid Engine. I run this code on the head node.
+
+- `setup` distributes conditions over nodes, and reps are computed within each node. The `.mc.cores` allows the replications to be computed in parallel within each node. `.chunks` allows splitting the replications over nodes.
+- `submit` submits all jobs to the scheduler
+- `collect` collects the results at any stage of completion.
+
+```{r}
+sim <- gapply(do.one, n = c(50, 100, 500), mu = c(1,5), sd = c(1, 5, 10), .eval=F)
+setup(sim, .reps=500, .chunks = 3, .mc.cores = 5)
+submit(sim)   
+res <- collect(sim)
+```
+
+
+# grid
+
+Though a single function `do.one` is convenient, it is not modular enough to add simulation conditions or replications without recomputation. With many conditions, `do.one` can become complex. A more modular framework is shown below using `+` and the function `grid`.
+
+```{r, eval=F}
+sim <- grid(f, arg1=c(1,2), arg2=c(T, F)) +
+	grid(g, arg3=c(.05, .001), arg4=c(10, 100), .level=1) +
+	grid(g2, arg5=c(1,2), .level=1) +   
+	h(.dep=c("g", "g2")) +
+  reps(1000) +   
+	tidy(.level=3) + 		
+	seed() +            
+	save(.level=1:3) + 
+	sge()
+```
+
+- `grid` takes a user applied function, allows it to be applied to a grid of its parameters, and specifies the output on which it is applied.
+- `+` specifies options and additional functions to be used in the simulation. Options/functions are added together to form the simulation plan, like layers of a plot are added in `ggplot2`.
+- `reps` specifies the number of replications
+- `tidy` tidies output at the given level, otherwise list is returned
+- `seed` sets seed at given levels using L'Ecuyer-CMRG RNG for reproducibility
+- `save` specifies what levels the output is saved
+- `sge` is the backend on which the simulation is run, other backends are possible
+
+To specify which functions are applied to the results of other functions, the following arguments are specified in `grid`:
+
+- `.level` The function is applied to the results of all functions at this 'level' (see figure for examples).
+- `.dep` The function is applied to the results of specific functions given by name
+
+```{r, echo=F, eval=T, fig.width=8, fig.height=4}
+ par(mar = c(1, 1, 1, 1), mfrow = c(1, 2), oma=c(1,1,1,1))
+ names <- c("f()", "g()", "g2()", "h()")
+M <- matrix(nrow = 4, ncol = 4, byrow = TRUE, data = 0)
+M[2, 1] <- M[3, 1] <- M[4, 2] <- M[4, 3] <- ""
+plotmat(M, pos = c(1, 2, 1), name = names, lwd= 1, relsize=1,
+         box.lwd = 1, cex.txt=.8, box.type = "circle", box.prop=1.0)
+
+xpos <- .975
+text(xpos,.85, labels = "Level 1", las=.5, xpd=NA)
+lines(x = c(xpos, xpos), y = c(.8, .55))
+text(xpos,.5, labels = "Level 2", las=.5, xpd=NA)
+lines(x = c(xpos, xpos), y = c(.45, .2))
+text(xpos,.15, labels = "Level 3", las=.5, xpd=NA)
+
+par(mar = c(0, 0, 0, 0))
+names <- c("f()", "g()", "g2()", "h1()", "h2()", "h1()", "h2()")
+M <- matrix(nrow = 7, ncol = 7, byrow = TRUE, data = 0)
+M[2, 1] <- M[3, 1] <- M[4, 2] <- M[6, 3] <- M[5, 2] <- M[7, 3] <- ""
+plotmat(M, pos = c(1, 2, 4), name = names, lwd= 1, relsize=1,
+         box.lwd = 1, cex.txt=.8, box.type = "circle", box.prop=1.0)
+
+
+
+ 
+```
+
+### Operations on `sim`
+
+It would be convenient to summarize the simulation in terms of the parameter grid and the function  graph. 
+
+- `plot` plots the function graph (as above)
+- `summary` summarizes the grid of parameters
+- `test` tests one or a few conditions, and estimates memory use and execution time
+- `submit` submits jobs to the scheduler
+- `collect` collects the results.
+
+```{r, eval=F}
+summary(sim)
+plot(sim)
+test(sim)     
+submit(sim)
+res <- collect(sim)	
+
+```
+
+### Operations on results
+
+- `summary` aggregates the `value` column of results using a function `.fun` (default `mean`) if results are tidy
+- `errors`, `warnings` list errors or warnings
+
+```{r, eval=F}
+summary(res, .fun = mean, .reps = NULL)  		
+errors(res)       
+warnings(res)  		
+```
+
+### Adding new conditions 
+
+New functions can be added to the simulation at different levels. Below I show examples of adding new functions at all levels. The figure shows what gets recomputed.
+
+
+```{r, eval=F}
+sim <- sim + grid(f2, arg6 = c(5:8))   
+
+submit(sim)
+res <- collect(sim)
+
+sim <- sim + grid(g3, ..., .level=1) +
+	h3(.dep=c("g3"))
+
+submit(sim)
+res <- collect(sim)
+```
+
+```{r, echo=F, eval=T}
+ par(mar = c(1, 1, 1, 1), mfrow = c(1, 2), oma=c(1,1,1,1))
+ names <- c("f()", "f2()", "g()", "g2()", "h()")
+M <- matrix(nrow = 5, ncol = 5, byrow = TRUE, data = 0)
+M[3, 1:2] <- M[4, 1:2] <-  ""
+M[5, 3:4] <- ""
+
+update <- matrix(nrow = 5, ncol = 5, byrow = TRUE, data = "gray")
+update[3:4, 2] <- "black"
+update[5,3:4] <- "black"
+
+plotmat(M, pos = c(2, 2, 1), name = names, lwd= 1, relsize=1,
+         box.lwd = 1, cex.txt=.8, box.type = "circle", box.prop=1.0,
+         arr.lcol=update, arr.col=update, box.lcol=c("gray", "black", "black", "black", "black"))
+
+xpos <- .975
+text(xpos,.85, labels = "Level 1", las=.5, xpd=NA)
+lines(x = c(xpos, xpos), y = c(.8, .55))
+text(xpos,.5, labels = "Level 2", las=.5, xpd=NA)
+lines(x = c(xpos, xpos), y = c(.45, .2))
+text(xpos,.15, labels = "Level 3", las=.5, xpd=NA)
+
+par(mar = c(0, 0, 0, 0))
+names <- c("f()", "f2()", "g()", "g2()", "g3()", "h()", "h3()")
+M <- matrix(nrow = 7, ncol = 5, byrow = TRUE, data = 0)
+M[3, 1:2] <- M[4, 1:2] <-  M[5, 1:2] <- ""
+M[6, 3:4] <- M[7, 5] <- ""
+update <- matrix(nrow = 7, ncol = 5, byrow = TRUE, data = "gray")
+update[5, 1:2] <- update[7, 5] <- "black"
+
+plotmat(M, pos = c(2, 3, 2), name = names, lwd= 1, relsize=1,
+         box.lwd = 1, cex.txt=.8, box.type = "circle", box.prop=1.0,
+        arr.lcol=update, arr.col=update, 
+        box.lcol=c(rep("gray", 4), "black", "gray", "black"))
+```
+
+## Example: GBM meta-parameter tuning by cross-validation
+
+```{r}
+
+data("mpg",package="ggplot2") 
+is.fac <- sapply(mpg, is.character)
+mpg[,is.fac] <- lapply(mpg[,is.fac], as.factor)
+
+do.one <- function(fold, ...){
+  set.seed(104)
+  fold.ids <- sample(1:5, size =  nrow(mpg), replace=T)
+  test <- mpg[fold.ids == fold, ]
+  out <- gbm(cty ~ . - hwy, data = mpg[fold.ids != fold, ], distribution="gaussian", ...)
+  nt <- suppressWarnings(gbm.perf(out, method="OOB", plot.it=F))
+  yhat <- predict(out, newdata = test, n.trees=nt)
+  mse <- var(test$cty - yhat)
+  return(c(mse=mse))
+}
+
+do.one(fold=1, n.trees=5)
+
+cv.tune <- gapply(do.one, fold=1:5, n.trees=c(1000, 5000), 
+       shrinkage=c(.01, .001, .005), interaction.depth=c(1:3), .mc.cores=5)
+
+library(dplyr)
+cv.tune %>% group_by(n.trees, shrinkage, interaction.depth) %>% 
+  summarise(mse=mean(value)) %>%
+  ungroup %>%
+  filter(mse == min(mse))
+
+
+```
+
+## Previous work
+
+There has been a lot of good work already done in this vein, which has influenced and motivated the current design. 
+
+BatchJobs and BatchExperiments (ref) support a fully asynchronous workflow, and support various backends including SGE, Torque, and SSH. This is a feat. However, I struggled learning the framework and getting something simple like distributed cross-validation to work cleanly out of the box. The interface is maximally flexible with many of the features described above. But it was difficult to use and remember the function names and argument structure. I also found it difficult to reason about errors when they occurred.
+
+Other options include
+
+- `simsalapar`. Not asynchronous, not extendable/modular enough for many tasks, but good for simple cases.
+- `ezsim` Not asynchronous, designed around the estimator/parameter metaphor. Specific to Monte Carlo simulation in statistics.
+- `harvestr` Not asynchronous, weird but sort of happy farming metaphor for functions.
+- `simFrame`. Not asynchronous, specific data generation and analysis functions for simulations involving survey sampling and missing data.
+- `simSummary` Only simplifies results aggregation.
+- `mlr`, `caret`; specifically designed for tuning machine learning models
+- I contributed to `simsem`, a framework for Monte Carlo simulations with structural equation models. It also is not asynchronous, and focuses only on this class of models.
+- Many other examples for simulating data under specific models.
+
