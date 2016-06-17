@@ -196,7 +196,7 @@ submit(sim)
 res <- collect(sim)
 ```
 
-```{r, echo=F, eval=T}
+```{r, echo=F, eval=T, fig.width=8, fig.height=4}
  par(mar = c(1, 1, 1, 1), mfrow = c(1, 2), oma=c(1,1,1,1))
  names <- c("f()", "f2()", "g()", "g2()", "h()")
 M <- matrix(nrow = 5, ncol = 5, byrow = TRUE, data = 0)
