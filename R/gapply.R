@@ -67,9 +67,10 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
   key2l <- list()
 
   for(i in 1:length(res.l)){
+    # Add a second key if a data frame is returned
     if(rows.flag){
       reprow <- as.data.frame(res.l[[i]])
-      key2l[[i]] <- rownames(reprow) # only add a second key if a data frame is returned
+      key2l[[i]] <- rownames(reprow)
       nm <- nrow(reprow)
       gridl[[i]] <- rep.grid[rep(i, nm), ]
     } else {
@@ -147,6 +148,14 @@ wrapWE <- function(fun){
   }
 }
 
+#' @export
+err <- function(object){
+  attr(object, "err")
+}
+#' @export
+warn <- function(object){
+  attr(object, "warn")
+}
 
 is.error <- function(x){!is.null(attr(x, "err"))}
 is.warn <- function(x){!is.null(attr(x, "warn"))}

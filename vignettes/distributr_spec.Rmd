@@ -1,18 +1,24 @@
 ---
 title: "distributr prototype"
 author: "Patrick Miller"
-date: "June 7, 2016"
-output: html_document
+date: "June 17, 2016"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
 library(xtable)
 library(diagram)
+library(distributr)
+library(dplyr)
 
 knitr::opts_chunk$set(echo = TRUE, eval=F)
 ```
 
-The motivation for this package is to provide a flexible but fun interface for distributed computing on large computing clusters. It's my impression that cluster resources are usually shared, and jobs are administered using a job manager like Sun Grid Engine or Torque. This produces an 'asynchronous' work flow were users specify jobs/resources, submit jobs, and collect results. These jobs can often take days or weeks to complete. I've found it to be unpleasant to learn the idiosyncrasies of these systems. I've also found myself copying 'glue' code I use from one project to another.
+The motivation for this package is to provide a flexible but fun interface for distributed computing on large computing clusters. It's my impression that cluster resources are usually shared, and jobs are administered using a job manager like Sun Grid Engine or Torque. This produces an 'asynchronous' work flow were users specify jobs/resources, submit jobs, and collect results. These jobs can often take days or weeks to complete. I've found it to be unpleasant to learn the idiosyncrasies of these systems. I've also found myself copying 'glue' code I use from one project to another. The purpose of the package is to simplify usage of distributed computing in a way already familiar to many useRs.
 
 Some common applications for distributed computing in statistics are
 
@@ -21,7 +27,7 @@ Some common applications for distributed computing in statistics are
 - distributed data analysis
 - computationally intensive workflows and pipelines.
 
-The motivation for the package is to exploit the fact that the tasks are embarrassingly parallel and modular. Data is generated or loaded, then one or more analyses are carried out on the data, and the performance is measured. These steps can be done all at once or in separate steps. Often the analysis or data generating functions are applied to a 'grid' of their parameters (e.g. tuning machine learning algorithms, or generating data under different conditions). This process is often carried out repeatedly (e.g. cv-folds, bootstrap replications, or Monte-Carlo replications). 
+The motivation for the package is to exploit the fact that the tasks are embarrassingly parallel and modular. Data is generated or loaded, then one or more analyses are carried out on the data, and the performance is measured. These steps can be done all at once or in separate steps. Often the analysis or data generating functions are applied to a 'grid' of their arguments/parameters (e.g. tuning machine learning algorithms, or generating data under different conditions). This process is often carried out repeatedly (e.g. cv-folds, bootstrap replications, or Monte-Carlo replications). 
 
 The main problem the package solves is providing a convenient interface for generating the 'glue' code that's necessary to carry out these tasks on a distributed computing cluster. A good abstraction could cover 80-90\% of the common tasks in these applications, and make using large clusters less painful to use and more fun. Some of the features of such a framework would be:
 
@@ -36,7 +42,7 @@ Below, I describe a simple function that covers a basic workflow, and a modular 
 
 # gapply
 
-This function (_grid_ apply) covers the basic use case of repeatedly applying a function over a grid of it's parameters in parallel. The function written by the user generates and loads data, performs analyses, and returns results. An implementation of `gapply` is available on github, which I use regularly.
+This function (_grid_ apply) covers the basic use case of repeatedly applying a function over a grid of its arguments in parallel. The function written by the user generates and loads data, performs analyses, and returns results. An implementation of `gapply` is available on github, which I use regularly.
 
 ```{r, eval=TRUE}
 # devtools::install_github("patr1ckm/patr1ckm")
@@ -45,25 +51,29 @@ do.one <- function(n, mu, sd){ mean(rnorm(n, mu, sd)) }
 
 sim <- gapply(do.one, n = c(50, 100, 500), mu = c(1,5), sd = c(1, 5, 10), 
               .reps=50, .mc.cores=5)
+head(sim)
 ```
 
 
-Using multiple performance criteria and multiple methods can be handled by returning a `data.frame` in `do.one`. The row and column names are mapped to variables in the results. We can also catch warnings and errors.
+Using multiple performance criteria and multiple methods can be handled by returning a `data.frame` in `do.one`. The row and column names are mapped to `key` and `key2` in the results.
 
 ```{r, eval=TRUE}
 do.one <- function(a=1,b=2){
   if(a==1){ stop("asdf")}
   if(b==2){warning("this is a warning")}
-  return(data.frame(perf=c(a+b, a-b)))
+  return(data.frame(ops1=c(a+b, a-b), ops2=c(a*b, a^2)))
 }
 
 sim <- gapply(do.one, a=c(2,1), b=2, .reps=2, .verbose=0)
+sim
 ```
 
-```{r, eval=FALSE}
-res <- summary(sim) 
-attr(out, "err")   # to be replaced by errors(sim)
-attr(out, "warn")  # to be replaced by warnings(sim)
+A `summary` method is provided, and warnings/errors can be extracted.
+
+```{r, eval=TRUE}
+summary(sim, .fun=mean) 
+err(sim)
+warn(sim)
 ```
 ### Execution on SGE
 
@@ -71,7 +81,7 @@ I've implemented and used this code for on a computing cluster that uses Sun Gri
 
 - `setup` distributes conditions over nodes, and reps are computed within each node. The `.mc.cores` allows the replications to be computed in parallel within each node. `.chunks` allows splitting the replications over nodes.
 - `submit` submits all jobs to the scheduler
-- `collect` collects the results at any stage of completion.
+- `collect` collects completed results 
 
 ```{r}
 sim <- gapply(do.one, n = c(50, 100, 500), mu = c(1,5), sd = c(1, 5, 10), .eval=F)
@@ -83,7 +93,7 @@ res <- collect(sim)
 
 # grid
 
-Though a single function `do.one` is convenient, it is not modular enough to add simulation conditions or replications without recomputation. With many conditions, `do.one` can become complex. A more modular framework is shown below using `+` and the function `grid`.
+Though using `gapply` with a single function `do.one` is convenient, it is not modular enough to add simulation conditions or replications without recomputation. With many conditions, `do.one` can become complex. A more modular framework is shown below using `+` and the function `grid`.
 
 ```{r, eval=F}
 sim <- grid(f, arg1=c(1,2), arg2=c(T, F)) +
@@ -97,7 +107,7 @@ sim <- grid(f, arg1=c(1,2), arg2=c(T, F)) +
 	sge()
 ```
 
-- `grid` takes a user applied function, allows it to be applied to a grid of its parameters, and specifies the output on which it is applied.
+- `grid` takes a user supplied function, allows it to be applied to a grid of its argumentss, and specifies the output on which it is applied.
 - `+` specifies options and additional functions to be used in the workflow.
 Options/functions are added together to form the function graph or workflow, like layers of a plot are added in `ggplot2`.
 - `reps` specifies the number of replications
@@ -140,10 +150,10 @@ plotmat(M, pos = c(1, 2, 4), name = names, lwd= 1, relsize=1,
 
 ### Operations on `sim`
 
-It would be convenient to summarize the workflow in terms of the parameter grid and the function  graph. 
+It would be convenient to summarize the workflow in terms of the argument grid and the function  graph. 
 
 - `plot` plots the function graph (as above)
-- `summary` summarizes the grid of parameters
+- `summary` summarizes the grid of arguments
 - `test` tests one or a few conditions, and estimates memory use and execution time
 - `submit` submits jobs to the scheduler
 - `collect` collects the results.
@@ -164,8 +174,8 @@ res <- collect(sim)
 
 ```{r, eval=F}
 summary(res, .fun = mean, .reps = NULL)  		
-errors(res)       
-warnings(res)  		
+err(res)       
+warn(res)  		
 ```
 
 ### Adding new conditions 
@@ -224,7 +234,7 @@ plotmat(M, pos = c(2, 3, 2), name = names, lwd= 1, relsize=1,
 
 ## Example: GBM meta-parameter tuning by cross-validation
 
-```{r}
+```{r,eval=T, cache=T, messages=F}
 
 library(gbm)
 data("mpg",package="ggplot2") 
@@ -251,7 +261,7 @@ library(dplyr)
 cv.tune %>% group_by(n.trees, shrinkage, interaction.depth) %>% 
   summarise(mse=mean(value)) %>%
   ungroup %>%
-  arrange(mse) %>% head(n=10)
+  arrange(mse) %>% head(n=5)
 
 
 ```
@@ -260,18 +270,20 @@ cv.tune %>% group_by(n.trees, shrinkage, interaction.depth) %>%
 
 There has been a lot of good work already done in this vein, which has influenced and motivated the current design. 
 
-BatchJobs and BatchExperiments (ref) support a fully asynchronous workflow, and support various backends including SGE, Torque, and SSH. This is a feat. The interface is maximally flexible with many of the features described above. But it was difficult to use and remember the function names and argument structure. I also found it difficult to reason about errors when they occurred.
+`BatchJobs` and `BatchExperiments` support a fully asynchronous workflow, and support various backends including SGE, Torque, and SSH. The interface is maximally flexible with many of the features described above. But it was difficult to use and remember the function names and argument structure. I also found it difficult to reason about errors and bugs when they occurred.
 
 Other work in R includes
 
-- `simsalapar`. Not asynchronous, not extendable/modular enough for many tasks, but good for simple cases.
+- `simsalapar` Not asynchronous, not extendable/modular enough for many tasks, but good for simple cases.
 - `ezsim` Not asynchronous, designed around the estimator/parameter metaphor. Specific to Monte Carlo simulation in statistics.
 - `harvestr` Not asynchronous, weird but sort of happy farming metaphor for functions.
-- `simFrame`. Not asynchronous, specific data generation and analysis functions for simulations involving survey sampling and missing data.
+- `simFrame` Not asynchronous, specific data generation and analysis functions for simulations involving survey sampling and missing data.
 - `simSummary` Only simplifies results aggregation.
-- `mlr`, `caret`; specifically designed for tuning machine learning models
+- `mlr`, `caret` specifically designed for tuning machine learning models
 - I contributed to `simsem`, a framework for Monte Carlo simulations with structural equation models. It also is not asynchronous, and focuses only on this class of models.
 - Many other examples for simulating data under specific models.
+
+There are many other 'distributed computing workflow' tools for other languages, and some that are 
 
 
 
