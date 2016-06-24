@@ -99,7 +99,7 @@ Though using `gapply` with a single function `do.one` is convenient, it is not m
 sim <- grid(f, arg1=c(1,2), arg2=c(T, F)) +
 	grid(g, arg3=c(.05, .001), arg4=c(10, 100), .level=1) +
 	grid(g2, arg5=c(1,2), .level=1) +   
-	h(.dep=c("g", "g2")) +
+	grid(h, .dep=c("g", "g2")) +
   reps(1000) +   
 	tidy(.level=3) + 		
 	seed() +            

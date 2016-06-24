@@ -96,6 +96,7 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
   return(long)
 }
 
+
 #' Evaluate a function repeatedly over arbitrary arguments
 #'
 #' This idiom is really useful to carry out simulations, which are essentially
@@ -112,8 +113,6 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
 #' @export
 #' @importFrom parallel mclapply
 #' @importFrom dplyr rbind_all as.tbl
-
-
 do.rep <- function(f,..., .reps,.verbose=1,.rep.cores=1, .eval=T){
   if(.verbose %in% c(2,3) & .eval){cat(paste(names(...),"=", ...),fill=T)}
   if(.eval){
