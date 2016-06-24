@@ -157,8 +157,8 @@ collect <- function(dir=getwd()){
   wide <- cbind(grid, value)
   long <- tidyr::gather(wide,key,value,-(1:(ncol(wide)-ncol(value))))
 
-  perc.complete <- nrow(cond.grid)/nrow(rep.grid)
-  perc.err <- ifelse(length(err.id) > 0, length(err.id)/nrow(rep.grid), 0)
+  perc.complete <- nrow(cond.grid)/nrow(param.grid) # percent conditions complete
+  perc.err <- ifelse(length(err.id) > 0, length(err.id)/nrow(param.grid), 0) # percent condition err
 
   class(long) <- c("gapply", class(long))
   attr(long, "time") <- NA
