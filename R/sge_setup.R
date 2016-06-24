@@ -161,7 +161,7 @@ collect <- function(dir=getwd()){
   perc.err <- ifelse(length(err.id) > 0, length(err.id)/nrow(param.grid), 0) # percent condition err
 
   class(long) <- c("gapply", class(long))
-  attr(long, "time") <- NA
+  attr(long, "time") <- 0
   attr(long, "arg.names") <- colnames(param.grid)[-ncol(param.grid)]
   #attr(long, "f") <- f
   attr(long, "param.grid") <- param.grid
