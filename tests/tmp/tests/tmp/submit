@@ -1,0 +1,10 @@
+#!/bin/bash
+#$ -M patr1ckm.crc@gmail.com     # Email address for job notification
+#$ -m a          # Send mail when job begins, ends and aborts
+#$ -pe smp 1     # environment and legal core size
+#$ -q *@@daccss  # Specify queue
+#$ -N patr1ckm   # Specify job name
+#$ -t 1:2        # number of rows in param.grid
+#$ -o SGE_Output
+
+Rscript doone.R $SGE_TASK_ID

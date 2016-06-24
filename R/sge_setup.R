@@ -157,18 +157,17 @@ collect <- function(dir=getwd()){
   wide <- cbind(grid, value)
   long <- tidyr::gather(wide,key,value,-(1:(ncol(wide)-ncol(value))))
 
-  perc.complete <- length(cond.idx)/nrow(param.grid)
-  perc.err <- ifelse(length(err.id) > 0, mean(err.id), 0)
+  perc.complete <- nrow(cond.grid)/nrow(rep.grid)
+  perc.err <- ifelse(length(err.id) > 0, length(err.id)/nrow(rep.grid), 0)
 
   class(long) <- c("gapply", class(long))
-  #attr(long, "time") <- end-start
-  attr(long, "arg.names") <- colnames(param.grid)
+  attr(long, "time") <- NA
+  attr(long, "arg.names") <- colnames(param.grid)[-ncol(param.grid)]
   #attr(long, "f") <- f
   attr(long, "param.grid") <- param.grid
   attr(long, "err") <- err.list
   attr(long, "warn") <- warn.list
   attr(long, ".reps") <- reps
-  attr(long, "rpc") <- rpc
   attr(long, "perc.complete") <- perc.complete
   attr(long, "perc.err") <- perc.err
 
