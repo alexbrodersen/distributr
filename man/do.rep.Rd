@@ -4,7 +4,8 @@
 \alias{do.rep}
 \title{Evaluate a function repeatedly over arbitrary arguments}
 \usage{
-do.rep(.f, ..., .reps, .verbose = 1, .rep.cores = 1, .eval = T)
+do.rep(.f, ..., .reps, .verbose = 1, .rep.cores = 1, .eval = T,
+  .args = NULL)
 }
 \arguments{
 \item{.f}{function to be evaluated}
@@ -13,13 +14,15 @@ do.rep(.f, ..., .reps, .verbose = 1, .rep.cores = 1, .eval = T)
 
 \item{.reps}{the number of times the function should be evaluated}
 
-\item{.verbose}{If \code{1} (default), prints a \code{.} with every completed condition.
-If \code{2}, prints the arguments corresponding to the completed condition.
-If \code{3}, prints the arguments and results of the completed condition.}
+\item{.verbose}{If \code{1} (default), prints a \code{.} with every completed condition.}
 
 \item{.rep.cores}{Apply repeates in parallel using mclapply}
 
 \item{.eval}{If \code{TRUE} (default), evaluates \code{f}. If \code{FALSE}, does not evaluate \code{f}.}
+
+\item{.args}{optional list of (named) arguments to .f
+If \code{2}, prints the arguments corresponding to the completed condition.
+If \code{3}, prints the arguments and results of the completed condition.}
 }
 \description{
 This idiom is really useful to carry out simulations, which are essentially

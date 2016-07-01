@@ -108,16 +108,17 @@ gapply <- function(.f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
 #' @param .rep.cores Apply repeates in parallel using mclapply
 #' @param .eval If \code{TRUE} (default), evaluates \code{f}. If \code{FALSE}, does not evaluate \code{f}.
 #' @param .verbose If \code{1} (default), prints a \code{.} with every completed condition.
+#' @param .args optional list of (named) arguments to .f
 #' If \code{2}, prints the arguments corresponding to the completed condition.
 #' If \code{3}, prints the arguments and results of the completed condition.
 #' @export
 #' @importFrom parallel mclapply
 #' @importFrom dplyr rbind_all as.tbl
-do.rep <- function(.f,..., .reps, .verbose=1,.rep.cores=1, .eval=T){
+do.rep <- function(.f, ..., .reps, .verbose=1,.rep.cores=1, .eval=T, .args=NULL){
   if(.verbose %in% c(2,3) & .eval){cat(paste(names(...),"=", ...),fill=T)}
   if(.eval){
     res.l <- parallel::mclapply(1:(.reps),function(.rep, .f, ...){
-      do.call(.f,...)}, .f=.f, ..., mc.cores=.rep.cores)
+      do.call(.f,c(.args, ...))}, .f=.f, ..., mc.cores=.rep.cores)
   } else {
     nothing <- function(...){c(NA)}
     res.l <- lapply(1:.reps, function(r, ...) do.call(nothing, ...), ...)

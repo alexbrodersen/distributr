@@ -21,6 +21,19 @@ do.one <- function(a=1,b=2){
   return(data.frame(perf=c(a+b, a-b)))
 }
 
+## Testing .args (must be a list, doesn't have to be named)
+f <- function(a, b=1, x=1){ a + b + x}
+x <- do.rep(f, list(b=0, x=0), .reps=2, .args=list(5))
+expect_true(all(unlist(x) == 5))
+x <- do.rep(f, list(a=0, x=0), .reps=2, .args=list(b=3))
+expect_true(all(unlist(x) == 3))
+x <- do.rep(f, list(a=0, x=0), .reps=2, .args=list(4)) ## will still match b
+expect_true(all(unlist(x) == 4))
+expect_error(do.rep(f, list(a=0, x=0, b=0), .reps=2, .args=list(b=3)))
+x <- do.rep(f, list(a=0, x=0), .reps=2, .args=list(rnorm(5))) ## will still match b
+expect_true(all(sapply(x, length) == 5))
+
+## Testing errors and warnings
 x <- do.rep(wrapWE(do.one), list(a=1, b=2), .reps=2)
 expect_true(all(is.na(unlist(x))))
 expect_true(all(sapply(x, function(x){ attr(x, "err")}) == "asdf"))

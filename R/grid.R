@@ -49,13 +49,13 @@ goption <- function(reps=NULL, tidy=NULL, backend="local", cache="all"){
 
 ## Applies f to argument grid locally
 #' @export
-gapply.local <- function(.f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
+gapply.local <- function(.f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T, .args=NULL){
   grid <- expand.grid(...)
   param.ls <- split(grid, 1:nrow(grid))
   names(param.ls) <- NULL
   start <- proc.time()
   res.l <- parallel::mclapply(param.ls, do.rep, .f=wrapWE(.f),
-                              .reps=.reps, mc.cores=.mc.cores, .verbose=.verbose,
+                              .reps=.reps, mc.cores=.mc.cores, .verbose=.verbose, .args=.args,
                               .eval=.eval, .rep.cores=1)
   end <- proc.time()
   res.l <- unlist(res.l, recursive=FALSE)
@@ -120,14 +120,22 @@ run.ggraph <- function(object){
     ## return the levels corresponding to each function
     levels <- as.numeric(sapply(object[fs], function(g){g$.level}))
     ## run the first function at level 1
+    res.all <- list()
     for(i in 1:max(levels)){
+      res <- list()
       for(j in which(levels == i)){
         node <- unlist(object[j], recursive=F) # node in the subgraph, usually a function
-        res <- gapply.local(.f = node$.f, node$grid)
+        res[[j]] <- gapply.local(.f = node$.f, node$grid)
       }
+      # if cache == TRUE save
+
+      # feed the results from level == 1 into functions at level == 2
+      # assume first argument is passed like %>%
+
+
     }
-    ## run the second function at level 1
-    ## run the first function at level 2
+
+
 
   }
 
