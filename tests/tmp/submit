@@ -4,7 +4,7 @@
 #$ -pe smp 1     # environment and legal core size
 #$ -q *@@daccss  # Specify queue
 #$ -N patr1ckm   # Specify job name
-#$ -t 1:6        # number of rows in param.grid
+#$ -t 1:2        # number of rows in param.grid
 #$ -o SGE_Output
 
 Rscript doone.R $SGE_TASK_ID

@@ -25,9 +25,9 @@ expect_true(all(summary(out, .key="sub")$key == "sub"))
 
 
 ## Plots
-do.one <- function(a=1,b=2,d=4){data.frame(sum=a+b+rnorm(1,d),sub=a-b)}
-out <- gapply(do.one,.reps=3, a=1:3,b=2,d=4:5, .verbose=0)
+#do.one <- function(a=1,b=2,d=4){data.frame(sum=a+b+rnorm(1,d),sub=a-b)}
+#out <- gapply(do.one,.reps=3, a=1:3,b=2,d=4:5, .verbose=0)
 
-do.one <- function(a=1){data.frame(sum=a+a, sub=a-a)}
-out <- gapply(do.one, .reps=3, a=1:3)
-plot(out)
+#do.one <- function(a=1){data.frame(sum=a+a, sub=a-a)}
+#out <- gapply(do.one, .reps=3, a=1:3)
+#plot(out)

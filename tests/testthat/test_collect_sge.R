@@ -1,4 +1,4 @@
-context("test_collect")
+context("test_collect_sge")
 
 do.one <- function(a=1,b=2){
   if(a==1) stop("asdf")

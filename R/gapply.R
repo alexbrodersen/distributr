@@ -2,7 +2,7 @@
 #'
 #' gapply (grid apply) applies a function to a grid of it's parameters in parallel, optionally for a given number of replications
 #'
-#' @param f function to be evaluated. The function must return a (named) value or (named) vector of values.
+#' @param .f function to be evaluated. The function must return a (named) value or (named) vector of values.
 #' @param ... named arguments to \code{f} in the form \code{key=c(value1,value2, ...)} etc.
 #' A grid of parameter values will be generated from values given to each named argument, as \code{expand.grid(...)}
 #' @param .reps times the function should be evaluated
@@ -31,12 +31,12 @@
 #' @importFrom tidyr gather
 #' @importFrom parallel mclapply
 #' @importFrom dplyr rbind_all
-gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
+gapply <- function(.f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
   param.grid <- expand.grid(...)
   param.ls <- split(param.grid, 1:nrow(param.grid))
   names(param.ls) <- NULL
   start <- proc.time()
-  res.l <- parallel::mclapply(param.ls, do.rep, f=wrapWE(f),
+  res.l <- parallel::mclapply(param.ls, do.rep, .f=wrapWE(.f),
                             .reps=.reps, mc.cores=.mc.cores, .verbose=.verbose,
                             .eval=.eval, .rep.cores=1)
   end <- proc.time()
@@ -88,7 +88,7 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
   class(long) <- c("gapply", class(long))
   attr(long, "time") <- end-start
   attr(long, "arg.names") <- colnames(param.grid)
-  attr(long, "f") <- f
+  attr(long, ".f") <- .f
   attr(long, "param.grid") <- param.grid
   attr(long, "err") <- err.list
   attr(long, "warn") <- warn.list
@@ -102,7 +102,7 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
 #' This idiom is really useful to carry out simulations, which are essentially
 #' repeated evaluations of a function over a grid of parameter values.
 #'
-#' @param f function to be evaluated
+#' @param .f function to be evaluated
 #' @param ... Arguments passed to f
 #' @param .reps the number of times the function should be evaluated
 #' @param .rep.cores Apply repeates in parallel using mclapply
@@ -113,11 +113,11 @@ gapply <- function(f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
 #' @export
 #' @importFrom parallel mclapply
 #' @importFrom dplyr rbind_all as.tbl
-do.rep <- function(f,..., .reps,.verbose=1,.rep.cores=1, .eval=T){
+do.rep <- function(.f,..., .reps, .verbose=1,.rep.cores=1, .eval=T){
   if(.verbose %in% c(2,3) & .eval){cat(paste(names(...),"=", ...),fill=T)}
   if(.eval){
-    res.l <- parallel::mclapply(1:(.reps),function(r, f, ...){
-      do.call(f,...)}, f=f, ..., mc.cores=.rep.cores)
+    res.l <- parallel::mclapply(1:(.reps),function(.rep, .f, ...){
+      do.call(.f,...)}, .f=.f, ..., mc.cores=.rep.cores)
   } else {
     nothing <- function(...){c(NA)}
     res.l <- lapply(1:.reps, function(r, ...) do.call(nothing, ...), ...)

@@ -20,7 +20,7 @@ setup <- function(object, dir=getwd(),  .reps=1, .chunks = 1, .mc.cores=1, .verb
   ## mapped onto SGE_TASK_ID. Don't change this unless you found something better design wise.
   chunk.grid <- param.grid[rep(1:nrow(param.grid), times=.chunks),,drop=F]
   chunk.grid$chunk <- rep(1:.chunks, each=nrow(param.grid))
-  f <- attr(object,"f")
+  .f <- attr(object,".f")
   reps.per.chunk <- ceiling(.reps/.chunks)
 
   cmd <- paste0("mkdir -p ", dir, "results")
@@ -35,7 +35,7 @@ setup <- function(object, dir=getwd(),  .reps=1, .chunks = 1, .mc.cores=1, .verb
   attr(param.grid, "rpc") <- reps.per.chunk # reps per chunk
   save(param.grid, file=paste0(dir, "param_grid.Rdata"))
 
-  write.do.one(f=f, dir=dir, reps=reps.per.chunk, mc.cores=.mc.cores, verbose=.verbose, script.name=.script.name)
+  write.do.one(.f=.f, dir=dir, reps=reps.per.chunk, mc.cores=.mc.cores, verbose=.verbose, script.name=.script.name)
 }
 
 
@@ -66,10 +66,10 @@ Rscript ", script.name, " $SGE_TASK_ID")
   cat(temp,file=paste0(dir, "submit"))
 }
 
-write.do.one <- function(f, dir, reps=1, mc.cores=1, verbose=1, script.name="doone.R"){
-  fstr <- paste0("f <- ", paste0(deparse(eval(f), control="all"),collapse="\n"))
+write.do.one <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doone.R"){
+  fstr <- paste0(".f <- ", paste0(deparse(eval(.f), control="all"),collapse="\n"))
   temp <- paste0(fstr,"
-  library(patr1ckm)
+  library(distributr)
   args <- as.numeric(commandArgs(trailingOnly=TRUE))
   cond <- args[1]
   reps <- ", reps," # this is reps per chunk
@@ -77,7 +77,7 @@ write.do.one <- function(f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
   params <- param.grid[cond,]
   rep.id <- (reps*(params$chunk-1)+1):(reps*params$chunk)
   params$chunk <- NULL # because f doesn't take chunk usually
-  res.l <- do.rep(wrapWE(f), as.list(params), .reps=reps, .rep.cores=", mc.cores, ", .verbose=", verbose," )
+  res.l <- do.rep(wrapWE(.f), as.list(params), .reps=reps, .rep.cores=", mc.cores, ", .verbose=", verbose," )
   dir <- paste0('results/')
   fn <- paste0(dir, cond,'.Rdata')
   save(res.l, file=fn)")

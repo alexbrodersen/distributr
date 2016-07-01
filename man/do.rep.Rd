@@ -4,10 +4,10 @@
 \alias{do.rep}
 \title{Evaluate a function repeatedly over arbitrary arguments}
 \usage{
-do.rep(f, ..., .reps, .verbose = 1, .rep.cores = 1, .eval = T)
+do.rep(.f, ..., .reps, .verbose = 1, .rep.cores = 1, .eval = T)
 }
 \arguments{
-\item{f}{function to be evaluated}
+\item{.f}{function to be evaluated}
 
 \item{...}{Arguments passed to f}
 

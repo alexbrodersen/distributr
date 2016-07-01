@@ -1,4 +1,3 @@
-
 context("gapply")
 
 ## write tests for different numbers of parameters!
