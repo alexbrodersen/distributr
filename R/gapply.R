@@ -41,7 +41,6 @@ gapply <- function(.f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
                             .eval=.eval, .rep.cores=1)
   end <- proc.time()
 
-
   # take off one level of nesting and make sure all elements are data.frame
   res.l <- unlist(res.l, recursive=FALSE)
   rc <- length(res.l) # reps * conditions

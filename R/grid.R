@@ -7,7 +7,14 @@
 # takes a function f, and lifts it so that it can be applied to a grid of the given parameters
 # but delay evaluation
 #' @export
-grid <- function(.f, ..., .level=0, .dep=NULL){
+grid <- function(.f, ..., .level=1, .dep=NULL){
+  stopifnot(.level >= 1)
+  if(is.null(.dep) & is.null(.level)){
+    stop("must specify .level or .dep")
+  }
+  if(!is.null(.dep) & !is.null(.level)){
+    stop("must choose .level or .dep")
+  }
   grid <- list(...)
   name <- deparse(substitute(.f))
   out <- list(.f=.f, grid=grid, .level=.level, .dep=.dep, .name=name)
@@ -59,6 +66,7 @@ gapply.local <- function(.f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T, .ar
                               .eval=.eval, .rep.cores=1)
   end <- proc.time()
   res.l <- unlist(res.l, recursive=FALSE)
+  cat("", fill=T)
 
   err <- lapply(res.l, function(r){attr(r, "err")})
   err.id <-  which(unlist(lapply(err, function(x){!is.null(x)})))
@@ -112,34 +120,11 @@ tidy.gresults <- function(res.l){
   return(long)
 }
 
+
+
 #' @export
-run.ggraph <- function(object){
-  if(object$backend == "local"){
-    ## find the functions
-    fs <- as.numeric(which(sapply(object, isgrid)))
-    ## return the levels corresponding to each function
-    levels <- as.numeric(sapply(object[fs], function(g){g$.level}))
-    ## run the first function at level 1
-    res.all <- list()
-    for(i in 1:max(levels)){
-      res <- list()
-      for(j in which(levels == i)){
-        node <- unlist(object[j], recursive=F) # node in the subgraph, usually a function
-        res[[j]] <- gapply.local(.f = node$.f, node$grid)
-      }
-      # if cache == TRUE save
-
-      # feed the results from level == 1 into functions at level == 2
-      # assume first argument is passed like %>%
-
-
-    }
-
-
-
-  }
-
+print.gresults <- function(object){
+  attributes(object) <- NULL
+  print(object)
 }
-
-
 
