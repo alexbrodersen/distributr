@@ -5,7 +5,9 @@
 \title{setup sge simulation}
 \usage{
 setup(object, dir = getwd(), .reps = 1, .chunks = 1, .mc.cores = 1,
-  .verbose = 1, .script.name = "doone.R")
+  .verbose = 1, .queue = "long", .script.name = "doone.R",
+  .job.name = "patr1ckm", .out.dir = "SGE_Output", .email.options = "a",
+  .email.addr = "patr1ckm.crc.nd.edu", .shell = "bash")
 }
 \arguments{
 \item{object}{gapply object}
@@ -20,7 +22,19 @@ setup(object, dir = getwd(), .reps = 1, .chunks = 1, .mc.cores = 1,
 
 \item{.verbose}{verbose level}
 
+\item{.queue}{name of queue}
+
 \item{.script.name}{name of script}
+
+\item{.job.name}{name of job}
+
+\item{.out.dir}{name of directory in which to put SGE output files.}
+
+\item{.email.options}{one or more characters from "bea" meaning email when "job Begins", "job Ends", and "job Aborts". Default is "a".}
+
+\item{.email.addr}{email address}
+
+\item{.shell}{shell to use. Default is 'bash'}
 }
 \description{
 setup sge simulation

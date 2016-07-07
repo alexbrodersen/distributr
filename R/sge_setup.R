@@ -8,11 +8,24 @@
 #' @param .mc.cores number of cores used to run replications in parallel
 #' @param .verbose verbose level
 #' @param .script.name name of script
+#' @param .queue name of queue
+#' @param .job.name name of job
+#' @param .out.dir name of directory in which to put SGE output files.
+#' @param .email.options one or more characters from "bea" meaning email when "job Begins", "job Ends", and "job Aborts". Default is "a".
+#' @param .email.addr email address
+#' @param .shell shell to use. Default is 'bash'
 #' @details
 #' The replications performed per chunk is computed as \code{ceiling(.reps/.chunks)}, which
 #' will produce more total replications than requested if \code{.reps} is not evenly divisible by \code{.chunks}
 #' @export
-setup <- function(object, dir=getwd(),  .reps=1, .chunks = 1, .mc.cores=1, .verbose=1, .script.name="doone.R"){
+setup <- function(object, dir=getwd(),  .reps=1, .chunks = 1, .mc.cores=1, .verbose=1,
+                  .queue="long",
+                  .script.name="doone.R",
+                  .job.name="patr1ckm",
+                  .out.dir="SGE_Output",
+                  .email.options="a",
+                  .email.addr="patr1ckm.crc.nd.edu",
+                  .shell="bash"){
   param.grid <- attr(object,"param.grid")
   dir <- paste0(dir, "/")
   ## Chunk is the slowest varying factor. So adding replications
@@ -28,7 +41,12 @@ setup <- function(object, dir=getwd(),  .reps=1, .chunks = 1, .mc.cores=1, .verb
   cmd <- paste0("mkdir -p ", dir, "SGE_Output")
   mysys(cmd)
 
-  write.submit(dir, script.name=.script.name, mc.cores=.mc.cores, tasks=nrow(chunk.grid))
+  write.submit(dir, script.name=.script.name, mc.cores=.mc.cores, tasks=nrow(chunk.grid),
+               job.name=.job.name,
+               out.dir = .out.dir,
+               email = .email.options,
+               email.addr = .email.addr,
+               shell = .shell)
 
   param.grid <- chunk.grid
   attr(param.grid, "reps") <- reps.per.chunk*.chunks # total actual reps
@@ -50,19 +68,22 @@ mysys <- function(cmd){
   system(cmd)
 }
 
-write.submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1){
+write.submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1, queue="long",
+                         job.name="patr1ckm", out.dir="SGE_Output", email="a",
+                         email.addr="patr1ckm.crc.nd.edu", shell="bash"){
   cmd <- paste0("touch ", dir, "submit")
   mysys(cmd)
-  temp <- paste0("#!/bin/bash
-#$ -M patr1ckm.crc@gmail.com     # Email address for job notification
-#$ -m a          # Send mail when job begins, ends and aborts
-#$ -pe smp ",mc.cores,"     # environment and legal core size
-#$ -q *@@daccss  # Specify queue
-#$ -N patr1ckm   # Specify job name
-#$ -t 1:", tasks, "        # number of rows in param.grid
-#$ -o SGE_Output
+  temp <- paste0(
+    "#!/bin/", shell, "
+    #$ -M ", email.addr, "     # Email address for job notification
+    #$ -m ", email, "          # Send mail when job aborts
+    #$ -pe smp ",mc.cores,"     # environment and legal core size
+    #$ -q ", queue, "  # Specify queue
+    #$ -N ", job.name, "   # Specify job name
+    #$ -t 1:", tasks, "        # number of rows in param.grid
+    #$ -o ", out.dir, "
 
-Rscript ", script.name, " $SGE_TASK_ID")
+    Rscript ", script.name, " $SGE_TASK_ID")
   cat(temp,file=paste0(dir, "submit"))
 }
 
