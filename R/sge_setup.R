@@ -74,16 +74,15 @@ write.submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1, queue=
   cmd <- paste0("touch ", dir, "submit")
   mysys(cmd)
   temp <- paste0(
-    "#!/bin/", shell, "
-    #$ -M ", email.addr, "     # Email address for job notification
-    #$ -m ", email, "          # Send mail when job aborts
-    #$ -pe smp ",mc.cores,"     # environment and legal core size
-    #$ -q ", queue, "  # Specify queue
-    #$ -N ", job.name, "   # Specify job name
-    #$ -t 1:", tasks, "        # number of rows in param.grid
-    #$ -o ", out.dir, "
-
-    Rscript ", script.name, " $SGE_TASK_ID")
+    "#!/bin/", shell, " \n",
+    "#$ -M ", email.addr, "\n",
+    "#$ -m ", email, "\n",
+    "#$ -pe smp ",mc.cores,"\n",
+    "#$ -q ", queue, "\n",
+    "#$ -N ", job.name, "\n",
+    "#$ -t 1:", tasks, "\n",
+    "#$ -o ", out.dir, " \n\n",
+    "Rscript ", script.name, " $SGE_TASK_ID")
   cat(temp,file=paste0(dir, "submit"))
 }
 

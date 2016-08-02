@@ -1,10 +1,10 @@
-#!/bin/bash
-    #$ -M patr1ckm.crc.nd.edu     # Email address for job notification
-    #$ -m a          # Send mail when job aborts
-    #$ -pe smp 1     # environment and legal core size
-    #$ -q long  # Specify queue
-    #$ -N patr1ckm   # Specify job name
-    #$ -t 1:2        # number of rows in param.grid
-    #$ -o SGE_Output
+#!/bin/bash 
+#$ -M patr1ckm.crc.nd.edu
+#$ -m a
+#$ -pe smp 1
+#$ -q long
+#$ -N patr1ckm
+#$ -t 1:2
+#$ -o SGE_Output 
 
-    Rscript doone.R $SGE_TASK_ID
+Rscript doone.R $SGE_TASK_ID
