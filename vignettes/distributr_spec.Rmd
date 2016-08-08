@@ -1,7 +1,7 @@
 ---
 title: "distributr prototype"
 author: "Patrick Miller"
-date: "June 17, 2016"
+date: "August 3 2016"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Vignette Title}
@@ -18,16 +18,16 @@ library(dplyr)
 knitr::opts_chunk$set(echo = TRUE, eval=F)
 ```
 
-The motivation for this package is to provide a flexible but fun interface for distributed computing on large computing clusters. It's my impression that cluster resources are usually shared, and jobs are administered using a job manager like Sun Grid Engine or Torque. This produces an 'asynchronous' work flow were users specify jobs/resources, submit jobs, and collect results. These jobs can often take days or weeks to complete. I've found it to be unpleasant to learn the idiosyncrasies of these systems. I've also found myself copying 'glue' code I use from one project to another. The purpose of the package is to simplify usage of distributed computing in a way already familiar to many useRs.
+The motivation for this package is to provide a flexible but fun interface for distributed computing on large computing clusters. It's my impression that cluster resources are usually shared, and jobs are administered using a job manager like Sun Grid Engine or Torque. This produces an 'asynchronous' work flow were users specify jobs/resources, submit jobs, and collect results. These jobs can often take days or weeks to complete. I've found it to be unpleasant to learn the idiosyncrasies of these systems. I've also found myself copying 'glue' code I use from one project to another. The purpose of the package is to simplify usage of distributed computing in a familiar way.
 
 Some common applications for distributed computing in statistics are
 
-- Monte Carlo simulations (e.g. comparing methods)
+- Monte Carlo simulations 
 - meta-parameter tuning for machine learning
 - distributed data analysis
 - computationally intensive workflows and pipelines.
 
-The motivation for the package is to exploit the fact that the tasks are embarrassingly parallel and modular. Data is generated or loaded, then one or more analyses are carried out on the data, and the performance is measured. These steps can be done all at once or in separate steps. Often the analysis or data generating functions are applied to a 'grid' of their arguments/parameters (e.g. tuning machine learning algorithms, or generating data under different conditions). This process is often carried out repeatedly (e.g. cv-folds, bootstrap replications, or Monte-Carlo replications). 
+The motivation for the package is to exploit the fact that the tasks are embarrassingly parallel and modular. Data is generated or loaded, then one or more analyses are carried out on the data, and results are computed and aggregated. Often the analysis or data generating functions are applied to a 'grid' of their arguments/parameters (e.g. tuning machine learning algorithms, or generating data under different conditions). This process is often carried out repeatedly (e.g. cv-folds, bootstrap replications, or Monte-Carlo replications). 
 
 The main problem the package solves is providing a convenient interface for generating the 'glue' code that's necessary to carry out these tasks on a distributed computing cluster. A good abstraction could cover 80-90\% of the common tasks in these applications, and make using large clusters less painful to use and more fun. Some of the features of such a framework would be:
 
@@ -38,15 +38,17 @@ The main problem the package solves is providing a convenient interface for gene
 - balancing memory use and run time
 - works on multiple schedulers (SGE, Torque), or specific back ends like Amazon EC2 or Hadoop
 
-Below, I describe a simple function that covers a basic workflow, and a modular solution that is more flexible. The single function (`gapply`) is easy to remember and use, but is not easily extendable. The modular solution enables easy modification of the workflow and is similar in spirit to `ggplot2`.
+Below, I describe a simple function that covers a basic workflow, and a modular solution that is more flexible. The single function (`gapply`) applies a function to a grid of its arguments. All the steps in a workflow are encapsulated in a single function, which is applied to the argument grid. This is simple to use, but it is not easy to add steps or modify workflows.
+
+We can get a more modular solution by noting that a workflow is a graph of functions. This graph can be described by nodes and layers constructed using `node` and `layer` respectively. Sequential steps in a workflow can be described by adding layers using `+`. This enables easy modification of workflows by adding nodes to existing layers, or adding new layers. It is similar in spirit to ggplot2. 
 
 # gapply
 
-This function (_grid_ apply) covers the basic use case of repeatedly applying a function over a grid of its arguments in parallel. The function written by the user generates and loads data, performs analyses, and returns results. An implementation of `gapply` is available on github, which I use regularly.
+This function (_grid_ apply) covers the basic use case of repeatedly applying a function over a grid of its arguments in parallel. The function written by the user performs all steps in a workflow. For example, generating / loading data, performing analyses, and returning results. An implementation of `gapply` is available on github.
 
 ```{r, eval=TRUE}
-# devtools::install_github("patr1ckm/patr1ckm")
-library(patr1ckm) 
+#devtools::install_github("patr1ckm/distributr")
+library(distributr) 
 do.one <- function(n, mu, sd){ mean(rnorm(n, mu, sd)) }
 
 sim <- gapply(do.one, n = c(50, 100, 500), mu = c(1,5), sd = c(1, 5, 10), 
@@ -68,14 +70,13 @@ sim <- gapply(do.one, a=c(2,1), b=2, .reps=2, .verbose=0)
 sim
 ```
 
-A `summary` method is provided, and warnings/errors can be extracted.
+Warnings/errors can be extracted as follows.
 
 ```{r, eval=TRUE}
-summary(sim, .fun=mean) 
 err(sim)
 warn(sim)
 ```
-### Execution on SGE
+### Execution on Sun Grid Engine
 
 I've implemented and used this code for on a computing cluster that uses Sun Grid Engine. I run this code on the head node.
 
@@ -91,64 +92,62 @@ res <- collect(sim)
 ```
 
 
-# grid
+# Workflows with nodes and layers
 
-Though using `gapply` with a single function `do.one` is convenient, it is not modular enough to add simulation conditions or replications without recomputation. With many conditions, `do.one` can become complex. A more modular framework is shown below using `+` and the function `grid`.
+Though using `gapply` with a single function `do.one` is convenient, it is not modular enough to add or edit steps in the workflow without recomputation. Additionally, with complex workflows, `do.one` can become tedious to maintain and debug.
+
+A workflow can be viewed as a graph of functions. Each node is a function. The provided function `node` allows user defined functions to be applied to grids of parameters. Groups of nodes are organized as layers. The function `layer` simply takes multiple nodes. For example, a layer might contain multiple data generating functions or analysis methods. Finally, steps in a workflow are expressed by using `+` to add layers together. In this way, the output from nodes in a previous layer becomes the input to nodes in the current layer.
+
+Consider the following example specification. A user defined function `f` generates or loads data. It is applied to a grid of `arg1, arg2`. Next, two user functions `g` and `g2` fit a model to that data, with their own arguments `arg3, arg4, arg5`. Finally, the function `h` aggregates results from both `g` and `g2`. Finally, simulation options can be specified using `options`, and
+the various backend functions are provided (here, `sge` for Sun Grid Engine).
+
 
 ```{r, eval=F}
-sim <- grid(f, arg1=c(1,2), arg2=c(T, F)) +
-	grid(g, arg3=c(.05, .001), arg4=c(10, 100), .level=1) +
-	grid(g2, arg5=c(1,2), .level=1) +   
-	grid(h, .dep=c("g", "g2")) +
-  reps(1000) +   
-	tidy(.level=3) + 		
-	seed() +            
-	save(.level=1:3) + 
-	sge()
+workflow <- layer(node(f, arg1=c(1,2), arg2=c(T, F))) +
+  layer(node(g, arg3=c(.05, .001), arg4=c(10, 100)) +
+        node(g2, arg5=c(1,2)) +   
+  layer(node(h), node(h2)) +
+  options(reps = 1000, tidy = TRUE, seed = 5) +  # workflow options
+  sge(queue = "long", dir = "test", shell = "bash", ...)  # options to sge environment
 ```
 
-- `grid` takes a user supplied function, allows it to be applied to a grid of its argumentss, and specifies the output on which it is applied.
-- `+` specifies options and additional functions to be used in the workflow.
-Options/functions are added together to form the function graph or workflow, like layers of a plot are added in `ggplot2`.
+- `node` takes a user supplied function, allows it to be applied to a grid of its argumentss, and specifies the output on which it is applied.
+- `+` Generates the function graph by adding layers. In addition, workflow options and specification of the backend environment can also be added.
 - `reps` specifies the number of replications
-- `tidy` tidies output at the given level, otherwise list is returned
+- `tidy` tidies output at the last level, otherwise list is returned
 - `seed` sets seed at given levels using L'Ecuyer-CMRG RNG for reproducibility
 - `save` specifies at what levels the output is saved
 - `sge` is the backend on which the workflow is run, other backends are possible
 
-To specify which functions are applied to the results of other functions, the following arguments are specified in `grid`:
+Both layers and nodes have default ids or can have their ids set by the user. These ids are used to modify workflows and specify dependencies. For example, some nodes should not applied to all nodes in the previous layer. The argument `.dep` of the function `node` can be used to specify that the node should only be applied to a specific node given by it's id. 
 
-- `.level` The function is applied to the results of all functions at this 'level' (see figure for examples).
-- `.dep` The function is applied to the results of specific functions given by name
+The above workflow or simulation can be discribed in the following graph:
 
-```{r, echo=F, eval=T, fig.width=8, fig.height=4}
- par(mar = c(1, 1, 1, 1), mfrow = c(1, 2), oma=c(1,1,1,1))
+```{r, echo=F, eval=T, fig.width=5, fig.height=4}
+ par(mar = c(1, 1, 1, 1), mfrow = c(1, 1), oma=c(1,1,1,1))
  names <- c("f()", "g()", "g2()", "h()")
 M <- matrix(nrow = 4, ncol = 4, byrow = TRUE, data = 0)
 M[2, 1] <- M[3, 1] <- M[4, 2] <- M[4, 3] <- ""
 plotmat(M, pos = c(1, 2, 1), name = names, lwd= 1, relsize=1,
          box.lwd = 1, cex.txt=.8, box.type = "circle", box.prop=1.0)
 
-xpos <- .975
+#par(mar = c(1, 1, 1, 2), oma=c(1,1,1,3))
+#names <- c("f()", "g()", "g2()", "h()", "h2()", "h()", "h2()")
+#M <- matrix(nrow = 7, ncol = 7, byrow = TRUE, data = 0)
+#M[2, 1] <- M[3, 1] <- M[4, 2] <- M[6, 3] <- M[5, 2] <- M[7, 3] <- ""
+#plotmat(M, pos = c(1, 2, 4), name = names, lwd= 1, relsize=1,
+#        box.lwd = 1, cex.txt=.8, box.type = "circle", box.prop=1.0)
+xpos <- .95
 text(xpos,.85, labels = "Level 1", las=.5, xpd=NA)
-lines(x = c(xpos, xpos), y = c(.8, .55))
+lines(x = c(xpos, xpos), y = c(.8, .55), xpd=NA)
 text(xpos,.5, labels = "Level 2", las=.5, xpd=NA)
-lines(x = c(xpos, xpos), y = c(.45, .2))
+lines(x = c(xpos, xpos), y = c(.45, .2), xpd=NA)
 text(xpos,.15, labels = "Level 3", las=.5, xpd=NA)
-
-par(mar = c(0, 0, 0, 0))
-names <- c("f()", "g()", "g2()", "h1()", "h2()", "h1()", "h2()")
-M <- matrix(nrow = 7, ncol = 7, byrow = TRUE, data = 0)
-M[2, 1] <- M[3, 1] <- M[4, 2] <- M[6, 3] <- M[5, 2] <- M[7, 3] <- ""
-plotmat(M, pos = c(1, 2, 4), name = names, lwd= 1, relsize=1,
-         box.lwd = 1, cex.txt=.8, box.type = "circle", box.prop=1.0)
-
-
 
  
 ```
 
-### Operations on `sim`
+### Operations on `workflow`
 
 It would be convenient to summarize the workflow in terms of the argument grid and the function  graph. 
 
@@ -159,11 +158,11 @@ It would be convenient to summarize the workflow in terms of the argument grid a
 - `collect` collects the results.
 
 ```{r, eval=F}
-summary(sim)
-plot(sim)
-test(sim)     
-submit(sim)
-res <- collect(sim)	
+summary(workflow)
+plot(workflow)
+test(workflow)     
+submit(workflow)
+res <- collect(workflow)	
 
 ```
 
@@ -178,22 +177,27 @@ err(res)
 warn(res)  		
 ```
 
-### Adding new conditions 
+### Testing and debugging
 
-New functions can be added to the workflow at different levels. Below I show examples of adding new functions at all levels. The figure shows what gets recomputed.
+Workflows can be debugged interactively by simply computing parts of the function graph by hand in base R, e.g. `f() %>% g() %>% h()`. 
+
+### Modifying workflows
+
+New nodes or layers can be added to the workflow using layer ids. Below I show examples of adding new nodes at all levels. The figure shows what gets recomputed.
 
 
 ```{r, eval=F}
-sim <- sim + grid(f2, arg6 = c(5:8))   
+workflow <- workflow + layer(grid(f2, arg6 = c(5:8)), .id = 1)   
 
-submit(sim)
-res <- collect(sim)
+submit(workflow)
+res <- collect(workflow)
 
-sim <- sim + grid(g3, ..., .level=1) +
-	h3(.dep=c("g3"))
+workflow <- workflow + 
+  layer(grid(g3, ..., .id = 2)) +
+ layer(h3(.dep=c("g3"), .id = 3)
 
-submit(sim)
-res <- collect(sim)
+submit(workflow)
+res <- collect(workflow)
 ```
 
 ```{r, echo=F, eval=T, fig.width=8, fig.height=4}
@@ -283,7 +287,7 @@ Other work in R includes
 - I contributed to `simsem`, a framework for Monte Carlo simulations with structural equation models. It also is not asynchronous, and focuses only on this class of models.
 - Many other examples for simulating data under specific models.
 
-There are many other 'distributed computing workflow' tools for other languages, and some that are 
+There are many other 'distributed computing workflow' tools for other languages, e.g. `make`, `MakeFlow`, etc. However, it would be convenient to have an idiomatic R way to express these tasks.
 
 
 

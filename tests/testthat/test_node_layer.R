@@ -32,8 +32,10 @@ o1 <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5), .id=1) +
 
 o2 <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5), .id=1) +
   layer(node(hh, arg2=1), node(gg, arg1=1), .id=2) +
-  doptions(reps = 30)
+  dcontrol() + reps(500)
 
+expect_true(get_node(o2, 2)$.id == 2)
+expect_true(get_node(o2, 3)$.id == 3)
 
 
 

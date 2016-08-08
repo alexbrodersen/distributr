@@ -8,7 +8,7 @@
 layer <- function(..., .id=NULL){
   # check that all ... are layers or options
   layer <- list(...)
-  stopifnot(sapply(layer, is.node) | sapply(layer, is.doption))
+  stopifnot(sapply(layer, is.node) | sapply(layer, is.dcontrol))
   attr(layer, ".id") <- .id
   class(layer) <- "layer"
   return(layer)
@@ -60,17 +60,28 @@ add_layer <- function(e1, e2){
     graph <- layer_to_graph(e2, graph = layer_to_graph(e1))
     o <- list(e1, e2)
     attr(o, "graph") <- graph
-    class(o) <- "dgraph"
   } else if(is.dcontrol(e2)){
-    # need to create a node/graph first before options, I think that's reasonable.
-    attr(e1, "dcontrol") <- e2
+    if(is.layer(e1)){
+      o <- list(e1)
+      graph <- layer_to_graph(e1)
+      attr(o, "graph") <- graph
+    } else {
+      o <- e1
+    }
+    if(is.null(attr(o, "dcontrol"))){
+      attr(o, "dcontrol") <- e2
+    } else {
+      attr(o, "dcontrol")[[names(e2)]] <- as.numeric(e2)
+    }
   } else {
     print("cant add")
   }
+  class(o) <- "dgraph"
   return(o)
 }
 
 # Add layer to graph, and update graph if already exists
+#' @export
 layer_to_graph <- function(l, graph = NULL){
   node.ids <- layer_apply(l, select=".id")
   lid <- attr(l, ".id")
@@ -99,10 +110,21 @@ layer_to_graph <- function(l, graph = NULL){
   return(graph)
 }
 
+#' @export
 layer_apply <- function(l, select=".id", FUN=I){
   sapply(l, function(x){FUN(x[[select]])})
 }
 
+#' @export
+get_node <- function(dgraph, id){
+  ids <- sapply(dgraph, function(l){ layer_apply(l, select = ".id") })
+  addr <- which(ids == id, arr.ind=T)
+  node.id <- addr[1]
+  layer.id <- addr[2]
+  dgraph[[layer.id]][[node.id]]
+}
+
+# @export
 assign_node_ids <- function(e, start=0){
   for(i in which(sapply(e, is.node))){
     if(is.null(e[[i]]$.id)) e[[i]]$.id <- start + i
@@ -110,14 +132,16 @@ assign_node_ids <- function(e, start=0){
   return(e)
 }
 
+#' @export
 reps <- function(reps){
-  class(reps) <- c("dcontrol", "layer")
-  return(reps)
+  o <- list(reps = reps)
+  class(o) <- c("dcontrol", "layer")
+  return(o)
 }
 
 #' @export
-dcontrol <- function(tidy=NULL, backend="local", cache="all"){
-  o <- list(tidy=tidy, backend=backend, cache=cache)
+dcontrol <- function(mc.cores = 1, tidy=NULL, backend="local", cache="all", verbose=1){
+  o <- list(mc.cores = mc.cores, tidy=tidy, backend=backend, cache=cache, verbose=verbose)
   class(o) <- c("dcontrol", "layer")
   return(o)
 }

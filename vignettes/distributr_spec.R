@@ -7,8 +7,8 @@ library(dplyr)
 knitr::opts_chunk$set(echo = TRUE, eval=F)
 
 ## ---- eval=TRUE----------------------------------------------------------
-# devtools::install_github("patr1ckm/patr1ckm")
-library(patr1ckm) 
+#devtools::install_github("patr1ckm/distributr")
+library(distributr) 
 do.one <- function(n, mu, sd){ mean(rnorm(n, mu, sd)) }
 
 sim <- gapply(do.one, n = c(50, 100, 500), mu = c(1,5), sd = c(1, 5, 10), 
@@ -26,7 +26,6 @@ sim <- gapply(do.one, a=c(2,1), b=2, .reps=2, .verbose=0)
 sim
 
 ## ---- eval=TRUE----------------------------------------------------------
-summary(sim, .fun=mean) 
 err(sim)
 warn(sim)
 
@@ -37,48 +36,42 @@ warn(sim)
 #  res <- collect(sim)
 
 ## ---- eval=F-------------------------------------------------------------
-#  sim <- grid(f, arg1=c(1,2), arg2=c(T, F)) +
-#  	grid(g, arg3=c(.05, .001), arg4=c(10, 100), .level=1) +
-#  	grid(g2, arg5=c(1,2), .level=1) +
-#  	grid(h, .dep=c("g", "g2")) +
-#    reps(1000) +
-#  	tidy(.level=3) + 		
-#  	seed() +
-#  	save(.level=1:3) +
-#  	sge()
+#  workflow <- layer(node(f, arg1=c(1,2), arg2=c(T, F))) +
+#    layer(node(g, arg3=c(.05, .001), arg4=c(10, 100)) +
+#          node(g2, arg5=c(1,2)) +
+#    layer(node(h), node(h2)) +
+#    options(reps = 1000, tidy = TRUE, seed = 5) +  # workflow options
+#    sge(queue = "long", dir = "test", shell = "bash", ...)  # options to sge environment
 
-## ---- echo=F, eval=T, fig.width=8, fig.height=4--------------------------
- par(mar = c(1, 1, 1, 1), mfrow = c(1, 2), oma=c(1,1,1,1))
+## ---- echo=F, eval=T, fig.width=5, fig.height=4--------------------------
+ par(mar = c(1, 1, 1, 1), mfrow = c(1, 1), oma=c(1,1,1,1))
  names <- c("f()", "g()", "g2()", "h()")
 M <- matrix(nrow = 4, ncol = 4, byrow = TRUE, data = 0)
 M[2, 1] <- M[3, 1] <- M[4, 2] <- M[4, 3] <- ""
 plotmat(M, pos = c(1, 2, 1), name = names, lwd= 1, relsize=1,
          box.lwd = 1, cex.txt=.8, box.type = "circle", box.prop=1.0)
 
-xpos <- .975
+#par(mar = c(1, 1, 1, 2), oma=c(1,1,1,3))
+#names <- c("f()", "g()", "g2()", "h()", "h2()", "h()", "h2()")
+#M <- matrix(nrow = 7, ncol = 7, byrow = TRUE, data = 0)
+#M[2, 1] <- M[3, 1] <- M[4, 2] <- M[6, 3] <- M[5, 2] <- M[7, 3] <- ""
+#plotmat(M, pos = c(1, 2, 4), name = names, lwd= 1, relsize=1,
+#        box.lwd = 1, cex.txt=.8, box.type = "circle", box.prop=1.0)
+xpos <- .95
 text(xpos,.85, labels = "Level 1", las=.5, xpd=NA)
-lines(x = c(xpos, xpos), y = c(.8, .55))
+lines(x = c(xpos, xpos), y = c(.8, .55), xpd=NA)
 text(xpos,.5, labels = "Level 2", las=.5, xpd=NA)
-lines(x = c(xpos, xpos), y = c(.45, .2))
+lines(x = c(xpos, xpos), y = c(.45, .2), xpd=NA)
 text(xpos,.15, labels = "Level 3", las=.5, xpd=NA)
-
-par(mar = c(0, 0, 0, 0))
-names <- c("f()", "g()", "g2()", "h1()", "h2()", "h1()", "h2()")
-M <- matrix(nrow = 7, ncol = 7, byrow = TRUE, data = 0)
-M[2, 1] <- M[3, 1] <- M[4, 2] <- M[6, 3] <- M[5, 2] <- M[7, 3] <- ""
-plotmat(M, pos = c(1, 2, 4), name = names, lwd= 1, relsize=1,
-         box.lwd = 1, cex.txt=.8, box.type = "circle", box.prop=1.0)
-
-
 
  
 
 ## ---- eval=F-------------------------------------------------------------
-#  summary(sim)
-#  plot(sim)
-#  test(sim)
-#  submit(sim)
-#  res <- collect(sim)	
+#  summary(workflow)
+#  plot(workflow)
+#  test(workflow)
+#  submit(workflow)
+#  res <- collect(workflow)	
 #  
 
 ## ---- eval=F-------------------------------------------------------------
@@ -87,16 +80,17 @@ plotmat(M, pos = c(1, 2, 4), name = names, lwd= 1, relsize=1,
 #  warn(res)  		
 
 ## ---- eval=F-------------------------------------------------------------
-#  sim <- sim + grid(f2, arg6 = c(5:8))
+#  workflow <- workflow + layer(grid(f2, arg6 = c(5:8)), .id = 1)
 #  
-#  submit(sim)
-#  res <- collect(sim)
+#  submit(workflow)
+#  res <- collect(workflow)
 #  
-#  sim <- sim + grid(g3, ..., .level=1) +
-#  	h3(.dep=c("g3"))
+#  workflow <- workflow +
+#    layer(grid(g3, ..., .id = 2)) +
+#   layer(h3(.dep=c("g3"), .id = 3)
 #  
-#  submit(sim)
-#  res <- collect(sim)
+#  submit(workflow)
+#  res <- collect(workflow)
 
 ## ---- echo=F, eval=T, fig.width=8, fig.height=4--------------------------
  par(mar = c(1, 1, 1, 1), mfrow = c(1, 2), oma=c(1,1,1,1))
