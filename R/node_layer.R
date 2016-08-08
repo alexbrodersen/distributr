@@ -1,17 +1,30 @@
+# dgraph data: .layer
+# layer data: .node
+# node data: .f, .args, .id, .fname
 
-#' @export
-"+.layer" <- function(e1, e2){
-  add_layer(e1, e2)
-}
+# dgraph attributes: .dcontrol, .graph
+# layer attributes: .id
+# node attributes: names
 
+#' Add layer to dgraph
+#' @param ... nodes, separated by commas
 #' @export
-layer <- function(..., .id=NULL){
-  # check that all ... are layers or options
-  layer <- list(...)
-  stopifnot(sapply(layer, is.node) | sapply(layer, is.dcontrol))
-  attr(layer, ".id") <- .id
+layer <- function(...){
+  # the .dgraph will be listed first in all but the first one
+  dots <- list(...)
+  layer <- dots[sapply(dots, is.node)]
+
+  stopifnot(sapply(layer, is.node))
   class(layer) <- "layer"
-  return(layer)
+
+  if(is.dgraph(dots[[1]])){
+    .dgraph <- dots[[1]]
+    .id = max(sapply(.dgraph, function(l){attr(l, ".id")})) + 1
+    .dgraph  <- add_layer(layer, .dgraph = .dgraph, .id= .id)
+  } else {
+    .dgraph <- layer_to_dgraph(layer)
+  }
+  return(.dgraph)
 }
 
 # takes a function f, and lifts it so that it can be applied to a node of the given parameters
@@ -26,7 +39,13 @@ node <- function(.f, ..., .dep=NULL, .id=NULL){
 }
 
 #' @export
-is.dcontrol <- function(x){ any(grepl("dcontrol", class(x)))}
+dcontrol <- function(.dgraph, mc.cores = 1, tidy=NULL,
+                     backend="sge", cache="all", verbose=1){
+  .dcontrol <- list(mc.cores = mc.cores, tidy=tidy, backend=backend, cache=cache, verbose=verbose)
+  attr(.dgraph, ".dcontrol")[names(.dcontrol)] <- .dcontrol
+  return(o)
+}
+
 #' @export
 is.layer <- function(x){ (class(x) == "layer") && (length(class(x)) == 1)}
 #' @export
@@ -34,54 +53,29 @@ is.node <- function(x){ "node" %in% class(x)}
 #' @export
 is.dgraph <- function(x){ class(x) == "dgraph"}
 
-#' @export
-add_layer <- function(e1, e2){
-  if(is.dgraph(e1) && is.layer(e2)){
-
-    if(is.null(e2$.id)) attr(e2, ".id") <- max(sapply(e1, function(l){attr(l, ".id")})) + 1
-    g <- attr(e1, ".graph")
-    e2 <- assign_node_ids(e2, start = max(g$node))
-    o <- c(e1, list(e2))
-    graph <- layer_to_graph(e2, graph = g)
-    attr(o, ".graph") <- graph
-    class(o) <- "dgraph"
-
-  } else if(is.layer(e1) && is.layer(e2)){
-
-    # Assign layer ids if not present
-    if(is.null(e1$.id)) attr(e1, ".id") <- 1
-    if(is.null(e2$.id)) attr(e2, ".id") <- 2
-
-    # Assign node ids if not present
-    e1 <- assign_node_ids(e1, start = 0)
-    e2 <- assign_node_ids(e2, start = max(layer_apply(e1, select=".id")))
-
-    # Generate task_map from layer; since this is layer 1 a graph has to be made from e1 first
-    graph <- layer_to_graph(e2, graph = layer_to_graph(e1))
-    o <- list(e1, e2)
-    attr(o, "graph") <- graph
-  } else if(is.dcontrol(e2)){
-    if(is.layer(e1)){
-      o <- list(e1)
-      graph <- layer_to_graph(e1)
-      attr(o, "graph") <- graph
-    } else {
-      o <- e1
-    }
-    if(is.null(attr(o, "dcontrol"))){
-      attr(o, "dcontrol") <- e2
-    } else {
-      attr(o, "dcontrol")[[names(e2)]] <- as.numeric(e2)
-    }
-  } else {
-    print("cant add")
-  }
-  class(o) <- "dgraph"
-  return(o)
+# lifts the first layer to dgraph
+layer_to_dgraph <- function(.layer){
+  .layer <- assign_node_ids(.layer, start = 1)
+  attr(.layer, ".id") <- 1
+  graph <- layer_to_graph(.layer, graph = NULL)
+  .dgraph <- list(.layer)
+  attr(.dgraph, ".graph") <- graph
+  class(.dgraph) <- "dgraph"
+  return(.dgraph)
 }
 
-# Add layer to graph, and update graph if already exists
-#' @export
+# adds a layer to a dgraph
+add_layer <- function(.layer, .dgraph, .id){
+  attr(.layer, ".id") <- .id
+  g <- attr(.dgraph, ".graph")
+  .layer <- assign_node_ids(.layer, start = max(g$node))
+  .dgraph <- c(.dgraph, .layer)
+  graph <- layer_to_graph(.layer, graph = g)
+  attr(.dgraph, ".graph") <- graph
+  return(.dgraph)
+}
+
+# Add layer to task graph, and update task graph if already exists
 layer_to_graph <- function(l, graph = NULL){
   node.ids <- layer_apply(l, select=".id")
   lid <- attr(l, ".id")
@@ -133,18 +127,12 @@ assign_node_ids <- function(e, start=0){
 }
 
 #' @export
-reps <- function(reps){
-  o <- list(reps = reps)
-  class(o) <- c("dcontrol", "layer")
-  return(o)
+reps <- function(.dgraph, reps){
+  attr(.dgraph, ".dcontrol")["reps"] <- reps
+  return(.dgraph)
 }
 
-#' @export
-dcontrol <- function(mc.cores = 1, tidy=NULL, backend="local", cache="all", verbose=1){
-  o <- list(mc.cores = mc.cores, tidy=tidy, backend=backend, cache=cache, verbose=verbose)
-  class(o) <- c("dcontrol", "layer")
-  return(o)
-}
+
 
 
 
