@@ -56,40 +56,7 @@ setup <- function(object, dir=getwd(),  .reps=1, .chunks = 1, .mc.cores=1, .verb
   write.do.one(.f=.f, dir=dir, reps=reps.per.chunk, mc.cores=.mc.cores, verbose=.verbose, script.name=.script.name)
 }
 
-#' @export
-setup.dgraph <- function(dgraph, dir=getwd(), .mc.cores=1, .verbose=1,
-                         .queue="long",
-                         .script.name="doone.R",
-                         .job.name="patr1ckm",
-                         .out.dir="SGE_Output",
-                         .email.options="a",
-                         .email.addr="patr1ckm.crc.nd.edu",
-                         .shell="bash"){
-  dir <- paste0(dir, "/")
-  # write the graph to a file
-  save(dgraph, file = "dgraph.Rdata")
-  graph <- attr(dgraph, ".graph")
 
-  # mkdir(s) for caching results
-  cmd <- paste0("mkdir -p ", dir, "results")
-  mysys(cmd)
-  cmd <- paste0("mkdir -p ", dir, "results/layer", unique(graph$layer))
-  for(i in 1:length(cmd)){ mysys(cmd[i])}
-
-  # mkdir for SGE output
-  cmd <- paste0("mkdir -p ", dir, "SGE_Output")
-  mysys(cmd)
-
-  # write the submit script
-  write.submit(dir, script.name=.script.name, mc.cores=.mc.cores, tasks=max(graph$tup),
-               job.name=.job.name,
-               out.dir = .out.dir,
-               email = .email.options,
-               email.addr = .email.addr,
-               shell = .shell)
-
-  # write do.one
-}
 
 
 #' @export
@@ -140,39 +107,7 @@ write.do.one <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="do
   cat(temp, file=paste0(dir, script.name))
 }
 
-write.do.one.dgraph <- function(dgraph, dir, script.name="doone.R"){
-  library(distributr)
-  args <- as.numeric(commandArgs(trailingOnly=TRUE))
-  t <- args[1]
-  load("dgraph.Rdata")
-  graph <- attr(dgraph, ".graph")
-  sub_graph <- graph[graph$tlow <= t & graph$tup > t, ]
-  if(sub_graph$dep == sub_graph$node){
-    # load nothing
-    node <- get_node(dgraph, sub_graph$node)
-    control <- attr(dgraph, ".dcontrol")
-    .f <- node$.f
-    param.grid <- expand.grid(node$.args)
-    params <- param.grid[t, ]
 
-    res.l <- grid_apply(.f = node$.f, node$.args, .paramid = t,
-                          .reps = control$reps, .mc.cores = control$mc.cores,
-                          .verbose = control$verbose)
-    fn <- paste0("results/layer", sub_graph$layer, "/node", sub_graph$node, "_t", t, ".Rdata")
-    save(res.l, file=fn)
-  } else {
-    # load previous results
-    dep_graph <- graph[graph$node == sub_graph$dep, ]
-    fn <- paste0("results/layer", dep_graph$layer, "/node", dep_graph$node, "_t", t, ".Rdata")
-    load(fn)
-    res.l <- grid_apply(.f = node$.f, res.l, node$.args, .paramid = t,
-               .reps = control$reps, .mc.cores = control$mc.cores,
-               .verbose = control$verbose)
-    fn <- paste0("results/layer", sub_graph$layer, "/node", sub_graph$node, "_t", t, ".Rdata")
-    save(res.l, fn)
-  }
-
-}
 
 #' Submit jobs to SGE
 #' @export
@@ -262,6 +197,8 @@ collect <- function(dir=getwd()){
 
   return(long)
 }
+
+
 
 #' Cleans results
 #' @param dir project directory name followed by 'slash'

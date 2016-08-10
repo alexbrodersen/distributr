@@ -47,9 +47,7 @@ o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
 expect_equal(attr(o, ".dcontrol")$reps, 5)
 
 
-system("mkdir -p tests/tmp_nl")
-system("rm -rf tests/tmp_nl/*")
-setup.dgraph(o, dir="tests/tmp_nl")
+
 
 
 
