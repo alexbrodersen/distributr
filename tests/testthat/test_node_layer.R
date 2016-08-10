@@ -22,15 +22,34 @@ l2 <- layer(node(hh, arg2=1), node(gg, arg1=1), .id=2)
 
 o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
   layer(node(hh, arg2=1), node(gg, arg1=1))
+expect_true(!is.null(attr(o, ".dcontrol")))
 
-o2 <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5), .id=1) +
-  layer(node(hh, arg2=1), node(gg, arg1=1), .id=2) +
-  dcontrol() + reps(500)
+## Test classes
+expect_equal(sapply(o, class), c("layer", "layer"))
+for(i in 1:2) expect_equal(sapply(o[[i]], class), c("node", "node"))
 
-expect_true(get_node(o2, 2)$.id == 2)
-expect_true(get_node(o2, 3)$.id == 3)
+## Test ids
+expect_equal(sapply(o[[1]], function(node){node$.id}), c(1,2))
+expect_equal(sapply(o[[2]], function(node){node$.id}), c(3, 4))
+expect_equal(sapply(o, function(l){attr(l, ".id")}), c(1, 2))
+
+## Test get_node
+for(i in 1:4) expect_true(get_node(o, i)$.id == i)
+
+o <- dcontrol(o)
+expect_true(!is.null(attr(o, ".dcontrol")))
+o <- reps(o, 500)
+expect_equal(attr(o, ".dcontrol")$reps, 500)
+
+o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
+  layer(node(hh, arg2=1), node(gg, arg1=1)) %>%
+  dcontrol() %>% reps(5)
+expect_equal(attr(o, ".dcontrol")$reps, 5)
 
 
+system("mkdir -p tests/tmp_nl")
+system("rm -rf tests/tmp_nl/*")
+setup.dgraph(o, dir="tests/tmp_nl")
 
 
 

@@ -56,6 +56,7 @@ setup <- function(object, dir=getwd(),  .reps=1, .chunks = 1, .mc.cores=1, .verb
   write.do.one(.f=.f, dir=dir, reps=reps.per.chunk, mc.cores=.mc.cores, verbose=.verbose, script.name=.script.name)
 }
 
+#' @export
 setup.dgraph <- function(dgraph, dir=getwd(), .mc.cores=1, .verbose=1,
                          .queue="long",
                          .script.name="doone.R",
@@ -66,8 +67,8 @@ setup.dgraph <- function(dgraph, dir=getwd(), .mc.cores=1, .verbose=1,
                          .shell="bash"){
   dir <- paste0(dir, "/")
   # write the graph to a file
-  save(dgrpah, file = "dgraph.Rdata")
-  graph <- attr(dgraph, "graph")
+  save(dgraph, file = "dgraph.Rdata")
+  graph <- attr(dgraph, ".graph")
 
   # mkdir(s) for caching results
   cmd <- paste0("mkdir -p ", dir, "results")
@@ -144,37 +145,31 @@ write.do.one.dgraph <- function(dgraph, dir, script.name="doone.R"){
   args <- as.numeric(commandArgs(trailingOnly=TRUE))
   t <- args[1]
   load("dgraph.Rdata")
-  graph <- attr(dgraph, "graph")
+  graph <- attr(dgraph, ".graph")
   sub_graph <- graph[graph$tlow <= t & graph$tup > t, ]
   if(sub_graph$dep == sub_graph$node){
     # load nothing
     node <- get_node(dgraph, sub_graph$node)
-    control <- attr(dgraph, "dcontrol")
+    control <- attr(dgraph, ".dcontrol")
     .f <- node$.f
     param.grid <- expand.grid(node$.args)
     params <- param.grid[t, ]
 
-    res.l <- gapply.local(.f = node$.f, node$.args, .paramid = t,
+    res.l <- grid_apply(.f = node$.f, node$.args, .paramid = t,
                           .reps = control$reps, .mc.cores = control$mc.cores,
                           .verbose = control$verbose)
     fn <- paste0("results/layer", sub_graph$layer, "/node", sub_graph$node, "_t", t, ".Rdata")
-    save(res.l, fn)
+    save(res.l, file=fn)
   } else {
     # load previous results
     dep_graph <- graph[graph$node == sub_graph$dep, ]
     fn <- paste0("results/layer", dep_graph$layer, "/node", dep_graph$node, "_t", t, ".Rdata")
     load(fn)
-
-    # gapply on grid from t to each rep
-    # let do.rep work with a list of arguments of length rps?
-    # iterate over .args by hand?
-    onerep <- function(r, .args){
-      gapply.local(.f = node$.f, node$.args, .paramid = t,
-                   .reps = 1, .mc.cores = control$mc.cores,
-                   .verbose = control$verbose, .args = .args[r])
-    }
-    mclapply(1:control$reps, onerep, .args = res.l)
-
+    res.l <- grid_apply(.f = node$.f, res.l, node$.args, .paramid = t,
+               .reps = control$reps, .mc.cores = control$mc.cores,
+               .verbose = control$verbose)
+    fn <- paste0("results/layer", sub_graph$layer, "/node", sub_graph$node, "_t", t, ".Rdata")
+    save(res.l, fn)
   }
 
 }

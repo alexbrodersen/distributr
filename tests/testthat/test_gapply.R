@@ -21,6 +21,7 @@ do.one <- function(a=1,b=2){
   return(data.frame(perf=c(a+b, a-b)))
 }
 
+
 ## Testing .args (must be a list, doesn't have to be named, must match the arguments.)
 f <- function(a, b=1, x=1){ a + b + x}
 x <- do.rep(f, list(b=0, x=0), .reps=2, .args=list(5))
@@ -68,7 +69,13 @@ do.one <- function(a=1,b=2){
   if(b==2){warning("this is a warning")}
   return(c(a-b, a+b))
 }
+ff <- function(x, y){-x}
 out <- gapply(do.one, a=c(2,1), b=2, .reps=2, .verbose=0)
+out1 <- grid_apply(do.one, a=c(2,1), b=2, .reps=2, .verbose=1)
+
+## This is a total mess.
+res <- grid_apply(do.one, a=c(2,1), b=2, .reps=1, .verbose=0) %>%
+  grid_apply(ff, x=., y=3:4)
 
 
 do.one <- function(a=1,b=2){c(a+b)}
@@ -137,4 +144,5 @@ expect_true(all(unique(out$value) == c(ref1, ref2)))
 nm = 3 # number of key2s (a+b etc)
 np = 2 # number of performance (minus, plus)
 expect_true(nrow(out) == 3*nm*np)
+
 

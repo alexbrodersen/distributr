@@ -1,17 +1,17 @@
 ## Applies f to argument node locally
 #' @export
-gapply.local <- function(.f, ..., .reps=1, .param.cores=1, .rep.cores=1, .verbose=1, .eval=T, .args=NULL, .paramid=NULL){
-  grid <- expand.grid(...)
-  param.ls <- split(grid, 1:nrow(grid))
-  if(!is.null(.paramid)) param.ls <- param.ls[.paramid]
-  names(param.ls) <- NULL
-  start <- proc.time()
-  stopifnot(length(.args) == .reps)
-  onerep <- function(r, .args, ...){ parallel::mclapply(param.ls, do.rep, .args = .args[r], ..., mc.cores = .param.cores)}
+grid_apply <- function(.f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T, .paramid=NULL){
+  dots <- as.pairlist(...)
+  arg.grid <- expand_grid(dots)
+  arg.ls <- purrr::transpose(arg.grid)
 
-  res.l <- parallel::mclapply(1:.reps, onerep, .args = .args, .f=wrapWE(.f),
-                              .reps=.reps, .verbose=.verbose, .param.cores = .param.cores,
-                              .eval=.eval, mc.cores = .rep.cores)
+  if(!is.null(.paramid)) arg.ls <- arg.ls[.paramid]
+  names(arg.ls) <- NULL
+  start <- proc.time()
+
+  res.l <- parallel::mclapply(arg.ls, do.rep, .f=wrapWE(.f),
+                              .reps=.reps, mc.cores=.mc.cores, .verbose=.verbose,
+                              .eval=.eval, .rep.cores=1)
 
   end <- proc.time()
   res.l <- unlist(res.l, recursive=FALSE)
@@ -29,9 +29,9 @@ gapply.local <- function(.f, ..., .reps=1, .param.cores=1, .rep.cores=1, .verbos
 
   class(res.l) <- c("gresults", class(res.l))
   attr(res.l, "time") <- end-start
-  attr(res.l, "arg.names") <- colnames(grid)
+  attr(res.l, "arg.names") <- names(arg.grid)
   attr(res.l, "f") <- .f
-  attr(res.l, "grid") <- grid
+  attr(res.l, "arg.grid") <- arg.grid
   attr(res.l, "err") <- err.list
   attr(res.l, "warn") <- warn.list
   attr(res.l, ".reps") <- .reps
@@ -69,6 +69,9 @@ tidy.gresults <- function(res.l){
   return(long)
 }
 
+#' @importFrom magrittr %>%
+#' @export
+magrittr::`%>%`
 
 
 #' @export
