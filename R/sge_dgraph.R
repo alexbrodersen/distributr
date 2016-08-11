@@ -9,7 +9,7 @@ setup.dgraph <- function(dgraph, dir=getwd(), .mc.cores=1, .verbose=1,
                          .shell="bash"){
   dir <- paste0(dir, "/")
   # write the graph to a file
-  save(dgraph, file = "dgraph.Rdata")
+  save(dgraph, file = paste0(dir, "dgraph.Rdata"))
   graph <- attr(dgraph, ".graph")
 
   # mkdir(s) for caching results
@@ -23,6 +23,7 @@ setup.dgraph <- function(dgraph, dir=getwd(), .mc.cores=1, .verbose=1,
   mysys(cmd)
 
   # write the submit script
+
   write.submit(dir, script.name=.script.name, mc.cores=.mc.cores, tasks=max(graph$tup),
                job.name=.job.name,
                out.dir = .out.dir,
@@ -30,45 +31,72 @@ setup.dgraph <- function(dgraph, dir=getwd(), .mc.cores=1, .verbose=1,
                email.addr = .email.addr,
                shell = .shell)
 
-  # write do.one
+  write.do.one.dgraph(dgraph, dir=dir, script.name = .script.name)
 }
 
 write.do.one.dgraph <- function(dgraph, dir, script.name="doone.R"){
+  doone <- paste0("
   library(distributr)
   args <- as.numeric(commandArgs(trailingOnly=TRUE))
   t <- args[1]
-  load("dgraph.Rdata")
-  graph <- attr(dgraph, ".graph")
+  load(\"dgraph.Rdata\")
+  graph <- attr(dgraph, \".graph\")
   sub_graph <- graph[graph$tlow <= t & graph$tup >= t, ]
   if(sub_graph$dep == sub_graph$node){
     # load nothing
     node <- get_node(dgraph, sub_graph$node)
-    control <- attr(dgraph, ".dcontrol")
-    res.l <- grid_apply(.f = node$.f, node$.args, .paramid = t,
+    control <- attr(dgraph, \".dcontrol\")
+    param.id <- which(sub_graph$tlow:sub_graph$tup == t)
+    res.l <- grid_apply(.f = node$.f, node$.args, .paramid = param.id,
                         .reps = control$reps, .mc.cores = control$mc.cores,
                         .verbose = control$verbose)
-    fn <- paste0("results/layer", sub_graph$layer, "/node", sub_graph$node, "_t", t, ".Rdata")
-    save(res.l, file=fn)
+
   } else {
     # load previous results
     dep_graph <- graph[graph$node == sub_graph$dep, ]
-    fn <- paste0("results/layer", dep_graph$layer, "/node", dep_graph$node, "_t", t, ".Rdata")
-    load(fn)
-    res.l <- grid_apply(.f = node$.f, res.l, node$.args, .paramid = t,
-                        .reps = control$reps, .mc.cores = control$mc.cores,
-                        .verbose = control$verbose)
-    fn <- paste0("results/layer", sub_graph$layer, "/node", sub_graph$node, "_t", t, ".Rdata")
-    save(res.l, fn)
-  }
+    node <- get_node(dgraph, sub_graph$node)
+    control <- attr(dgraph, \".dcontrol\")
 
+    # which row of parameters to run within node
+    param.id <- which(sub_graph$tlow:sub_graph$tup == t)
+
+    # which task to load
+    prev_t = dep_graph$tlow:dep_graph$tup
+    all <- append(list(t = prev_t), node$.args) %>% expand_grid %>% purrr::transpose(.)
+    args <- all[[param.id]]
+
+    prev_res <- paste0(\"t\", args$t, \".Rdata\") %>%
+      load_results(.)
+
+    res.l <- grid_apply(.f = node$.f, append(x=prev_res, args[-1]),
+               .reps = 1, .mc.cores = control$mc.cores, .verbose = control$verbose)
+  }
+  fn <- paste0(\"results/layer\", sub_graph$layer, \"/node\", sub_graph$node, \"_t\", t, \".Rdata\")
+  save(res.l, file=fn)
+  ")
+  cat("cat ", paste0(dir, "doone.R"), fill=T)
+  cat(doone, file=paste0(dir, "/", script.name))
 }
 
-collect.dgraph <- function(layer, node=NULL, dir = getwd()){
-  ldir <- paste0(dir, "/results/layer", layer)
+#' @export
+load_results <- function(regex, dir=getwd()){
+  fns <- list.files(paste0(dir, "/results/"), recursive = T)
+  fl <- fns[grep(regex, fns)]
+  res.node <- list()
+  for(i in 1:length(fl)){
+    fn <- paste0(dir, "/results/", fl[i])
+    load(fn)
+    res.node[[i]] <- res.l
+  }
+  return(res.node)
+}
+
+collect.dgraph <- function(layer=NULL, node=NULL, task=NULL, dir = getwd()){
+  ldir <- paste0(dir, "/results/layer", layer, "/")
   load(paste0(dir, "/dgraph.Rdata"))
+  tasks <- gtools::mixedsort(paste0(ldir,list.files(ldir)))
 
 
-  conds.files <- gtools::mixedsort(paste0(ldir,list.files(ldir)))
   cond.l <- list()           # list of the results from each condition
 
   for(i in 1:length(conds.files)){
