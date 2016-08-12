@@ -69,7 +69,7 @@ add_layer <- function(.layer, .dgraph, .id){
   attr(.layer, ".id") <- .id
   g <- attr(.dgraph, ".graph")
   control <- attr(.dgraph, ".dcontrol")
-  .layer <- assign_node_ids(.layer, start = max(g$node))
+  .layer <- assign_node_ids(.layer, start = max(g$node.id))
   .dgraph <- c(.dgraph, list(.layer)) # loses attributes??
   graph <- layer_to_graph(.layer, graph = g)
   attr(.dgraph, ".graph") <- graph
@@ -85,18 +85,21 @@ layer_to_graph <- function(l, graph = NULL){
   ntasks <- layer_apply(l, FUN=function(a){prod(sapply(a, length))}, select = ".args")
 
   if(is.null(graph)){
+    # root nodes
     dep <- node.ids
     tlow <- c(1, 1+ntasks)[-(n.nodes+1)]
     tup <- cumsum(ntasks)
-    graph <- data.frame(layer = rep(attr(l, ".id"), n.nodes), dep=dep, node=node.ids,
-                        ntasks = ntasks, tlow=tlow, tup=tup)
+    graph <- data.frame(layer = rep(attr(l, ".id"), n.nodes), dep=dep, node.id=node.ids,
+                        node.pos = node.ids, ntasks = ntasks, tlow=tlow, tup=tup)
 
   } else {
     sub_graph <- subset(graph, layer == lid - 1)
     start <- max(sub_graph[, "tup"])
-    dep <- sub_graph$node
+    dep <- sub_graph$node.pos
     # create a row for each dependency
-    dep.rows <- expand.grid(layer = lid, dep=dep, node=node.ids)
+    dep.rows <- expand.grid(layer = lid, dep=dep, node.id=node.ids)
+    pos.start <- max(sub_graph$node.pos) + 1
+    dep.rows$node.pos <- pos.start : (pos.start + nrow(dep.rows) - 1)
     dep.rows$ntasks <- rep(ntasks, each = length(dep)) *
       rep(sub_graph$ntasks, times = n.nodes)
     dep.rows$tlow <- head(c(start + 1, start + 1 + cumsum(dep.rows$ntasks)), -1)
@@ -109,15 +112,6 @@ layer_to_graph <- function(l, graph = NULL){
 #' @export
 layer_apply <- function(l, select=".id", FUN=I){
   sapply(l, function(x){FUN(x[[select]])})
-}
-
-#' @export
-get_node <- function(dgraph, id){
-  ids <- sapply(dgraph, function(l){ layer_apply(l, select = ".id") })
-  addr <- which(ids == id, arr.ind=T)
-  node.id <- addr[1]
-  layer.id <- addr[2]
-  dgraph[[layer.id]][[node.id]]
 }
 
 # @export
@@ -134,8 +128,44 @@ reps <- function(.dgraph, reps){
   return(.dgraph)
 }
 
+#' @export
+get_node <- function(dgraph, id){
+  ids <- sapply(dgraph, function(l){ layer_apply(l, select = ".id") })
+  addr <- which(ids == id, arr.ind=T)
+  node.id <- addr[1]
+  layer.id <- addr[2]
+  dgraph[[layer.id]][[node.id]]
+}
 
+#' Return the parameter graph implied by the dgraph grid
+#' @export
+expand_grid_dgraph <- function(dgraph){
+  # get the arguments from terminal node
+  graph <- attr(dgraph, ".graph")
 
+  # start at max layer
+  last_layer <- max(graph$layer)
+
+  expand_subgraph <- function(dgraph, graph, node){
+    res <- expand_grid(get_node(dgraph, node)$.args)
+
+    if(sub_graph$node == sub_graph$dep){
+      # root node
+      return(res)
+    }
+    # expand graph of parent
+    return(append(res, expand_subraph(dgraph, graph, node = graph$dep)))
+  }
+
+  # expand subgraph of all terminal nodes
+  res.l <- list()
+  nodes <- subset(graph, layer == last_layer)$node
+  for(i in seq_along(nodes)){
+    res.l[[i]] <- expand_subgraph(dgraph, graph, node = nodes[i])
+  }
+  res <- do.call(rbind, res.l)
+  return(res.l)
+}
 
 
 

@@ -8,6 +8,8 @@ setup.dgraph <- function(dgraph, dir=getwd(), .mc.cores=1, .verbose=1,
                          .email.addr="patr1ckm.crc.nd.edu",
                          .shell="bash"){
   dir <- paste0(dir, "/")
+  cmd <- paste0("mkdir -p ",  fdir)
+  mysys(cmd)
   # write the graph to a file
   save(dgraph, file = paste0(dir, "dgraph.Rdata"))
   graph <- attr(dgraph, ".graph")
@@ -91,34 +93,21 @@ load_results <- function(regex, dir=getwd()){
   return(res.node)
 }
 
+#' @export
 collect.dgraph <- function(layer=NULL, node=NULL, task=NULL, dir = getwd()){
-  ldir <- paste0(dir, "/results/layer", layer, "/")
-  load(paste0(dir, "/dgraph.Rdata"))
-  tasks <- gtools::mixedsort(paste0(ldir,list.files(ldir)))
-
-
-  cond.l <- list()           # list of the results from each condition
-
-  for(i in 1:length(conds.files)){
-    fn <- paste0(conds.files[i])
-    load(fn)
-    cond.l[[i]] <- res.l
+  # Load a particular layer, node or task
+  if(any(!is.null(layer) | !is.null(node) | !is.null(task))){
+    if(!is.null(task)) {
+      reg <- paste0("_t", task, ".Rdata")
+    } else if(!is.null(node)){
+      reg <- paste0("node", node)
+    } else if(!is.null(layer)){
+      reg <- paste0("layer", layer)
+    }
+    res <- load_results(reg, dir=dir)
+    return(res)
   }
-
-  cond.l <- unlist(cond.l, recursive=F)
-  cond.idx <- as.numeric(gsub(".Rdata", "", basename(conds.files))) # completed conditions
-  cond.grid <- param.grid[cond.idx,]
-
-  err <- lapply(cond.l, function(r){attr(r, "err")})
-  err.id <-  which(unlist(lapply(err, function(x){!is.null(x)})))
-  err.list <- err[err.id]
-  names(err.list) <- err.id
-
-  warn <- lapply(cond.l, function(r){attr(r, "warn")})
-  warn.id <- which(unlist(lapply(warn, function(x){!is.null(x)})))
-  warn.list <- warn[warn.id]
-  names(warn.list) <- warn.id
-
-  value <- as.data.frame(do.call(rbind, cond.l))
-
 }
+
+
+
