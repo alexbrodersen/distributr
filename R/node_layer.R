@@ -146,22 +146,26 @@ expand_grid_dgraph <- function(dgraph){
   # start at max layer
   last_layer <- max(graph$layer)
 
-  expand_subgraph <- function(dgraph, graph, node){
-    res <- expand_grid(get_node(dgraph, node)$.args)
+  expand_subgraph <- function(dgraph, graph, node.pos){
+    sub_graph <- graph[node.pos, ]
+    node <- sub_graph$node.id
+    res <- get_node(dgraph, node)$.args %>% expand_grid(.)
 
-    if(sub_graph$node == sub_graph$dep){
+    if(sub_graph$node.pos == sub_graph$dep){
       # root node
       return(res)
     }
-    # expand graph of parent
-    return(append(res, expand_subraph(dgraph, graph, node = graph$dep)))
+    # expand list of parent for each combination of res
+    parent <- expand_subgraph(dgraph, graph, node.pos = sub_graph$dep)
+    do.call(expand_grid, list(res, list(parent)))
+    return(expand_grid(res, list(parent)))
   }
 
   # expand subgraph of all terminal nodes
   res.l <- list()
-  nodes <- subset(graph, layer == last_layer)$node
+  nodes <- subset(graph, layer == last_layer)$node.pos
   for(i in seq_along(nodes)){
-    res.l[[i]] <- expand_subgraph(dgraph, graph, node = nodes[i])
+    res.l[[i]] <- expand_subgraph(dgraph, graph, node.pos = nodes[i])
   }
   res <- do.call(rbind, res.l)
   return(res.l)
