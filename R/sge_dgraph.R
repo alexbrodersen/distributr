@@ -44,9 +44,9 @@ write.do.one.dgraph <- function(dgraph, dir, script.name="doone.R"){
   load(\"dgraph.Rdata\")
   graph <- attr(dgraph, \".graph\")
   sub_graph <- graph[graph$tlow <= t & graph$tup >= t, ]
-  if(sub_graph$dep == sub_graph$node){
+  if(sub_graph$dep == sub_graph$node.id){
     # load nothing
-    node <- get_node(dgraph, sub_graph$node)
+    node <- get_node(dgraph, sub_graph$node.id)
     control <- attr(dgraph, \".dcontrol\")
     param.id <- which(sub_graph$tlow:sub_graph$tup == t)
     res.l <- grid_apply(.f = node$.f, node$.args, .paramid = param.id,
@@ -55,8 +55,8 @@ write.do.one.dgraph <- function(dgraph, dir, script.name="doone.R"){
 
   } else {
     # load previous results
-    dep_graph <- graph[graph$node == sub_graph$dep, ]
-    node <- get_node(dgraph, sub_graph$node)
+    dep_graph <- graph[graph$node.id == sub_graph$dep, ]
+    node <- get_node(dgraph, sub_graph$node.id)
     control <- attr(dgraph, \".dcontrol\")
 
     # which row of parameters to run within node
@@ -73,7 +73,7 @@ write.do.one.dgraph <- function(dgraph, dir, script.name="doone.R"){
     res.l <- grid_apply(.f = node$.f, append(x=prev_res, args[-1]),
                .reps = 1, .mc.cores = control$mc.cores, .verbose = control$verbose)
   }
-  fn <- paste0(\"results/layer\", sub_graph$layer, \"/node\", sub_graph$node, \"_t\", t, \".Rdata\")
+  fn <- paste0(\"results/layer\", sub_graph$layer, \"/node_pos\", sub_graph$node.pos, \"_t\", t, \".Rdata\")
   save(res.l, file=fn)
   ")
   cat("cat ", paste0(dir, "doone.R"), fill=T)
@@ -100,7 +100,7 @@ collect.dgraph <- function(layer=NULL, node=NULL, task=NULL, dir = getwd()){
     if(!is.null(task)) {
       reg <- paste0("_t", task, ".Rdata")
     } else if(!is.null(node)){
-      reg <- paste0("node", node)
+      reg <- paste0("node_pos", node)
     } else if(!is.null(layer)){
       reg <- paste0("layer", layer)
     }
