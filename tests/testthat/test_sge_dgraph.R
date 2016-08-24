@@ -7,9 +7,18 @@ ff <- function(a, b){a + b}
 gg <- function(x, arg1){x^2}
 hh <- function(x, arg2){-x}
 
+do.one <- function(a, b, arg1, arg2){
+  ggres = ff(a, b) %>% gg(., arg1=arg1)
+  hhres <- ff(a, b) %>% hh(., arg2=arg2)
+  data.frame(ggres, hhres)
+}
+
 o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
   layer(node(hh, arg2=1), node(gg, arg1=1)) %>%
   dcontrol() %>% reps(5)
+
+o.check1 <- gapply(do.one, a=1:3, b = 1:3, arg1=1, arg2=1, .reps = 5)
+o.check2 <- gapply(do.one, a=4:5, b = 4:5, arg1=1, arg2=1, .reps = 5)
 
 setup.dgraph(o, dir=fdir)
 
@@ -43,3 +52,9 @@ expect_equal(res5, gg(ans1))
 
 res6 <- unlist(collect.dgraph(node = 6, dir = fdir))
 expect_equal(res6, gg(ans2))
+
+res <- unlist(collect.dgraph(layer = 2, dir = fdir))
+
+ans1 <-  rep(c(outer(1:3, 1:3, "+")), each = 5)
+ans2 <-  rep(c(outer(4:5, 4:5, "+")), each = 5)
+expect_equal(res, c(hh(ans1, 1), hh(ans2, 1), gg(ans1, 1), gg(ans2, 1)))
