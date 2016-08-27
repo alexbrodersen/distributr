@@ -7,18 +7,9 @@ ff <- function(a, b){a + b}
 gg <- function(x, arg1){x^2}
 hh <- function(x, arg2){-x}
 
-do.one <- function(a, b, arg1, arg2){
-  ggres = ff(a, b) %>% gg(., arg1=arg1)
-  hhres <- ff(a, b) %>% hh(., arg2=arg2)
-  data.frame(ggres, hhres)
-}
-
 o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
   layer(node(hh, arg2=1), node(gg, arg1=1)) %>%
   dcontrol() %>% reps(5)
-
-o.check1 <- gapply(do.one, a=1:3, b = 1:3, arg1=1, arg2=1, .reps = 5)
-o.check2 <- gapply(do.one, a=4:5, b = 4:5, arg1=1, arg2=1, .reps = 5)
 
 setup.dgraph(o, dir=fdir)
 

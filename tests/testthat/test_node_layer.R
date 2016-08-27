@@ -1,4 +1,4 @@
-## test grid
+## test node layer
 
 #library(ggplot2)
 context("test node layer")

@@ -143,32 +143,33 @@ expand_grid_dgraph <- function(dgraph){
   # get the arguments from terminal node
   graph <- attr(dgraph, ".graph")
 
-  # start at max layer
-  last_layer <- max(graph$layer)
+  terminal_layer <- max(graph$layer)
 
-  expand_subgraph <- function(dgraph, graph, node.pos){
+  get_args_subgraph <- function(dgraph, graph, node.pos){
     sub_graph <- graph[node.pos, ]
     node <- sub_graph$node.id
-    res <- get_node(dgraph, node)$.args %>% expand_grid(.)
+    args <- get_node(dgraph, node)$.args
 
     if(sub_graph$node.pos == sub_graph$dep){
       # root node
-      return(res)
+      return(args)
     }
-    # expand list of parent for each combination of res
-    parent <- expand_subgraph(dgraph, graph, node.pos = sub_graph$dep)
-    do.call(expand_grid, list(res, list(parent)))
-    return(expand_grid(res, list(parent)))
+    # get the arg list of parent
+    parent_args <- get_args_subgraph(dgraph, graph, node.pos = sub_graph$dep)
+
+    args <- c(args, parent_args)
+    return(args)
   }
 
-  # expand subgraph of all terminal nodes
-  res.l <- list()
-  nodes <- subset(graph, layer == last_layer)$node.pos
+  # expand arguments of the parents of all terminal nodes (subgraph)
+  expanded_args.l <- list()
+  nodes <- subset(graph, layer == terminal_layer)$node.pos
   for(i in seq_along(nodes)){
-    res.l[[i]] <- expand_subgraph(dgraph, graph, node.pos = nodes[i])
+    expanded_args.l[[i]] <- do.call(expand.grid,
+                                    get_args_subgraph(dgraph, graph, node.pos = nodes[i]))
   }
-  res <- do.call(rbind, res.l)
-  return(res.l)
+  res <- dplyr::bind_rows(expanded_args.l)
+  return(res)
 }
 
 

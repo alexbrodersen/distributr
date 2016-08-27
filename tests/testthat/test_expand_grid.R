@@ -1,7 +1,18 @@
-x1 <- list(data.frame(a=1:5, b=1:5), data.frame(a=1:5, b=1:5))
-x <- expand_grid(x1, d=1:3, f=c(TRUE, FALSE))
+context("expand_grid_dgraph")
 
+ff <- function(a, b){a + b}
+gg <- function(x, arg1){x^2}
+hh <- function(x, arg2){-x}
 
-x <- expand.grid(a=1:2, b=2, KEEP.OUT.ATTRS=FALSE)
-y <- as.data.frame(expand_grid(a=1:2, b=2))
-expect_equal(x, y)
+o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
+  layer(node(hh, arg2=1), node(gg, arg1=1)) %>%
+  dcontrol() %>% reps(5)
+
+param.grid <- expand_grid_dgraph(o)
+
+ans <- dplyr::bind_rows(list(expand.grid(a=1:3, b=1:3, arg2=1),
+               expand.grid(a=1:3, b=1:3, arg1=1),
+               expand.grid(a=4:5, b=4:5, arg2=1),
+               expand.grid(a=4:5, b=4:5, arg1=1)))
+
+expect_equal(param.grid, ans)
