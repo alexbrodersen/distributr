@@ -38,21 +38,26 @@ grid_apply <- function(.f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T, .para
   return(res.l)
 }
 
+#' Tidy output from grid_apply or collect.dgraph
+#'
 #' @export
-tidy.gresults <- function(res.l){
-  value <- as.data.frame(do.call(rbind, res.l))
+#' @param x list of results from grid_apply or collect.dgraph
+#' @param param.grid expanded grid of arguments
+#' @param .reps number of reps
+tidy.gresults <- function(x, param.grid, .reps){
+  value <- as.data.frame(do.call(rbind, x))
 
-  rep.grid <- res.l$grid[rep(1:nrow(param.grid),each=.reps), , drop=F]
+  rep.grid <- x$grid[rep(1:nrow(param.grid),each=.reps), , drop=F]
   rep.grid$rep  <- rep(1:.reps, times=nrow(param.grid))
 
-  rows.flag <- any(!sapply(sapply(res.l, nrow),is.null))
+  rows.flag <- any(!sapply(sapply(x, nrow),is.null))
   gridl <- list()
   key2l <- list()
 
-  for(i in 1:length(res.l)){
+  for(i in 1:length(x)){
     # Add a second key if a data frame is returned
     if(rows.flag){
-      reprow <- as.data.frame(res.l[[i]])
+      reprow <- as.data.frame(x[[i]])
       key2l[[i]] <- rownames(reprow)
       nm <- nrow(reprow)
       gridl[[i]] <- rep.grid[rep(i, nm), ]

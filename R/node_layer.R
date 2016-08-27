@@ -139,11 +139,11 @@ get_node <- function(dgraph, id){
 
 #' Return the parameter graph implied by the dgraph grid
 #' @export
-expand_grid_dgraph <- function(dgraph, layer=NULL){
+expand_grid_dgraph <- function(dgraph, layer.id=NULL){
   # get the arguments from terminal node
   graph <- attr(dgraph, ".graph")
 
-  terminal_layer <- ifelse(is.null(layer), max(graph$layer), layer)
+  terminal_layer <- ifelse(is.null(layer.id), max(graph$layer), layer.id)
 
   get_args_subgraph <- function(dgraph, graph, node.pos){
     sub_graph <- graph[node.pos, ]

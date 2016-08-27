@@ -95,7 +95,7 @@ load_results <- function(regex, dir=getwd()){
 
 #' @export
 #' @importFrom gtools mixedsort
-collect.dgraph <- function(layer=NULL, node=NULL, task=NULL, dir = getwd()){
+collect.dgraph <- function(dir = getwd(), layer=NULL, node=NULL, task=NULL){
   # Load a particular layer, node or task
   if(any(!is.null(layer) | !is.null(node) | !is.null(task))){
     if(!is.null(task)) {
@@ -116,16 +116,18 @@ collect.dgraph <- function(layer=NULL, node=NULL, task=NULL, dir = getwd()){
   return(res)
 }
 
+#' Tidying dgraph results
+#'
 #' @param x list of results
 #' @param dir directory
 #' @param layer layer if not last
 #' @export
-tidy.dgraph <- function(x, dir=getwd(), layer = NULL){
+tidy.dgraph <- function(x, dir=getwd(), layer.id = NULL){
   # Collect available results
   res <- collect.dgraph(dir)
 
   load(paste0(dir, "/dgraph.Rdata"))
-  param.grid <- expand_grid_dgraph(dgraph, layer = layer)
+  param.grid <- expand_grid_dgraph(dgraph, layer = layer.id)
 
 }
 
