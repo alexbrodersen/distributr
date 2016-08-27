@@ -16,3 +16,9 @@ ans <- dplyr::bind_rows(list(expand.grid(a=1:3, b=1:3, arg2=1),
                expand.grid(a=4:5, b=4:5, arg1=1)))
 
 expect_equal(param.grid, ans)
+
+context("tidy")
+
+# todo:
+# - test tidying from non-last layer
+
