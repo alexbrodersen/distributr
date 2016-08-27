@@ -1,5 +1,7 @@
 context("sge dgraph")
-fdir <- "tests/testthat/tests/tmp_nl"
+# if interactive: setwd("tests/testthat/")
+fdir <- "tmp_nl"
+
 
 system(paste0("rm -rf ", fdir))
 
@@ -11,17 +13,23 @@ o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
   layer(node(hh, arg2=1), node(gg, arg1=1)) %>%
   dcontrol() %>% reps(5)
 
+context("setup.dgraph")
 setup.dgraph(o, dir=fdir)
 
 setwd(fdir)
+
+context("doone.R")
 
 for(i in 1:39) {
   cmd <- paste0("Rscript doone.R ", i)
   system(cmd)
 }
-setwd("../../../../")
+setwd("../")
 
+context("load_results")
 expect_equal(unlist(load_results("t1.Rdata", fdir)), rep(2, 5))
+
+context("collect.dgraph")
 expect_equal(collect.dgraph(task = 1, dir = fdir), load_results("t1.Rdata", fdir))
 
 res1 <- unlist(collect.dgraph(node = 1, dir=fdir))

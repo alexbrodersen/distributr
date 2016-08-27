@@ -2,7 +2,7 @@
   if(a==1) stop("asdf")
   a
 }
-  library(distributr)
+  suppressMessages(library(distributr))
   args <- as.numeric(commandArgs(trailingOnly=TRUE))
   cond <- args[1]
   reps <- 2 # this is reps per chunk

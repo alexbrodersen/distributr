@@ -91,7 +91,7 @@ write.submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1, queue=
 write.do.one <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doone.R"){
   fstr <- paste0(".f <- ", paste0(deparse(eval(.f), control="all"),collapse="\n"))
   temp <- paste0(fstr,"
-  library(distributr)
+  suppressMessages(library(distributr))
   args <- as.numeric(commandArgs(trailingOnly=TRUE))
   cond <- args[1]
   reps <- ", reps," # this is reps per chunk

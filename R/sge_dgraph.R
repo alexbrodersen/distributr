@@ -38,7 +38,7 @@ setup.dgraph <- function(dgraph, dir=getwd(), .mc.cores=1, .verbose=1,
 
 write.do.one.dgraph <- function(dgraph, dir, script.name="doone.R"){
   doone <- paste0("
-  library(distributr)
+  suppressMessages(library(distributr))
   args <- as.numeric(commandArgs(trailingOnly=TRUE))
   t <- args[1]
   load(\"dgraph.Rdata\")
@@ -63,14 +63,14 @@ write.do.one.dgraph <- function(dgraph, dir, script.name="doone.R"){
     param.id <- which(sub_graph$tlow:sub_graph$tup == t)
 
     # which task to load
-    prev_t = dep_graph$tlow:dep_graph$tup
+    prev_t <- dep_graph$tlow:dep_graph$tup
     all <- append(list(t = prev_t), node$.args) %>% expand.grid
     args <- all[param.id, ]
 
     prev_res <- paste0(\"t\", args$t, \".Rdata\") %>%
       load_results(.)
 
-    res.l <- grid_apply(.f = node$.f, append(x=prev_res, args[-1]),
+    res.l <- grid_apply(.f = node$.f, x = purrr::flatten(list(x = prev_res, args[-1])),
                .reps = 1, .mc.cores = control$mc.cores, .verbose = control$verbose)
   }
   fn <- paste0(\"results/layer\", sub_graph$layer, \"/node_pos\", sub_graph$node.pos, \"_t\", t, \".Rdata\")
