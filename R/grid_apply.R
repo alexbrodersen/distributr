@@ -1,8 +1,7 @@
 ## Applies f to argument node locally
 #' @export
 grid_apply <- function(.f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T, .paramid=NULL){
-  dots <- as.pairlist(...)
-  arg.grid <- expand_grid(dots)
+  arg.grid <- expand.grid(...)
   arg.ls <- purrr::transpose(arg.grid)
 
   if(!is.null(.paramid)) arg.ls <- arg.ls[.paramid]
@@ -30,7 +29,7 @@ grid_apply <- function(.f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T, .para
   class(res.l) <- c("gresults", class(res.l))
   attr(res.l, "time") <- end-start
   attr(res.l, "arg.names") <- names(arg.grid)
-  attr(res.l, "f") <- .f
+  attr(res.l, ".f") <- .f
   attr(res.l, "arg.grid") <- arg.grid
   attr(res.l, "err") <- err.list
   attr(res.l, "warn") <- warn.list
@@ -44,10 +43,12 @@ grid_apply <- function(.f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T, .para
 #' @param x list of results from grid_apply or collect.dgraph
 #' @param param.grid expanded grid of arguments
 #' @param .reps number of reps
-tidy.gresults <- function(x, param.grid, .reps){
+tidy.gresults <- function(x, param.grid=NULL, .reps=NULL){
   value <- as.data.frame(do.call(rbind, x))
+  if(is.null(param.grid)){ param.grid <- attr(x, "arg.grid")}
+  if(is.null(.reps)){ .reps = attr(x, ".reps")}
 
-  rep.grid <- x$grid[rep(1:nrow(param.grid),each=.reps), , drop=F]
+  rep.grid <- param.grid[rep(1:nrow(param.grid),each=.reps), , drop=F]
   rep.grid$rep  <- rep(1:.reps, times=nrow(param.grid))
 
   rows.flag <- any(!sapply(sapply(x, nrow),is.null))
@@ -71,11 +72,13 @@ tidy.gresults <- function(x, param.grid, .reps){
 
   wide <- cbind(grid, value)
   long <- tidyr::gather(wide,key,value,-(1:(ncol(wide)-ncol(value))))
+  new.attr.names <- setdiff(names(attributes(x)), names(attributes(long)))
+  attributes(long)[new.attr.names] <- attributes(x)[new.attr.names]
+  attr(long, "class") <- c("gapply", class(long))
   return(long)
 }
 
 #' @importFrom magrittr %>%
-#' @export
 magrittr::`%>%`
 
 

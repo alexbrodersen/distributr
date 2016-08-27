@@ -3,7 +3,6 @@
 S3method(plot,gapply)
 S3method(print,gresults)
 S3method(summary,gapply)
-export("%>%")
 export(clean)
 export(collect)
 export(collect.dgraph)

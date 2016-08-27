@@ -7,33 +7,33 @@ setup.dgraph <- function(dgraph, dir=getwd(), .mc.cores=1, .verbose=1,
                          .email.options="a",
                          .email.addr="patr1ckm.crc.nd.edu",
                          .shell="bash"){
-  dir <- paste0(dir, "/")
+  fdir <- paste0(dir, "/")
   cmd <- paste0("mkdir -p ",  fdir)
   mysys(cmd)
   # write the graph to a file
-  save(dgraph, file = paste0(dir, "dgraph.Rdata"))
+  save(dgraph, file = paste0(fdir, "dgraph.Rdata"))
   graph <- attr(dgraph, ".graph")
 
   # mkdir(s) for caching results
-  cmd <- paste0("mkdir -p ", dir, "results")
+  cmd <- paste0("mkdir -p ", fdir, "results")
   mysys(cmd)
-  cmd <- paste0("mkdir -p ", dir, "results/layer", unique(graph$layer))
+  cmd <- paste0("mkdir -p ", fdir, "results/layer", unique(graph$layer))
   for(i in 1:length(cmd)){ mysys(cmd[i])}
 
   # mkdir for SGE output
-  cmd <- paste0("mkdir -p ", dir, "SGE_Output")
+  cmd <- paste0("mkdir -p ", fdir, "SGE_Output")
   mysys(cmd)
 
   # write the submit script
 
-  write.submit(dir, script.name=.script.name, mc.cores=.mc.cores, tasks=max(graph$tup),
+  write.submit(fdir, script.name=.script.name, mc.cores=.mc.cores, tasks=max(graph$tup),
                job.name=.job.name,
                out.dir = .out.dir,
                email = .email.options,
                email.addr = .email.addr,
                shell = .shell)
 
-  write.do.one.dgraph(dgraph, dir=dir, script.name = .script.name)
+  write.do.one.dgraph(dgraph, dir=fdir, script.name = .script.name)
 }
 
 write.do.one.dgraph <- function(dgraph, dir, script.name="doone.R"){
@@ -64,8 +64,8 @@ write.do.one.dgraph <- function(dgraph, dir, script.name="doone.R"){
 
     # which task to load
     prev_t = dep_graph$tlow:dep_graph$tup
-    all <- append(list(t = prev_t), node$.args) %>% expand_grid %>% purrr::transpose(.)
-    args <- all[[param.id]]
+    all <- append(list(t = prev_t), node$.args) %>% expand.grid
+    args <- all[param.id, ]
 
     prev_res <- paste0(\"t\", args$t, \".Rdata\") %>%
       load_results(.)
