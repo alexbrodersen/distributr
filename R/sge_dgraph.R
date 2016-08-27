@@ -105,8 +105,14 @@ collect.dgraph <- function(layer=NULL, node=NULL, task=NULL, dir = getwd()){
       reg <- paste0("layer", layer)
     }
     res <- load_results(reg, dir=dir)
-    return(res)
+
+  } else {
+    # all are NULL, default to loading last layer
+    layers <- list.files(paste0(dir, "/results"))
+    last.layer <- tail(gtools::mixedsort(layers), n=1)
+    res <- load_results(last.layer, dir = dir)
   }
+  return(res)
 }
 
 
