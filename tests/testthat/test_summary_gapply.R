@@ -7,7 +7,7 @@ x <- capture.output(o <- summary(out))
 expect_output(summary(out), "Source:")
 expect_output(summary(out), "Estimated time")
 expect_output(summary(out), "Number of conditions: ")
-x <- capture.output(summary(out))
+x <- summary(out)
 expect_is(x,"tbl")
 expect_equal(dim(x), c(2,4))
 

@@ -56,7 +56,12 @@ res <- unlist(collect.dgraph(layer = 2, dir = fdir))
 
 ans1 <-  rep(c(outer(1:3, 1:3, "+")), each = 5)
 ans2 <-  rep(c(outer(4:5, 4:5, "+")), each = 5)
-expect_equal(res, c(hh(ans1, 1), hh(ans2, 1), gg(ans1, 1), gg(ans2, 1)))
+fin.ans <- c(hh(ans1, 1), hh(ans2, 1), gg(ans1, 1), gg(ans2, 1))
+expect_equal(res, fin.ans)
 
 res2 <- unlist(collect.dgraph(dir = fdir))
 expect_equal(res, res2)
+
+context("tidy.dgraph")
+res.tidy <- collect.dgraph(dir = fdir) %>% tidy.dgraph(dir = fdir)
+expect_equal(res.tidy$value, fin.ans)

@@ -124,11 +124,12 @@ collect.dgraph <- function(dir = getwd(), layer=NULL, node=NULL, task=NULL){
 #' @export
 tidy.dgraph <- function(x, dir=getwd(), layer.id = NULL){
   # Collect available results
-  res <- collect.dgraph(dir)
+  res <- collect.dgraph(dir = dir)
+  res <- purrr::flatten(res)
 
   load(paste0(dir, "/dgraph.Rdata"))
   param.grid <- expand_grid_dgraph(dgraph, layer = layer.id)
-
+  tidy.gresults(res, param.grid = param.grid, .reps = attr(dgraph, ".dcontrol")$reps)
 }
 
 
