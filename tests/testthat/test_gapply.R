@@ -62,6 +62,12 @@ out <- gapply(do.one, a=c(2,1), b=2, .reps=2, .verbose=0)
 out1 <- grid_apply(do.one, a=c(2,1), b=2, .reps=2, .verbose=0) %>% tidy.gresults()
 expect_equivalent(out, out1)
 
+# Different numbers of rows
+do.one <- function(a){
+  return(rep(a, a))
+}
+out <- gapply(do.one, a=1:5)
+
 
 ## Single named return value
 do.one <- function(a=1,b=2){c(a+b)}

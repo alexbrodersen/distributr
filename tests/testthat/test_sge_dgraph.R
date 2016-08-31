@@ -65,3 +65,5 @@ expect_equal(res, res2)
 context("tidy.dgraph")
 res.tidy <- collect.dgraph(dir = fdir) %>% tidy.dgraph(dir = fdir)
 expect_equal(res.tidy$value, fin.ans)
+
+
