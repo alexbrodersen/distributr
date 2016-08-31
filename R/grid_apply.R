@@ -151,6 +151,4 @@ stackx <- function(x){
   }
 }
 
-#' @importFrom magrittr %>%
-magrittr::`%>%`
 
