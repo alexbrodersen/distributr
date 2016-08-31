@@ -43,15 +43,15 @@ grid_apply <- function(.f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T, .para
 #'
 #' @export
 #' @param x list of results from grid_apply or collect.dgraph
-#' @param param.grid expanded grid of arguments
+#' @param arg.grid expanded grid of arguments
 #' @param .reps number of reps
-tidy.gresults <- function(x, param.grid=NULL, .reps=NULL){
+tidy.gresults <- function(x, arg.grid=NULL, .reps=NULL){
 
-  if(is.null(param.grid)){ param.grid <- attr(x, "arg.grid")}
+  if(is.null(arg.grid)){ arg.grid <- attr(x, "arg.grid")}
   if(is.null(.reps)){ .reps = attr(x, ".reps")}
 
-  rep.grid <- param.grid[rep(1:nrow(param.grid),each=.reps), , drop=F]
-  rep.grid$rep  <- rep(1:.reps, times=nrow(param.grid))
+  rep.grid <- arg.grid[rep(1:nrow(arg.grid),each=.reps), , drop=F]
+  rep.grid$rep  <- rep(1:.reps, times=nrow(arg.grid))
 
   # Stack values by key
   val <- lapply(x, stackx)
@@ -131,15 +131,12 @@ warn <- function(object){
 is.error <- function(x){!is.null(attr(x, "err"))}
 is.warn <- function(x){!is.null(attr(x, "warn"))}
 
-#' @importFrom magrittr %>%
-magrittr::`%>%`
-
-# takes a variety of inputs, and stacks into a consistent format (for me?)
-#  x is vector                    : key with auto-names
-#  x is vetor with named keys     : key with given names
-#  x is matrix                    : key with auto-names for a given number of rows
-#  x is df with nrow = 1          : key with colnames
-#  x is df with nrow > 1          : key with colnames, key2 with rownames
+#' takes a variety of inputs, and stacks into a consistent format (for me?)
+#'  x is vector                    : key with auto-names
+#'  x is vetor with named keys     : key with given names
+#'  x is matrix                    : key with auto-names for a given number of rows
+#'  x is df with nrow = 1          : key with colnames
+#'  x is df with nrow > 1          : key with colnames, key2 with rownames
 stackx <- function(x){
   if(is.data.frame(x)){
     if(nrow(x) > 1){
@@ -147,10 +144,13 @@ stackx <- function(x){
                                 key = as.character(ind),
                                 value = values)
     } else {
-      x %>% stack %>% dplyr::transmute(key = as.character(ind), value = value)
+      x %>% stack %>% dplyr::transmute(key = as.character(ind), value = values)
     }
   } else {
     t(x) %>% as.data.frame %>% stack %>% transmute(key = as.character(ind), value = values)
   }
 }
+
+#' @importFrom magrittr %>%
+magrittr::`%>%`
 

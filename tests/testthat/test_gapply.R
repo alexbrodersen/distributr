@@ -67,6 +67,7 @@ do.one <- function(a){
   return(rep(a, a))
 }
 out <- gapply(do.one, a=1:5)
+expect_true(all(out$value == rep(1:5, 1:5)))
 
 
 ## Single named return value
@@ -95,7 +96,7 @@ expect_equivalent(out, out1)
 do.one <- function(a=1,b=2){data.frame(sum=a+b,sub=a-b)}
 out <- gapply(do.one,.reps=2, a=1:2,b=2,.verbose=0)
 out1 <- grid_apply(do.one,.reps=2, a=1:2,b=2,.verbose=0) %>% tidy.gresults()
-expect_equal(colnames(out),c("a","b","rep","key2", "key","value"))
+expect_equal(colnames(out),c("a","b","rep", "key","value"))
 # Test that key is a factor, and has the correct levels
 expect_equal(unique(out$key),c("sum","sub"))
 expect_equivalent(out, out1)
@@ -105,7 +106,7 @@ do.one <- function(a=1,b=2){data.frame(sum=a+b,sub=a-b)}
 out <- gapply(do.one,.reps=3, a=1,b=2,.verbose=0)
 out1 <- grid_apply(do.one,.reps=3, a=1,b=2,.verbose=0) %>% tidy.gresults()
 expect_equal(unique(out$rep),1:3)
-expect_equal(out$value,c(3,3,3,-1,-1,-1))
+expect_equal(out$value,c(3,-1, 3, -1, 3, -1))
 expect_equivalent(out, out1)
 
 ## Data frame returns
@@ -120,6 +121,7 @@ expect_is(out[[1]], "data.frame")
 out <- gapply(do.one,.reps=3, a=1,b=2,.verbose=0, .eval=T)
 out1 <- grid_apply(do.one,.reps=3, a=1,b=2,.verbose=0, .eval=T) %>% tidy.gresults()
 expect_true(all(unique(out$key) == c("plus", "minus")))
+expect_true(all(unique(out$key2) == 1:3))
 a = 1
 b = 2
 ref1 = c(a+b, a+2*b, a+3*b)
