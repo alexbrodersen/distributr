@@ -153,49 +153,9 @@ collect <- function(dir=getwd()){
   warn.list <- warn[warn.id]
   names(warn.list) <- warn.id
 
-  value <- as.data.frame(do.call(rbind, cond.l))
-
-  rep.grid <- arg.grid[rep(1:nrow(arg.grid),each=reps), , drop=F]
-  rep.grid$rep  <- rep(1:reps, times=nrow(arg.grid))
-  rep.grid$chunk <- NULL
-
-  rows.flag <- any(!sapply(sapply(cond.l, nrow),is.null))
-  gridl <- list()
-  key2l <- list()
-
-  for(i in 1:length(cond.l)){
-    # Add a second key if a data frame is returned
-    if(rows.flag){
-      reprow <- as.data.frame(cond.l[[i]])
-      key2l[[i]] <- rownames(reprow)
-      nm <- nrow(reprow)
-      gridl[[i]] <- rep.grid[rep(i, nm), ]
-    } else {
-      gridl[[i]] <- rep.grid[i, ]
-    }
-  }
-  grid <- do.call(rbind, gridl)
-  key2 <- unlist(key2l)
-  grid$key2 <- key2
-
-  wide <- cbind(grid, value)
-  long <- tidyr::gather(wide,key,value,-(1:(ncol(wide)-ncol(value))))
-
-  perc.complete <- nrow(cond.grid)/nrow(arg.grid) # percent conditions complete
-  perc.err <- ifelse(length(err.id) > 0, length(err.id)/nrow(arg.grid), 0) # percent condition err
-
-  class(long) <- c("gapply", class(long))
-  attr(long, "time") <- NULL
-  attr(long, "arg.names") <- colnames(arg.grid)[-ncol(arg.grid)]
-  #attr(long, "f") <- f
-  attr(long, "arg.grid") <- arg.grid
-  attr(long, "err") <- err.list
-  attr(long, "warn") <- warn.list
-  attr(long, ".reps") <- reps
-  attr(long, "perc.complete") <- perc.complete
-  attr(long, "perc.err") <- perc.err
-
-  return(long)
+  res <- tidy.gresults(cond.l, arg.grid = cond.grid, .reps = reps)
+  res$chunk <- NULL
+  return(res)
 }
 
 

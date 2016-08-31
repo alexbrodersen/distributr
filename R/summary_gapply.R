@@ -1,5 +1,5 @@
 #' \code{summary} method for class \code{"gapply"}
-#' @param object gapply result object
+#' @param object gresults object
 #' @param .reps number of reps to scale to
 #' @param .fun function to aggregate over replications
 #' @param .key A string of the character vector to filter on
@@ -7,14 +7,14 @@
 #' @importFrom dplyr group_by_ summarize
 #' @importFrom tidyr %>%
 #' @export
-summary.gapply <- function(object, .reps=NULL, .fun=mean, .key=NULL){
+summary.gresults <- function(object, .reps=NULL, .fun=mean, .key=NULL){
   ns <- c(attr(object, 'arg.names'),"key")
   if(is.null(.key)){
     .key <- as.character(unique(object$key))
   }
-  
-  res <- object %>% 
-    dplyr::group_by_(.dots=ns) %>% 
+
+  res <- object %>%
+    dplyr::group_by_(.dots=ns) %>%
     dplyr::filter(key %in% .key) %>%
     dplyr::summarize(.fun(value)) # I don't like it, but it will work for now
 
@@ -34,7 +34,7 @@ summary.gapply <- function(object, .reps=NULL, .fun=mean, .key=NULL){
 }
 
 #' Plot simulation object
-#' 
+#'
 #' Automatic plotting method for aggregating over replications
 #' @export
 plot.gapply <- function(object, .fun=mean, .key=NULL){
@@ -46,8 +46,8 @@ plot.gapply <- function(object, .fun=mean, .key=NULL){
   map.args <- arg.names[order(num.levels,decreasing=T)] # arg with the most levels is first
   n.args <- length(map.args)
   key.levels <- length(unique(sum$key))
-  
-  
+
+
   if(key.levels > 1){
     if(n.args == 1){
       ## Simple box plot of all the reps
@@ -104,7 +104,7 @@ estimate.time <- function(object, nreps=NULL){
   time.per.rep <- attr(object,"time")[3]/max.reps
   times <- lapply(time.per.rep*nreps,FUN=nicetime)
   o <- cbind(reps=nreps,times=times)
-  return(o)  
+  return(o)
 }
 
 ## From package astro
