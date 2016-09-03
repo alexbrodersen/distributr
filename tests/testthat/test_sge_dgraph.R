@@ -67,3 +67,12 @@ res.tidy <- collect.dgraph(dir = fdir) %>% tidy.dgraph(dir = fdir)
 expect_equal(res.tidy$value, fin.ans)
 
 
+context("timing")
+#library(microbenchmark)
+#times  = microbenchmark::microbenchmark(res.tidy <- collect.dgraph(dir = fdir) %>% tidy.dgraph(dir = fdir))
+
+#library(profvis)
+#profvis(
+#  res.tidy <- collect.dgraph(dir = fdir) %>% tidy.dgraph(dir = fdir)
+#)
+
