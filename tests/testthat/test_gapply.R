@@ -138,6 +138,16 @@ out1 <- grid_apply(do.one, .reps = 1, a=1:5, .verbose=0, .eval=T) %>% tidy.gresu
 expect_true(all(out$value == rep(1:5, 1:5)))
 expect_equivalent(out, out1)
 
+# output returns named and un-unamed elements
+do.one <- function (a = 1, b = 2) {
+  if (a == 1)
+    stop("asdf")
+  a
+}
+out <- gapply(do.one, a=1:5)
+out1 <- grid_apply(do.one, .reps = 1, a=1:5, .verbose=0, .eval=T) %>% tidy.gresults()
+expect_equal(out$key, c("err", rep("V1", 4)))
+expect_equal(out$value, c(NA, 2:5))
 
 ## .verbose
 do.one <- function(a=1,b=2){
