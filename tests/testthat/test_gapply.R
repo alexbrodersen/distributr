@@ -115,17 +115,18 @@ out <- do.rep(do.one,list(a=1,b=2), .reps=3, .verbose=0, .eval=T)
 expect_true(length(out) == 3)
 expect_is(out[[1]], "data.frame")
 
-out <- gapply(do.one,.reps=3, a=1:2,b=2,.verbose=0, .eval=T)
-out1 <- grid_apply(do.one,.reps=3, a=1,b=2,.verbose=0, .eval=T) %>% tidy.gresults()
+out <- gapply(do.one, .reps=3, a=1:2, b=2, .verbose=0, .eval=T)
+out1 <- grid_apply(do.one, .reps=3, a=1:2, b=2, .verbose=0, .eval=T) %>% tidy.gresults()
 expect_true(all(unique(out$key) == c("plus", "minus")))
 expect_true(all(unique(out$key2) == 1:3))
 
+ans = c(rep(c(1 + 2, 1 + 2*2, 1 + 3*2, 1 - 2, 1 - 2*2, 1 - 3*2), times = 3),
+        rep(c(2 + 2, 2 + 2*2, 2 + 3*2, 2 - 2, 2 - 2*2, 2 - 3*2), times = 3))
 
-ans = rep(c(1 + 2, 1 + 2*2, 1 + 2*3, 1 - 2, 1 - 2*b, 1 - 3*b), times = 3)
 expect_equal(out$value, ans)
 nm = 3 # number of key2s (a+b etc)
 np = 2 # number of performance (minus, plus)
-expect_true(nrow(out) == 3*nm*np)
+expect_true(nrow(out) == 3*nm*np*2)
 expect_equivalent(out, out1)
 
 # Different numbers of rows

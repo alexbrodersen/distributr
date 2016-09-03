@@ -128,8 +128,8 @@ tidy.dgraph <- function(x, dir=getwd(), layer.id = NULL){
   res <- purrr::flatten(res)
 
   load(paste0(dir, "/dgraph.Rdata"))
-  arg.grid <- expand_grid_dgraph(dgraph, layer = layer.id)
-  tidy.gresults(res, arg.grid = arg.grid, .reps = attr(dgraph, ".dcontrol")$reps)
+  arg_grid <- expand_grid_dgraph(dgraph, layer = layer.id)
+  tidy.gresults(res, arg_grid = arg_grid, .reps = attr(dgraph, ".dcontrol")$reps)
 }
 
 
