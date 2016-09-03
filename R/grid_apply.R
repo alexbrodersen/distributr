@@ -38,35 +38,6 @@ grid_apply <- function(.f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T, .para
   return(res.l)
 }
 
-#' Tidy output from grid_apply or collect.dgraph
-#'
-#' @export
-#' @param x list of results from grid_apply or collect.dgraph
-#' @param arg.grid expanded grid of arguments
-#' @param .reps number of reps
-tidy.gresults <- function(x, arg.grid=NULL, .reps=NULL){
-
-  if(is.null(arg.grid)){ arg.grid <- attr(x, "arg.grid")}
-  if(is.null(.reps)){ .reps = attr(x, ".reps")}
-
-  rep.grid <- arg.grid[rep(1:nrow(arg.grid),each=.reps), , drop=F]
-  rep.grid$rep  <- rep(1:.reps, times=nrow(arg.grid))
-
-  # Stack values by key
-  val <- lapply(x, stackx)
-  nkeys <- sapply(val, nrow)
-
-  # Expand rows by number of keys
-  val.grid <- rep.grid[rep(1:nrow(rep.grid), nkeys), ]
-  rownames(val.grid) <- NULL
-  res <- dplyr::as_data_frame(val.grid) %>% dplyr::bind_cols(., dplyr::bind_rows(val))
-
-  new.attr.names <- setdiff(names(attributes(x)), names(attributes(res)))
-  attributes(res)[new.attr.names] <- attributes(x)[new.attr.names]
-  attr(res, "class") <- c("gresults", class(res))
-  return(res)
-}
-
 #' Evaluate a function repeatedly over arbitrary arguments
 #'
 #' This idiom is really useful to carry out simulations, which are essentially
