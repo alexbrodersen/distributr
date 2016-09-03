@@ -107,7 +107,7 @@ wrapWE <- function(fun){
     res <- withCallingHandlers(
       tryCatch(fun(...), error=function(e) {
         err <<- conditionMessage(e)
-        c(err = NA)
+        c(NA)
       }), warning=function(w) {
         warn <<- append(warn, conditionMessage(w))
         invokeRestart("muffleWarning")

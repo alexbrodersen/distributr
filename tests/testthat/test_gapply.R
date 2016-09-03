@@ -146,7 +146,7 @@ do.one <- function (a = 1, b = 2) {
 }
 out <- gapply(do.one, a=1:5)
 out1 <- grid_apply(do.one, .reps = 1, a=1:5, .verbose=0, .eval=T) %>% tidy.gresults()
-expect_equal(out$key, c("err", rep("V1", 4)))
+expect_equal(out$key, c(rep("V1", 5)))
 expect_equal(out$value, c(NA, 2:5))
 
 ## .verbose
