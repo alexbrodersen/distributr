@@ -153,7 +153,7 @@ collect <- function(dir=getwd()){
   warn.list <- warn[warn.id]
   names(warn.list) <- warn.id
 
-  res <- tidy.gresults(cond.l, arg.grid = cond.grid, .reps = reps)
+  res <- tidy.gresults(cond.l, arg_grid = cond.grid, .reps = reps)
   res$chunk <- NULL
   return(res)
 }
