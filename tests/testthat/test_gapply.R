@@ -62,12 +62,6 @@ out <- gapply(do.one, a=c(2,1), b=2, .reps=2, .verbose=0)
 out1 <- grid_apply(do.one, a=c(2,1), b=2, .reps=2, .verbose=0) %>% tidy.gresults()
 expect_equivalent(out, out1)
 
-# Different numbers of rows
-do.one <- function(a){
-  return(rep(a, a))
-}
-out <- gapply(do.one, a=1:5)
-expect_true(all(out$value == rep(1:5, 1:5)))
 
 
 ## Single named return value
@@ -84,13 +78,14 @@ expect_equivalent(out, out1)
 
 ## Multiple unnamed return values
 ## Names should be assigned by as.data.frame rules (V1, V2)
-do.one <- function(a=1,b=2){c(a+b,a-b)}
+do.one <- function(a=1,b=2){c(a+b, a - b)}
 out <- gapply(do.one,.reps=2, a=1:2,b=2,.verbose=0)
 out1 <- grid_apply(do.one,.reps=2, a=1:2,b=2,.verbose=0) %>% tidy.gresults()
 expect_equal(colnames(out),c("a","b","rep", "key", "value"))
 expect_equivalent(unique(out[,c("a","b")]), grid)
 expect_equal(unique(out$key),c("V1","V2"))
 expect_equivalent(out, out1)
+expect_equal(out$value, )
 
 ## Multiple named return values
 do.one <- function(a=1,b=2){data.frame(sum=a+b,sub=a-b)}
@@ -131,6 +126,14 @@ nm = 3 # number of key2s (a+b etc)
 np = 2 # number of performance (minus, plus)
 expect_true(nrow(out) == 3*nm*np)
 expect_equivalent(out, out1)
+
+# Different numbers of rows
+do.one <- function(a){
+  return(rep(a, a))
+}
+out <- gapply(do.one, a=1:5)
+expect_true(all(out$value == rep(1:5, 1:5)))
+
 
 
 ## .verbose

@@ -16,7 +16,6 @@ grid_apply <- function(.f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T, .para
 
   end <- proc.time()
   res.l <- unlist(res.l, recursive=FALSE)
-  cat("", fill=T)
 
   err <- lapply(res.l, function(r){attr(r, "err")})
   err.id <-  which(unlist(lapply(err, function(x){!is.null(x)})))
@@ -130,25 +129,5 @@ warn <- function(object){
 
 is.error <- function(x){!is.null(attr(x, "err"))}
 is.warn <- function(x){!is.null(attr(x, "warn"))}
-
-#' takes a variety of inputs, and stacks into a consistent format (for me?)
-#'  x is vector                    : key with auto-names
-#'  x is vetor with named keys     : key with given names
-#'  x is matrix                    : key with auto-names for a given number of rows
-#'  x is df with nrow = 1          : key with colnames
-#'  x is df with nrow > 1          : key with colnames, key2 with rownames
-stackx <- function(x){
-  if(is.data.frame(x)){
-    if(nrow(x) > 1){
-      x %>% stack %>% dplyr::transmute(key2 = rep(rownames(x), times = ncol(x)),
-                                key = as.character(ind),
-                                value = values)
-    } else {
-      x %>% stack %>% dplyr::transmute(key = as.character(ind), value = values)
-    }
-  } else {
-    t(x) %>% as.data.frame %>% stack %>% transmute(key = as.character(ind), value = values)
-  }
-}
 
 
