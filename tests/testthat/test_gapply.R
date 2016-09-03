@@ -85,16 +85,18 @@ expect_equal(colnames(out),c("a","b","rep", "key", "value"))
 expect_equivalent(unique(out[,c("a","b")]), grid)
 expect_equal(unique(out$key),c("V1","V2"))
 expect_equivalent(out, out1)
-expect_equal(out$value, )
+ans <- c(1+2, 1-2, 1+2, 1-2, 2 + 2, 2 - 2, 2 + 2, 2 - 2)
+expect_equal(out$value, ans)
 
 ## Multiple named return values
 do.one <- function(a=1,b=2){data.frame(sum=a+b,sub=a-b)}
 out <- gapply(do.one,.reps=2, a=1:2,b=2,.verbose=0)
 out1 <- grid_apply(do.one,.reps=2, a=1:2,b=2,.verbose=0) %>% tidy.gresults()
-expect_equal(colnames(out),c("a","b","rep", "key","value"))
+expect_equal(colnames(out),c("a","b","rep", "key", "key2", "value"))
 # Test that key is a factor, and has the correct levels
 expect_equal(unique(out$key),c("sum","sub"))
 expect_equivalent(out, out1)
+expect_equal(out$value, ans)
 
 ## One row in param.grid with multiple reps
 do.one <- function(a=1,b=2){data.frame(sum=a+b,sub=a-b)}
@@ -113,15 +115,14 @@ out <- do.rep(do.one,list(a=1,b=2), .reps=3, .verbose=0, .eval=T)
 expect_true(length(out) == 3)
 expect_is(out[[1]], "data.frame")
 
-out <- gapply(do.one,.reps=3, a=1,b=2,.verbose=0, .eval=T)
+out <- gapply(do.one,.reps=3, a=1:2,b=2,.verbose=0, .eval=T)
 out1 <- grid_apply(do.one,.reps=3, a=1,b=2,.verbose=0, .eval=T) %>% tidy.gresults()
 expect_true(all(unique(out$key) == c("plus", "minus")))
 expect_true(all(unique(out$key2) == 1:3))
-a = 1
-b = 2
-ref1 = c(a+b, a+2*b, a+3*b)
-ref2 = c(a-b, a-2*b, a-3*b)
-expect_true(all(unique(out$value) == c(ref1, ref2)))
+
+
+ans = rep(c(1 + 2, 1 + 2*2, 1 + 2*3, 1 - 2, 1 - 2*b, 1 - 3*b), times = 3)
+expect_equal(out$value, ans)
 nm = 3 # number of key2s (a+b etc)
 np = 2 # number of performance (minus, plus)
 expect_true(nrow(out) == 3*nm*np)
@@ -132,11 +133,15 @@ do.one <- function(a){
   return(rep(a, a))
 }
 out <- gapply(do.one, a=1:5)
+out1 <- grid_apply(do.one, .reps = 1, a=1:5, .verbose=0, .eval=T) %>% tidy.gresults()
 expect_true(all(out$value == rep(1:5, 1:5)))
-
+expect_equivalent(out, out1)
 
 
 ## .verbose
+do.one <- function(a=1,b=2){
+  return(data.frame(plus=c(a+b, a+2*b, a+3*b), minus=c(a-b, a-2*b, a-3*b)))
+}
 expect_output(out <- gapply(do.one,.reps=2, a=1:3,b=2:5,.verbose=1), ".")
 expect_output(out <- gapply(do.one,.reps=2, a=1:3,b=2:5,.verbose=2), "a = ")
 expect_output(out <- gapply(do.one,.reps=2, a=1:3,b=2:5,.verbose=3), "plus minus")
