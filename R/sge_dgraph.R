@@ -70,8 +70,13 @@ write.do.one.dgraph <- function(dgraph, dir, script.name="doone.R"){
     prev_res <- paste0(\"t\", args$t, \".Rdata\") %>%
       load_results(.)
 
-    res.l <- grid_apply(.f = node$.f, x = purrr::flatten(list(x = prev_res, args[-1])),
-               .reps = 1, .mc.cores = control$mc.cores, .verbose = control$verbose)
+    # assumes that the results are passed as the first argument to the function.
+    args <- purrr::flatten(list(prev_res, args[-1]))
+    names(args)[1] <- names(formals(node$.f))[1]
+
+    res.l <- grid_apply(.f = node$.f, args,
+      .reps = 1, .mc.cores = control$mc.cores, .verbose = control$verbose)
+
   }
   fn <- paste0(\"results/layer\", sub_graph$layer, \"/node_pos\", sub_graph$node.pos, \"_t\", t, \".Rdata\")
   save(res.l, file=fn)
