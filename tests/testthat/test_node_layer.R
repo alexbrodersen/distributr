@@ -26,7 +26,7 @@ context("layer %>%")
 
 o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
   layer(node(hh, arg2=1), node(gg, arg1=1))
-expect_true(!is.null(attr(o, ".dcontrol")))
+expect_true(!is.null(attr(o, ".control")))
 
 ## Test classes
 expect_equal(sapply(o, class), c("layer", "layer"))
@@ -41,16 +41,16 @@ expect_equal(sapply(o, function(l){attr(l, ".id")}), c(1, 2))
 context("get_node")
 for(i in 1:4) expect_true(get_node(o, i)$.id == i)
 
-context("dctonrol")
-o <- dcontrol(o)
-expect_true(!is.null(attr(o, ".dcontrol")))
+context("control")
+o <- control(o)
+expect_true(!is.null(attr(o, ".control")))
 o <- reps(o, 500)
-expect_equal(attr(o, ".dcontrol")$reps, 500)
+expect_equal(attr(o, ".control")$.reps, 500)
 
 o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
   layer(node(hh, arg2=1), node(gg, arg1=1)) %>%
-  dcontrol() %>% reps(5)
-expect_equal(attr(o, ".dcontrol")$reps, 5)
+  control() %>% reps(5)
+expect_equal(attr(o, ".control")$.reps, 5)
 
 
 context("expand_grid_dgraph")

@@ -47,17 +47,17 @@ write.do.one.dgraph <- function(dgraph, dir, script.name="doone.R"){
   if(sub_graph$dep == sub_graph$node.id){
     # load nothing
     node <- get_node(dgraph, sub_graph$node.id)
-    control <- attr(dgraph, \".dcontrol\")
+    control <- attr(dgraph, \".control\")
     param.id <- which(sub_graph$tlow:sub_graph$tup == t)
     res.l <- grid_apply(.f = node$.f, node$.args, .paramid = param.id,
-                        .reps = control$reps, .mc.cores = control$mc.cores,
-                        .verbose = control$verbose)
+                        .reps = control$.reps, .mc.cores = control$.mc.cores,
+                        .verbose = control$.verbose)
 
   } else {
     # load previous results
     dep_graph <- graph[graph$node.id == sub_graph$dep, ]
     node <- get_node(dgraph, sub_graph$node.id)
-    control <- attr(dgraph, \".dcontrol\")
+    control <- attr(dgraph, \".control\")
 
     # which row of parameters to run within node
     param.id <- which(sub_graph$tlow:sub_graph$tup == t)
@@ -75,7 +75,7 @@ write.do.one.dgraph <- function(dgraph, dir, script.name="doone.R"){
     names(args)[1] <- names(formals(node$.f))[1]
 
     res.l <- grid_apply(.f = node$.f, args,
-      .reps = 1, .mc.cores = control$mc.cores, .verbose = control$verbose)
+      .reps = 1, .mc.cores = control$.mc.cores, .verbose = control$.verbose)
 
   }
   fn <- paste0(\"results/layer\", sub_graph$layer, \"/node_pos\", sub_graph$node.pos, \"_t\", t, \".Rdata\")
@@ -134,7 +134,7 @@ tidy.dgraph <- function(x, dir=getwd(), layer.id = NULL){
 
   load(paste0(dir, "/dgraph.Rdata"))
   arg_grid <- expand_grid_dgraph(dgraph, layer = layer.id)
-  tidy.gresults(res, arg_grid = arg_grid, .reps = attr(dgraph, ".dcontrol")$reps)
+  tidy.gresults(res, arg_grid = arg_grid, .reps = attr(dgraph, ".control")$.reps)
 }
 
 

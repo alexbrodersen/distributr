@@ -14,7 +14,7 @@ hh <- function(x, arg2){-z}
 
 o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
   layer(node(hh, arg2=1), node(gg, arg1=1)) %>%
-  dcontrol() %>% reps(5)
+  control() %>% reps(5)
 
 #setup.dgraph(o, dir = "nl_test", .mc.cores = 2)
 
@@ -24,7 +24,7 @@ hh <- function(x, arg2){-z}
 
 o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
   layer(node(hh, arg2=1), node(gg, arg1=1)) %>%
-  dcontrol() %>% reps(30)
+  control() %>% reps(30)
 
 #setup.dgraph(o, dir = "nl2_test", .mc.cores = 2,)
 

@@ -2,7 +2,7 @@
 # layer data: .node
 # node data: .f, .args, .id, .fname
 
-# dgraph attributes: .dcontrol, .graph
+# dgraph attributes: .control, .graph
 # layer attributes: .id
 # node attributes: names
 
@@ -22,7 +22,7 @@ layer <- function(...){
     .id = max(sapply(.dgraph, function(l){attr(l, ".id")})) + 1
     .dgraph  <- add_layer(layer, .dgraph = .dgraph, .id= .id)
   } else {
-    .dgraph <- layer_to_dgraph(layer) %>% dcontrol()
+    .dgraph <- layer_to_dgraph(layer) %>% control()
   }
   return(.dgraph)
 }
@@ -39,10 +39,10 @@ node <- function(.f, ..., .dep=NULL, .id=NULL){
 }
 
 #' @export
-dcontrol <- function(.dgraph, reps=1, mc.cores = 1, tidy=NULL,
-                     backend="sge", cache="all", verbose=1){
-  .dcontrol <- list(mc.cores = mc.cores, tidy=tidy, backend=backend, cache=cache, verbose=verbose)
-  attr(.dgraph, ".dcontrol")[names(.dcontrol)] <- .dcontrol
+control <- function(.dgraph, .reps=1, .mc.cores = 1, .tidy=NULL,
+                     .backend="sge", .cache="all", .verbose=1){
+  .control <- list(.mc.cores = .mc.cores, .tidy=.tidy, .backend=.backend, .cache=.cache, .verbose=.verbose)
+  attr(.dgraph, ".control")[names(.control)] <- .control
   return(.dgraph)
 }
 
@@ -68,12 +68,12 @@ layer_to_dgraph <- function(.layer){
 add_layer <- function(.layer, .dgraph, .id){
   attr(.layer, ".id") <- .id
   g <- attr(.dgraph, ".graph")
-  control <- attr(.dgraph, ".dcontrol")
+  control <- attr(.dgraph, ".control")
   .layer <- assign_node_ids(.layer, start = max(g$node.id))
   .dgraph <- c(.dgraph, list(.layer)) # loses attributes??
   graph <- layer_to_graph(.layer, graph = g)
   attr(.dgraph, ".graph") <- graph
-  attr(.dgraph, ".dcontrol") <- control
+  attr(.dgraph, ".control") <- control
   return(.dgraph)
 }
 
@@ -123,8 +123,8 @@ assign_node_ids <- function(e, start=0){
 }
 
 #' @export
-reps <- function(.dgraph, reps){
-  attr(.dgraph, ".dcontrol")["reps"] <- reps
+reps <- function(.dgraph, .reps){
+  attr(.dgraph, ".control")[".reps"] <- .reps
   return(.dgraph)
 }
 

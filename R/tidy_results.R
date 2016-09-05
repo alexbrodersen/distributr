@@ -1,3 +1,4 @@
+
 # Tidys results
 tidy.gresults <- function(x, arg_grid=NULL, .reps=NULL){
   if(is.null(arg_grid)){ arg_grid <- attr(x, "arg.grid")}
