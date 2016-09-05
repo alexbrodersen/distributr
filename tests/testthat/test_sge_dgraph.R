@@ -5,7 +5,7 @@ fdir <- "tmp_nl"
 
 system(paste0("rm -rf ", fdir))
 
-ff <- function(a, b){a + b}
+ff <- function(a, b){c(a + b, a - b)}
 gg <- function(y, arg1){y^2}
 hh <- function(z, arg2){-z}
 
@@ -27,17 +27,17 @@ for(i in 1:39) {
 setwd("../")
 
 context("load_results")
-expect_equal(unlist(load_results("t1.Rdata", fdir)), rep(2, 5))
+expect_equal(unlist(load_results("t1.Rdata", fdir)), rep(c(2, 0), 5))
 
 context("collect.dgraph")
 expect_equal(collect.dgraph(task = 1, dir = fdir), load_results("t1.Rdata", fdir))
 
 res1 <- unlist(collect.dgraph(node = 1, dir=fdir))
-ans1 <-  rep(c(outer(1:3, 1:3, "+")), each = 5)
+ans1 <- unlist(grid_apply(ff, a = 1:3, b = 1:3, .reps = 5))
 expect_equal(res1, ans1)
 
 res2 <- unlist(collect.dgraph(node = 2, dir = fdir))
-ans2 <- rep(c(outer(4:5, 4:5, "+")), each = 5)
+ans2 <- unlist(grid_apply(ff, a = 4:5, b = 4:5, .reps = 5))
 expect_equal(res2, ans2)
 
 res3 <- unlist(collect.dgraph(node = 3, dir = fdir))
@@ -54,8 +54,6 @@ expect_equal(res6, gg(ans2))
 
 res <- unlist(collect.dgraph(layer = 2, dir = fdir))
 
-ans1 <-  rep(c(outer(1:3, 1:3, "+")), each = 5)
-ans2 <-  rep(c(outer(4:5, 4:5, "+")), each = 5)
 fin.ans <- c(hh(ans1, 1), hh(ans2, 1), gg(ans1, 1), gg(ans2, 1))
 expect_equal(res, fin.ans)
 
