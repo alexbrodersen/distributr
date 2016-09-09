@@ -3,8 +3,8 @@
 #' @importFrom purrr transpose
 #' @importFrom parallel mclapply
 grid_apply <- function(.f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T, .paramid=NULL){
-  arg.grid <- expand.grid(...)
-  arg.ls <- purrr::transpose(arg.grid)
+  arg_grid <- expand.grid(...)
+  arg.ls <- purrr::transpose(arg_grid)
 
   if(!is.null(.paramid)) arg.ls <- arg.ls[.paramid]
   names(arg.ls) <- NULL
@@ -29,9 +29,9 @@ grid_apply <- function(.f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T, .para
 
   class(res.l) <- c("gresults", class(res.l))
   attr(res.l, "time") <- end-start
-  attr(res.l, "arg.names") <- names(arg.grid)
+  attr(res.l, "arg_names") <- names(arg_grid)
   attr(res.l, ".f") <- .f
-  attr(res.l, "arg.grid") <- arg.grid
+  attr(res.l, "arg_grid") <- arg_grid
   attr(res.l, "err") <- err.list
   attr(res.l, "warn") <- warn.list
   attr(res.l, ".reps") <- .reps

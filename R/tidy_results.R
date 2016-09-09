@@ -8,7 +8,7 @@ tidy <- function(x, ...){
 #' Tidy an object from grid_apply
 #' @export
 tidy.gresults <- function(x, arg_grid=NULL, .reps=NULL){
-  if(is.null(arg_grid)){ arg_grid <- attr(x, "arg.grid")}
+  if(is.null(arg_grid)){ arg_grid <- attr(x, "arg_grid")}
   if(is.null(.reps)){ .reps = attr(x, ".reps")}
 
   rep_grid <- arg_grid[rep(1:nrow(arg_grid),each=.reps), , drop=F]

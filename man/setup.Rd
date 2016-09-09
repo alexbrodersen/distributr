@@ -4,10 +4,7 @@
 \alias{setup}
 \title{setup sge simulation}
 \usage{
-setup(object, dir = getwd(), .reps = 1, .chunks = 1, .mc.cores = 1,
-  .verbose = 1, .queue = "long", .script.name = "doone.R",
-  .job.name = "patr1ckm", .out.dir = "SGE_Output", .email.options = "a",
-  .email.addr = "patr1ckm.crc.nd.edu", .shell = "bash")
+setup(x, ...)
 }
 \arguments{
 \item{object}{gapply object}
@@ -22,9 +19,9 @@ setup(object, dir = getwd(), .reps = 1, .chunks = 1, .mc.cores = 1,
 
 \item{.verbose}{verbose level}
 
-\item{.queue}{name of queue}
-
 \item{.script.name}{name of script}
+
+\item{.queue}{name of queue}
 
 \item{.job.name}{name of job}
 

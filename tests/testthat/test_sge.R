@@ -38,9 +38,9 @@ setwd("../")
 
 context("test_collect_sge")
 
-outc <- collect("tmp")
+outc <- collect(out, dir = "tmp") %>% tidy
 out <- gapply(do.one,a=1:2,b=2, .reps=5, .verbose=0, .eval = T)
-expect_equivalent(outc, out)
+expect_equivalent(select(outc, -chunk), out)
 
 # if interactive: setwd("../../")
 

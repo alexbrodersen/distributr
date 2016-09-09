@@ -26,17 +26,17 @@ setup.dgraph <- function(dgraph, dir=getwd(), .mc.cores=1, .verbose=1,
 
   # write the submit script
 
-  write.submit(fdir, script.name=.script.name, mc.cores=.mc.cores, tasks=max(graph$tup),
+  write_submit(fdir, script.name=.script.name, mc.cores=.mc.cores, tasks=max(graph$tup),
                job.name=.job.name,
                out.dir = .out.dir,
                email = .email.options,
                email.addr = .email.addr,
                shell = .shell)
 
-  write.do.one.dgraph(dgraph, dir=fdir, script.name = .script.name)
+  write_doone_dgraph(dgraph, dir=fdir, script.name = .script.name)
 }
 
-write.do.one.dgraph <- function(dgraph, dir, script.name="doone.R"){
+write_doone_dgraph <- function(dgraph, dir, script.name="doone.R"){
   doone <- paste0("
   suppressMessages(library(distributr))
   args <- as.numeric(commandArgs(trailingOnly=TRUE))
@@ -100,7 +100,7 @@ load_results <- function(regex, dir=getwd()){
 
 #' @export
 #' @importFrom gtools mixedsort
-collect.dgraph <- function(dir = getwd(), layer=NULL, node=NULL, task=NULL){
+collect.dgraph <- function(x, dir = getwd(), layer=NULL, node=NULL, task=NULL){
   # Load a particular layer, node or task
   if(any(!is.null(layer) | !is.null(node) | !is.null(task))){
     if(!is.null(task)) {
@@ -118,6 +118,7 @@ collect.dgraph <- function(dir = getwd(), layer=NULL, node=NULL, task=NULL){
     last.layer <- tail(gtools::mixedsort(layers), n=1)
     res <- load_results(last.layer, dir = dir)
   }
+  class(res) <- c(class(res), "dgraph")
   return(res)
 }
 
@@ -129,7 +130,7 @@ collect.dgraph <- function(dir = getwd(), layer=NULL, node=NULL, task=NULL){
 #' @export
 tidy.dgraph <- function(x, dir=getwd(), layer.id = NULL){
   # Collect available results
-  res <- collect.dgraph(dir = dir)
+  res <- collect.dgraph(x, dir = dir)
   res <- purrr::flatten(res)
 
   load(paste0(dir, "/dgraph.Rdata"))
