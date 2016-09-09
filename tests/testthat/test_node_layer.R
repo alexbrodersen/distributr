@@ -13,7 +13,7 @@ expect_true(is.node(n1))
 context("layer")
 
 l1 <- layer(.dgraph=NULL, node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5), .id=1)
-is.dgraph(l1)
+expect_true(is.dgraph(l1))
 
 l1 <- distributr:::assign_node_ids(l1, start = 0)
 
@@ -27,6 +27,7 @@ context("layer %>%")
 o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
   layer(node(hh, arg2=1), node(gg, arg1=1))
 expect_true(!is.null(attr(o, ".control")))
+expect_true(is.dgraph(o))
 
 ## Test classes
 expect_equal(sapply(o, class), c("layer", "layer"))
@@ -51,6 +52,7 @@ o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
   layer(node(hh, arg2=1), node(gg, arg1=1)) %>%
   control() %>% reps(5)
 expect_equal(attr(o, ".control")$.reps, 5)
+expect_true(is.dgraph(o))
 
 
 context("expand_grid_dgraph")

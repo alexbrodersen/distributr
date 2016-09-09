@@ -15,7 +15,7 @@ o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
   control() %>% reps(.reps)
 
 context("setup.dgraph")
-setup.dgraph(o, dir=fdir)
+setup(o, dir=fdir)
 
 setwd(fdir)
 

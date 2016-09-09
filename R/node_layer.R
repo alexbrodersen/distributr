@@ -24,6 +24,7 @@ layer <- function(...){
   } else {
     .dgraph <- layer_to_dgraph(layer) %>% control()
   }
+  class(.dgraph) <- c(class(.dgraph), "dgraph")
   return(.dgraph)
 }
 
@@ -51,7 +52,7 @@ is.layer <- function(x){ (class(x) == "layer") && (length(class(x)) == 1)}
 #' @export
 is.node <- function(x){ "node" %in% class(x)}
 #' @export
-is.dgraph <- function(x){ class(x) == "dgraph"}
+is.dgraph <- function(x){ "dgraph" %in% class(x)}
 
 # lifts the first layer to dgraph
 layer_to_dgraph <- function(.layer){
