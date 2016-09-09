@@ -8,7 +8,7 @@
 #' @importFrom tidyr %>%
 #' @export
 summary.gresults <- function(object, .reps=NULL, .fun=mean, .key=NULL){
-  ns <- c(attr(object, 'arg.names'),"key")
+  ns <- c(attr(object, 'arg_names'),"key")
   if(is.null(.key)){
     .key <- as.character(unique(object$key))
   }
@@ -20,14 +20,14 @@ summary.gresults <- function(object, .reps=NULL, .fun=mean, .key=NULL){
 
   print(res)
   cat("",fill=T)
-  grid <- attr(object, "param.grid")
+  grid <- attr(object, "arg_grid")
   cat("Number of conditions: ", nrow(grid), fill=T)
   print(head(grid))
   cat("",fill=T)
   if(!is.null(attr(object,"time"))){
     cat("Estimated time for x reps:", fill=T)
     cat("Reps \t Time", fill=T)
-    o <- estimate.time(object, nreps=.reps)
+    o <- estimate_time(object, nreps=.reps)
     for(i in 1:nrow(o)){ cat(paste0(o[i,],"\t"),fill=T)}
   }
   invisible(res)
@@ -98,7 +98,7 @@ plot.gapply <- function(object, .fun=mean, .key=NULL){
 #' @param object gapply object
 #' @param nreps number of reps to scale to
 #' @export
-estimate.time <- function(object, nreps=NULL){
+estimate_time <- function(object, nreps=NULL){
   if(is.null(nreps)){ nreps <- c(50,100,500,1000,5000,10000)}
   max.reps <- max(object$rep)
   time.per.rep <- attr(object,"time")[3]/max.reps

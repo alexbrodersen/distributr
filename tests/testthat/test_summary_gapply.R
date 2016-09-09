@@ -3,10 +3,9 @@ context("test_summary_gapply")
 
 do.one <- function(a=1,b=2){data.frame(sum=a+b,sub=a-b)}
 out <- gapply(do.one,.reps=3, a=1,b=2,.verbose=0)
-x <- capture.output(o <- summary(out))
-expect_output(summary(out), "Source:")
+
 expect_output(summary(out), "Estimated time")
-expect_output(summary(out), "Number of conditions: ")
+expect_output(summary(out), "Number of conditions:  1")
 x <- summary(out)
 expect_is(x,"tbl")
 expect_equal(dim(x), c(2,4))
