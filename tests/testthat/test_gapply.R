@@ -59,7 +59,7 @@ expect_true(all(is.na(out[out$a==1,"value"])))  # all errors return NA
 expect_true(all(out[out$a==2,"value"] == c(4,0,4,0))) # warnings still return values
 
 out <- gapply(do.one, a=c(2,1), b=2, .reps=2, .verbose=0)
-out1 <- grid_apply(do.one, a=c(2,1), b=2, .reps=2, .verbose=0) %>% tidy.gresults()
+out1 <- grid_apply(do.one, a=c(2,1), b=2, .reps=2, .verbose=0) %>% tidy
 expect_equivalent(out, out1)
 
 
@@ -67,7 +67,7 @@ expect_equivalent(out, out1)
 ## Single named return value
 do.one <- function(a=1,b=2){c(a+b)}
 out <- gapply(do.one, a=1:2, b=2, .reps=2, .verbose=0)
-out1 <- grid_apply(do.one, a=1:2, b=2, .reps=2, .verbose=0) %>% tidy.gresults()
+out1 <- grid_apply(do.one, a=1:2, b=2, .reps=2, .verbose=0) %>% tidy
 
 grid <- expand.grid(a=1:2,b=2)
 expect_equal(colnames(out), c("a", "b", "rep", "key","value"))
@@ -80,7 +80,7 @@ expect_equivalent(out, out1)
 ## Names should be assigned by as.data.frame rules (V1, V2)
 do.one <- function(a=1,b=2){c(a+b, a - b)}
 out <- gapply(do.one,.reps=2, a=1:2,b=2,.verbose=0)
-out1 <- grid_apply(do.one,.reps=2, a=1:2,b=2,.verbose=0) %>% tidy.gresults()
+out1 <- grid_apply(do.one,.reps=2, a=1:2,b=2,.verbose=0) %>% tidy
 expect_equal(colnames(out),c("a","b","rep", "key", "value"))
 expect_equivalent(unique(out[,c("a","b")]), grid)
 expect_equal(unique(out$key),c("V1","V2"))
@@ -91,7 +91,7 @@ expect_equal(out$value, ans)
 ## Multiple named return values
 do.one <- function(a=1,b=2){data.frame(sum=a+b,sub=a-b)}
 out <- gapply(do.one,.reps=2, a=1:2,b=2,.verbose=0)
-out1 <- grid_apply(do.one,.reps=2, a=1:2,b=2,.verbose=0) %>% tidy.gresults()
+out1 <- grid_apply(do.one,.reps=2, a=1:2,b=2,.verbose=0) %>% tidy
 expect_equal(colnames(out),c("a","b","rep", "key", "key2", "value"))
 # Test that key is a factor, and has the correct levels
 expect_equal(unique(out$key),c("sum","sub"))
@@ -101,7 +101,7 @@ expect_equal(out$value, ans)
 ## One row in param.grid with multiple reps
 do.one <- function(a=1,b=2){data.frame(sum=a+b,sub=a-b)}
 out <- gapply(do.one,.reps=3, a=1,b=2,.verbose=0)
-out1 <- grid_apply(do.one,.reps=3, a=1,b=2,.verbose=0) %>% tidy.gresults()
+out1 <- grid_apply(do.one,.reps=3, a=1,b=2,.verbose=0) %>% tidy
 expect_equal(unique(out$rep),1:3)
 expect_equal(out$value,c(3,-1, 3, -1, 3, -1))
 expect_equivalent(out, out1)
@@ -116,7 +116,7 @@ expect_true(length(out) == 3)
 expect_is(out[[1]], "data.frame")
 
 out <- gapply(do.one, .reps=3, a=1:2, b=2, .verbose=0, .eval=T)
-out1 <- grid_apply(do.one, .reps=3, a=1:2, b=2, .verbose=0, .eval=T) %>% tidy.gresults()
+out1 <- grid_apply(do.one, .reps=3, a=1:2, b=2, .verbose=0, .eval=T) %>% tidy
 expect_true(all(unique(out$key) == c("plus", "minus")))
 expect_true(all(unique(out$key2) == 1:3))
 
@@ -134,20 +134,55 @@ do.one <- function(a){
   return(rep(a, a))
 }
 out <- gapply(do.one, a=1:5)
-out1 <- grid_apply(do.one, .reps = 1, a=1:5, .verbose=0, .eval=T) %>% tidy.gresults()
+out1 <- grid_apply(do.one, .reps = 1, a=1:5, .verbose=0, .eval=T) %>% tidy
 expect_true(all(out$value == rep(1:5, 1:5)))
 expect_equivalent(out, out1)
 
 # output returns named and un-unamed elements
-do.one <- function (a = 1, b = 2) {
+do.one <- function(a = 1, b = 2) {
   if (a == 1)
     stop("asdf")
   a
 }
 out <- gapply(do.one, a=1:5)
-out1 <- grid_apply(do.one, .reps = 1, a=1:5, .verbose=0, .eval=T) %>% tidy.gresults()
+out1 <- grid_apply(do.one, .reps = 1, a=1:5, .verbose=0, .eval=T) %>% tidy
 expect_equal(out$key, c(rep("V1", 5)))
 expect_equal(out$value, c(NA, 2:5))
+
+# list
+do.one <- function(a=1, b=2){
+  return(list(x=a + b, y=a - b))
+}
+out <- gapply(do.one, a=1:2, b=1:2, .reps = 1)
+out1 <- grid_apply(do.one, a=1:2, b=1:2, .reps = 1) %>% tidy
+expect_equal(out$key, rep(c("x", "y"), times = 4))
+expect_equal(out$value, c(2, 0, 3, 1, 3, -1, 4, 0))
+
+
+# list of vectors
+do.one <- function(a=1, b=2){
+  return(list(x=c(a, a), y=c(b, b)))
+}
+out <- gapply(do.one, a=1:2, b=1:2, .reps = 1)
+out1 <- grid_apply(do.one, a=1:2, b=1:2, .reps = 1) %>% tidy
+expect_equal(out$key, rep(c("x", "x", "y", "y"), times = 4))
+expect_equal(out$key2, rep(c("1", "2"), times = 4*2))
+expect_equal(out$value, c(1, 1, 1, 1,
+                          2, 2, 1, 1,
+                          1, 1, 2, 2,
+                          2, 2, 2, 2))
+expect_equivalent(out, out1)
+
+# list of vectors of unequal length
+do.one <- function(a=1, b=2){
+  return(list(x=c(a, a), y=c(b, b, b)))
+}
+out <- gapply(do.one, a=1:2, b=1:2, .reps = 1)
+expect_equal(out$key, rep(c("x1", "x2", "y1", "y2", "y3"), times = 4))
+expect_equal(out$value, c(1, 1, 1, 1, 1,
+                          2, 2, 1, 1, 1,
+                          1, 1, 2, 2, 2,
+                          2, 2, 2, 2, 2))
 
 ## .verbose
 do.one <- function(a=1,b=2){
@@ -176,7 +211,7 @@ expect_equal(unlist(out), rep(NA,3))
 out <- gapply(do.one,.reps=3, a=1,b=2,.verbose=0, .eval=F)
 expect_equal(unlist(out$value), rep(NA,3))
 
-out <- grid_apply(do.one,.reps=3, a=1,b=2,.verbose=0, .eval=F) %>% tidy.gresults()
+out <- grid_apply(do.one,.reps=3, a=1,b=2,.verbose=0, .eval=F) %>% tidy
 expect_equal(unlist(out$value), rep(NA,3))
 
 

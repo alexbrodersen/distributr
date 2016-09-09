@@ -64,7 +64,7 @@ do.rep <- function(.f, ..., .reps, .verbose=1,.rep.cores=1, .eval=T, .args=NULL)
     nothing <- function(...){c(NA)}
     res.l <- lapply(1:.reps, function(r, ...) do.call(nothing, ...), ...)
   }
-  #res <- as.data.frame(do.call(rbind, res.l))
+  #res <- as.data.frame(do.call(rbind, res.l)); don't be tempted to do this!
   if(.verbose==1 & .eval){cat(".")}
   if(.verbose == 3 & .eval) { print(head(res.l))}
   if(.verbose > 1 & .eval) { cat("", fill=T) }
