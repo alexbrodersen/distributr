@@ -8,8 +8,9 @@
 
 #' Add layer to dgraph
 #' @param ... nodes, separated by commas
+#' @param .reduce if TRUE, the results of previous layers are expanded by nodes, otherwise reduced
 #' @export
-layer <- function(...){
+layer <- function(..., .reduce = FALSE){
   # the .dgraph will be listed first in all but the first one
   dots <- list(...)
   layer <- dots[sapply(dots, is.node)]
@@ -20,13 +21,19 @@ layer <- function(...){
   if(is.dgraph(dots[[1]])){
     .dgraph <- dots[[1]]
     .id = max(sapply(.dgraph, function(l){attr(l, ".id")})) + 1
-    .dgraph  <- add_layer(layer, .dgraph = .dgraph, .id= .id)
+    .dgraph  <- add_layer(layer, .dgraph = .dgraph, .id= .id, .reduce = .reduce)
   } else {
     .dgraph <- layer_to_dgraph(layer) %>% control()
   }
   class(.dgraph) <- c(class(.dgraph), "dgraph")
   return(.dgraph)
 }
+
+#' @export
+grid_map <- layer
+
+#' @export
+grid_reduce <- layer(..., .reduce = TRUE)
 
 # takes a function f, and lifts it so that it can be applied to a node of the given parameters
 # but delay evaluation
@@ -54,7 +61,7 @@ is.node <- function(x){ "node" %in% class(x)}
 #' @export
 is.dgraph <- function(x){ "dgraph" %in% class(x)}
 
-# lifts the first layer to dgraph
+# lifts the first layer to dgraph (cannot reduce)
 layer_to_dgraph <- function(.layer){
   .layer <- assign_node_ids(.layer, start = 0)
   attr(.layer, ".id") <- 1
@@ -66,20 +73,21 @@ layer_to_dgraph <- function(.layer){
 }
 
 # adds a layer to a dgraph
-add_layer <- function(.layer, .dgraph, .id){
+add_layer <- function(.layer, .dgraph, .id, .reduce){
   attr(.layer, ".id") <- .id
   g <- attr(.dgraph, ".graph")
   control <- attr(.dgraph, ".control")
   .layer <- assign_node_ids(.layer, start = max(g$node.id))
   .dgraph <- c(.dgraph, list(.layer)) # loses attributes??
-  graph <- layer_to_graph(.layer, graph = g)
+  graph <- layer_to_graph(.layer, graph = g, .reduce = .reduce)
   attr(.dgraph, ".graph") <- graph
   attr(.dgraph, ".control") <- control
   return(.dgraph)
 }
 
+
 # Add layer to task graph, and update task graph if already exists
-layer_to_graph <- function(l, graph = NULL){
+layer_to_graph <- function(l, graph = NULL, .reduce){
   node.ids <- layer_apply(l, select=".id")
   lid <- attr(l, ".id")
   n.nodes <- length(l)
@@ -99,9 +107,14 @@ layer_to_graph <- function(l, graph = NULL){
     sub_graph <- subset(graph, layer == lid - 1)
     start <- max(sub_graph[, "tup"])
     dep <- sub_graph$node.pos
+    pos.start <- max(sub_graph$node.pos) + 1
+
+    # basically, don't grid over all dependencies, just choose the last one.
+    if(.reduce) dep <- max(dep)
+
     # create a row for each dependency
     dep.rows <- expand.grid(layer = lid, dep=dep, node.id=node.ids)
-    pos.start <- max(sub_graph$node.pos) + 1
+
     dep.rows$node.pos <- pos.start : (pos.start + nrow(dep.rows) - 1)
     dep.rows$ntasks <- rep(ntasks, each = length(dep)) *
       rep(sub_graph$ntasks, times = n.nodes)
