@@ -25,14 +25,11 @@ setup.dgraph <- function(dgraph, dir=getwd(), .mc.cores=1, .verbose=1,
   cmd <- paste0("mkdir -p ", fdir, "SGE_Output")
   mysys(cmd)
 
-  # write the submit script
+  # write the submission scripts
 
-  write_submit(fdir, script.name=.script.name, mc.cores=.mc.cores, tasks=max(graph$tup),
-               job.name=.job.name,
-               out.dir = .out.dir,
-               email = .email.options,
-               email.addr = .email.addr,
-               shell = .shell)
+  write_submit_dgraph(fdir, dgraph, script.name=.script.name, mc.cores=.mc.cores,
+               job.name=.job.name, out.dir = .out.dir, email = .email.options,
+               email.addr = .email.addr, shell = .shell)
 
   write_doone_dgraph(dgraph, dir=fdir, script.name = .script.name)
 }
@@ -46,6 +43,7 @@ write_submit_dgraph <- function(dir, dgraph, script.name="doone.R", mc.cores=1, 
   submit_all_fn <- paste0(dir, "submit.sh")
   mysys(paste0("mkdir -p ", submit_dir))
   mysys(paste0("touch ", submit_all_fn))
+  cat(paste0("#!/bin/", shell), file=submit_all_fn, fill=T)
 
   for(i in 1:nrow(graph)){
     ### Create a submission script for each node
@@ -63,7 +61,7 @@ write_submit_dgraph <- function(dir, dgraph, script.name="doone.R", mc.cores=1, 
       "#$ -t ", node$tlow, ":", node$tup, "\n",
       "#$ -o ", out.dir, " \n\n",
       "Rscript ", script.name, " $SGE_TASK_ID")
-    cat(submit_node, file=paste0(submit_dir, submit_name))
+    cat(submit_node, file=paste0(submit_dir, "/", submit_name))
 
     ### Update submit.sh which executes all scripts
 
@@ -75,7 +73,8 @@ write_submit_dgraph <- function(dir, dgraph, script.name="doone.R", mc.cores=1, 
     qsub_cmd <- paste("qsub", hold, submit_name)
     cat(qsub_cmd, file = submit_all_fn, append = T, fill = T)
   }
-  mysys("chmod +x ", submit_all_fn)
+  # Make executable
+  mysys(paste0("chmod +x ", submit_all_fn))
 }
 
 write_doone_dgraph <- function(dgraph, dir, script.name="doone.R"){
