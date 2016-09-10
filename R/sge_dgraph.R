@@ -7,6 +7,7 @@ setup.dgraph <- function(dgraph, dir=getwd(), .mc.cores=1, .verbose=1,
                          .email.options="a",
                          .email.addr="patr1ckm.crc.nd.edu",
                          .shell="bash"){
+  # check whether has '/' on the end?
   fdir <- paste0(dir, "/")
   cmd <- paste0("mkdir -p ",  fdir)
   mysys(cmd)
@@ -34,6 +35,47 @@ setup.dgraph <- function(dgraph, dir=getwd(), .mc.cores=1, .verbose=1,
                shell = .shell)
 
   write_doone_dgraph(dgraph, dir=fdir, script.name = .script.name)
+}
+
+write_submit_dgraph <- function(dir, dgraph, script.name="doone.R", mc.cores=1, queue="long",
+                         job.name="patr1ckm", out.dir="SGE_Output", email="a",
+                         email.addr="patr1ckm.crc.nd.edu", shell="bash"){
+
+  graph <- attr(dgraph, ".graph")
+  submit_dir <- paste0(dir, "submit")
+  submit_all_fn <- paste0(dir, "submit.sh")
+  mysys(paste0("mkdir -p ", submit_dir))
+  mysys(paste0("touch ", submit_all_fn))
+
+  for(i in 1:nrow(graph)){
+    ### Create a submission script for each node
+    node <- graph[i, ]
+    job_name <- paste0("node_", i)
+    submit_name <- paste0("submit_node_", i)
+
+    submit_node <- paste0(
+      "#!/bin/", shell, " \n",
+      "#$ -M ", email.addr, "\n",
+      "#$ -m ", email, "\n",
+      "#$ -pe smp ",mc.cores,"\n",
+      "#$ -q ", queue, "\n",
+      "#$ -N ", job_name, "\n",
+      "#$ -t ", node$tlow, ":", node$tup, "\n",
+      "#$ -o ", out.dir, " \n\n",
+      "Rscript ", script.name, " $SGE_TASK_ID")
+    cat(submit_node, file=paste0(submit_dir, submit_name))
+
+    ### Update submit.sh which executes all scripts
+
+    # Hold for dependencies, otherwise don't
+    hold <- NULL
+    if(node$dep != node$node.id){
+      hold <- paste0("-hold-jid node_", node$dep)
+    }
+    qsub_cmd <- paste("qsub", hold, submit_name)
+    cat(qsub_cmd, file = submit_all_fn, append = T, fill = T)
+  }
+  mysys("chmod +x ", submit_all_fn)
 }
 
 write_doone_dgraph <- function(dgraph, dir, script.name="doone.R"){

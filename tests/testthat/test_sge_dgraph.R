@@ -14,12 +14,12 @@ o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
   layer(node(hh, arg2=1), node(gg, arg1=1)) %>%
   control() %>% reps(.reps)
 
-context("setup.dgraph")
+context("sge_dgraph_setup")
 setup(o, dir=fdir)
 
 setwd(fdir)
 
-context("doone.R")
+context("sge_dgraph_doone")
 
 for(i in 1:39) {
   cmd <- paste0("Rscript doone.R ", i)
@@ -27,10 +27,10 @@ for(i in 1:39) {
 }
 setwd("../")
 
-context("load_results")
+context("sge_dgraph_load_results")
 expect_equal(unlist(load_results("t1.Rdata", fdir)), rep(c(2, 0), .reps))
 
-context("collect.dgraph")
+context("sge_dgraph_collect")
 expect_equivalent(collect(o, task = 1, dir = fdir), load_results("t1.Rdata", fdir))
 
 res1 <- unlist(collect(o, node = 1, dir=fdir))
@@ -61,10 +61,24 @@ expect_equal(res, fin.ans)
 res2 <- unlist(collect(o, dir = fdir))
 expect_equal(res, res2)
 
-context("tidy.dgraph")
+
+context("sge_dgraph_tidy")
 res.tidy <- collect(o, dir = fdir) %>% tidy(., dir = fdir)
 expect_equal(res.tidy$value, fin.ans)
 
+context("sge_dgraph_incomplete")
+
+
+system(paste0("rm -rf ", fdir))
+setup(o, dir=fdir)
+setwd(fdir)
+for(i in sort(sample(1:39, 15, replace = F))) {
+  cmd <- paste0("Rscript doone.R ", i)
+  system(cmd)
+}
+setwd("../")
+
+res <- collect(o, dir = fdir)
 
 context("timing")
 #library(microbenchmark)
