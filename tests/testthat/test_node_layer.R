@@ -65,6 +65,8 @@ ans <- dplyr::bind_rows(list(expand.grid(a=1:3, b=1:3, arg2=1),
 pg <- param.grid[,c("a", "b", "arg2", "arg1")]
 expect_equal(pg, ans)
 
-
+context("collect_node")
+o <- layer(node(collect_node))
+expect_true(is.dgraph(o))
 
 

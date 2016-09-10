@@ -83,7 +83,9 @@ layer_to_graph <- function(l, graph = NULL){
   node.ids <- layer_apply(l, select=".id")
   lid <- attr(l, ".id")
   n.nodes <- length(l)
-  ntasks <- layer_apply(l, FUN=function(a){prod(sapply(a, length))}, select = ".args")
+  ntasks <- layer_apply(l, FUN=function(a){
+   ifelse(length(a) == 0, 1, prod(sapply(a, length)))
+  }, select = ".args")
 
   if(is.null(graph)){
     # root nodes

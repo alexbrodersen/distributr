@@ -27,16 +27,20 @@ setup.dgraph <- function(dgraph, dir=getwd(), .mc.cores=1, .verbose=1,
 
   # write the submission scripts
 
-  write_submit_dgraph(fdir, dgraph, script.name=.script.name, mc.cores=.mc.cores,
-               job.name=.job.name, out.dir = .out.dir, email = .email.options,
+  write_submit_dgraph(fdir, dgraph, script.name=.script.name,
+                      mc.cores=.mc.cores,
+               out.dir = .out.dir, email = .email.options,
                email.addr = .email.addr, shell = .shell)
 
   write_doone_dgraph(dgraph, dir=fdir, script.name = .script.name)
+
+
 }
 
-write_submit_dgraph <- function(dir, dgraph, script.name="doone.R", mc.cores=1, queue="long",
-                         job.name="patr1ckm", out.dir="SGE_Output", email="a",
-                         email.addr="patr1ckm.crc.nd.edu", shell="bash"){
+write_submit_dgraph <- function(dir, dgraph, script.name="doone.R",
+                                mc.cores=1, queue="long",
+                                out.dir="SGE_Output", email="a",
+                                email.addr="patr1ckm.crc.nd.edu", shell="bash"){
 
   graph <- attr(dgraph, ".graph")
   submit_dir <- paste0(dir, "submit")
@@ -74,6 +78,7 @@ write_submit_dgraph <- function(dir, dgraph, script.name="doone.R", mc.cores=1, 
 
     cat(qsub_cmd, file = submit_all_fn, append = T, fill = T)
   }
+
   # Make executable
   mysys(paste0("chmod +x ", submit_all_fn))
 }
@@ -127,6 +132,19 @@ write_doone_dgraph <- function(dgraph, dir, script.name="doone.R"){
   cat(doone, file=paste0(dir, "/", script.name))
 }
 
+#' Collect within a node of a layer
+#' @export
+collect_node <- function(layer = NULL, node=NULL, task=NULL){
+  #load("dgraph.Rdata") shouldn't have to do that, should be already loaded
+  collect(dgraph, layer = layer, node = node, task = task) %>% tidy
+}
+
+#' Tidy within a node of a layer
+#' @export
+tidy_node <- function(x, arg_grid = NULL){
+  tidy(x)
+}
+
 #' @export
 load_results <- function(regex, dir=getwd()){
   fns <- list.files(paste0(dir, "/results/"), recursive = T)
@@ -161,6 +179,9 @@ collect.dgraph <- function(x, dir = getwd(), layer=NULL, node=NULL, task=NULL){
     res <- load_results(last.layer, dir = dir)
   }
   class(res) <- c(class(res), "dgraph")
+
+  ## todo: should return arg_grid of completed conditions as attribute
+
   return(res)
 }
 
@@ -176,7 +197,13 @@ tidy.dgraph <- function(x, dir=getwd(), layer.id = NULL){
   res <- purrr::flatten(res)
 
   load(paste0(dir, "/dgraph.Rdata"))
-  arg_grid <- expand_grid_dgraph(dgraph, layer = layer.id)
+  arg_grid <- attr(x, "arg_grid") # try to grab the arg grid from the results
+
+  # Otherwise just use the specified one; will only work if all conditions are complete
+  if(is.null(arg_grid)){
+    arg_grid <- expand_grid_dgraph(dgraph, layer = layer.id)
+  }
+
   tidy.gresults(res, arg_grid = arg_grid, .reps = attr(dgraph, ".control")$.reps)
 }
 

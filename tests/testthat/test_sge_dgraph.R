@@ -66,7 +66,21 @@ context("sge_dgraph_tidy")
 res.tidy <- collect(o, dir = fdir) %>% tidy(., dir = fdir)
 expect_equal(res.tidy$value, fin.ans)
 
-context("sge_dgraph_incomplete")
+context("sge_dgraph_collect_node")
+
+system(paste0("rm -rf ", fdir))
+
+o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
+  layer(node(hh, arg2=1), node(gg, arg1=1)) %>%
+  layer(node(collect_node)) %>%
+  control() %>% reps(.reps)
+
+context("sge_dgraph_setup")
+for(i in 1:39) {
+  cmd <- paste0("Rscript doone.R ", i)
+  system(cmd)
+}
+setwd("../")
 
 
 #system(paste0("rm -rf ", fdir))
