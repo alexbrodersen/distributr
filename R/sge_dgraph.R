@@ -71,6 +71,7 @@ write_submit_dgraph <- function(dir, dgraph, script.name="doone.R", mc.cores=1, 
       hold <- paste0("-hold_jid node_", node$dep)
     }
     qsub_cmd <- paste0("qsub ", hold, " submit/", submit_name)
+
     cat(qsub_cmd, file = submit_all_fn, append = T, fill = T)
   }
   # Make executable
