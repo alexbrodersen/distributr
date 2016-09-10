@@ -68,7 +68,7 @@ write_submit_dgraph <- function(dir, dgraph, script.name="doone.R", mc.cores=1, 
     # Hold for dependencies, otherwise don't
     hold <- NULL
     if(node$dep != node$node.id){
-      hold <- paste0("-hold-jid node_", node$dep)
+      hold <- paste0("-hold_jid node_", node$dep)
     }
     qsub_cmd <- paste("qsub", hold, submit_name)
     cat(qsub_cmd, file = submit_all_fn, append = T, fill = T)

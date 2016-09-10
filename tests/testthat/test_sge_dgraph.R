@@ -69,16 +69,16 @@ expect_equal(res.tidy$value, fin.ans)
 context("sge_dgraph_incomplete")
 
 
-system(paste0("rm -rf ", fdir))
-setup(o, dir=fdir)
-setwd(fdir)
-for(i in sort(sample(1:39, 15, replace = F))) {
-  cmd <- paste0("Rscript doone.R ", i)
-  system(cmd)
-}
-setwd("../")
+#system(paste0("rm -rf ", fdir))
+#setup(o, dir=fdir)
+#setwd(fdir)
+#for(i in sort(sample(1:39, 15, replace = F))) {
+#  cmd <- paste0("Rscript doone.R ", i)
+#  system(cmd)
+#}
+#setwd("../")
 
-res <- collect(o, dir = fdir)
+#res <- collect(o, dir = fdir)
 
 context("timing")
 #library(microbenchmark)
