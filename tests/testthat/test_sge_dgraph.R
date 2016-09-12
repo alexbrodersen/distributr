@@ -85,6 +85,8 @@ for(i in 1:ntasks) {
 }
 setwd("../")
 
+collect(o, dir = fdir, layer = 3)
+load_results("layer3",dir = fdir)
 
 #system(paste0("rm -rf ", fdir))
 #setup(o, dir=fdir)

@@ -119,23 +119,29 @@ write_doone_dgraph <- function(dgraph, dir, script.name="doone.R"){
     all <- append(list(t = prev_t), node$.args) %>% expand.grid
     args <- all[param.id, ]
 
+
     if(dep_graph$dep == 0){
       layers <- list.files(\"", dir, "results\")
       # the first layer will never have dep == 0
       prev_layer <- dep_graph$layer - 1
-      prev_res <- load_results(prev_layer)
+      prev_res <- collect(dgraph, layer = prev_layer)
+
+      args <- purrr::flatten(list(prev_res, args[-1]))
+      names(args)[1] <- names(formals(node$.f))[1]
+
+      # just call f on the previous results and args
+      res.l <- do.call(node$.f, args)
+
     } else {
       prev_res <- paste0(\"t\", args$t, \".Rdata\") %>%
         load_results(.)
+
+      args <- purrr::flatten(list(prev_res, args[-1]))
+      names(args)[1] <- names(formals(node$.f))[1]
+
+      res.l <- grid_apply(.f = node$.f, args,
+        .reps = 1, .mc.cores = control$.mc.cores, .verbose = control$.verbose)
     }
-
-    # assumes that the results are passed as the first argument to the function.
-    args <- purrr::flatten(list(prev_res, args[-1]))
-    names(args)[1] <- names(formals(node$.f))[1]
-
-    res.l <- grid_apply(.f = node$.f, args,
-      .reps = 1, .mc.cores = control$.mc.cores, .verbose = control$.verbose)
-
   }
   fn <- paste0(\"results/layer\", sub_graph$layer, \"/node_pos\", sub_graph$node.pos, \"_t\", t, \".Rdata\")
   save(res.l, file=fn)
