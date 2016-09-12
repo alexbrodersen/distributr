@@ -151,11 +151,16 @@ reps <- function(.dgraph, .reps){
 
 #' @export
 get_node <- function(dgraph, id){
-  ids <- sapply(dgraph, function(l){ layer_apply(l, select = ".id") })
-  addr <- which(ids == id, arr.ind=T)
-  node.id <- addr[1]
-  layer.id <- addr[2]
-  dgraph[[layer.id]][[node.id]]
+
+  ids <- lapply(dgraph, function(l){
+     layer_apply(l, select = ".id")
+  })
+
+  # This is not fast, but hopefully clearish
+  which_layer <- sapply(ids, function(nid){any(nid == id)}) %>% which
+  pos_in_layer <- which(ids[[which_layer]] == id)
+
+  dgraph[[which_layer]][[pos_in_layer]]
 }
 
 # this is just a sketch right now, it's going to be complicated

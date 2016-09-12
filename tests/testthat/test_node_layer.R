@@ -47,7 +47,7 @@ expect_true(nrow(graph) == 7)
 expect_true(max(graph$layer) == 3)
 
 context("get_node")
-for(i in 1:4) expect_true(get_node(o, i)$.id == i)
+for(i in 1:5) expect_true(get_node(o, i)$.id == i)
 
 context("control")
 o <- control(o)
