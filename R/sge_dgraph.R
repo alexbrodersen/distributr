@@ -102,7 +102,12 @@ write_doone_dgraph <- function(dgraph, dir, script.name="doone.R"){
 
   } else {
     # load previous results
-    dep_graph <- graph[graph$node.id == sub_graph$dep, ]
+    if(sub_graph$dep > 0) {
+      dep_graph <- graph[graph$node.id == sub_graph$dep, ]
+    } else {
+      dep_graph <- sub_graph
+    }
+
     node <- get_node(dgraph, sub_graph$node.id)
     control <- attr(dgraph, \".control\")
 
@@ -115,10 +120,10 @@ write_doone_dgraph <- function(dgraph, dir, script.name="doone.R"){
     args <- all[param.id, ]
 
     if(dep_graph$dep == 0){
-      layers <- list.files(paste0(dir, \"/results\"))
+      layers <- list.files(\"", dir, "results\")
       # the first layer will never have dep == 0
-      last.layer <- dep_graph$layer - 1
-      prev_res <- load_results(last.layer, dir = dir)
+      prev_layer <- dep_graph$layer - 1
+      prev_res <- load_results(prev_layer)
     } else {
       prev_res <- paste0(\"t\", args$t, \".Rdata\") %>%
         load_results(.)
@@ -137,19 +142,6 @@ write_doone_dgraph <- function(dgraph, dir, script.name="doone.R"){
   ")
   cat("cat ", paste0(dir, "doone.R"), fill=T)
   cat(doone, file=paste0(dir, "/", script.name))
-}
-
-#' Collect within a node of a layer
-#' @export
-collect_node <- function(layer = NULL, node=NULL, task=NULL){
-  #load("dgraph.Rdata") shouldn't have to do that, should be already loaded
-  collect(dgraph, layer = layer, node = node, task = task) %>% tidy
-}
-
-#' Tidy within a node of a layer
-#' @export
-tidy_node <- function(x, arg_grid = NULL){
-  tidy(x)
 }
 
 #' @export
@@ -192,27 +184,7 @@ collect.dgraph <- function(x, dir = getwd(), layer=NULL, node=NULL, task=NULL){
   return(res)
 }
 
-#' Tidying dgraph results
-#'
-#' @param x list of results
-#' @param dir directory
-#' @param layer layer if not last
-#' @export
-tidy.dgraph <- function(x, dir=getwd(), layer.id = NULL){
-  # Collect available results
-  res <- collect.dgraph(x, dir = dir)
-  res <- purrr::flatten(res)
 
-  load(paste0(dir, "/dgraph.Rdata"))
-  arg_grid <- attr(x, "arg_grid") # try to grab the arg grid from the results
-
-  # Otherwise just use the specified one; will only work if all conditions are complete
-  if(is.null(arg_grid)){
-    arg_grid <- expand_grid_dgraph(dgraph, layer = layer.id)
-  }
-
-  tidy.gresults(res, arg_grid = arg_grid, .reps = attr(dgraph, ".control")$.reps)
-}
 
 
 

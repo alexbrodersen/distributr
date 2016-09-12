@@ -37,6 +37,26 @@ tidy.gresults <- function(x, arg_grid=NULL, .reps=NULL){
   return(res)
 }
 
+#' Tidying dgraph results
+#'
+#' @param x list of results
+#' @param dir directory
+#' @param layer layer if not last
+#' @export
+tidy.dgraph <- function(x, dir=getwd(), layer.id = NULL){
+  # why flatten?
+  res <- purrr::flatten(x)
+
+  arg_grid <- attr(x, "arg_grid") # try to grab the arg grid from the results
+
+  # Otherwise just use the specified one; will only work if all conditions are complete
+  if(is.null(arg_grid)){
+    arg_grid <- expand_grid_dgraph(dgraph, layer = layer.id)
+  }
+
+  tidy.gresults(res, arg_grid = arg_grid, .reps = attr(dgraph, ".control")$.reps)
+}
+
 
 #' Stacks a list of vectors, lists, or data frames
 #'

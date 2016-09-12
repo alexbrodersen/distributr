@@ -77,9 +77,9 @@ o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
 
 setup(o, dir = fdir)
 
-context("sge_dgraph_setup")
 setwd(fdir)
-for(i in 1:39) {
+ntasks <- max(attr(o, ".graph")$tup)
+for(i in 1:ntasks) {
   cmd <- paste0("Rscript doone.R ", i)
   system(cmd)
 }
