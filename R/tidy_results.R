@@ -8,7 +8,10 @@ tidy <- function(x, ...){
 #' Tidy an object from grid_apply
 #' @export
 tidy.gresults <- function(x, arg_grid=NULL, .reps=NULL){
-  if(is.null(arg_grid)){ arg_grid <- attr(x, "arg_grid")}
+  if(is.null(arg_grid)){
+    arg_grid <- attr(x, "arg_grid")
+    if(is.null(arg_grid)) stop("can't tidy, no argument grid")
+  }
   if(is.null(.reps)){ .reps = attr(x, ".reps")}
 
   rep_grid <- arg_grid[rep(1:nrow(arg_grid),each=.reps), , drop=F]
@@ -43,18 +46,15 @@ tidy.gresults <- function(x, arg_grid=NULL, .reps=NULL){
 #' @param dir directory
 #' @param layer layer if not last
 #' @export
-tidy.dgraph <- function(x, dir=getwd(), layer.id = NULL){
-  # why flatten?
+tidy.dgraph <- function(x, arg_grid = NULL, dir=getwd(), layer.id = NULL){
+  # flatten because list of gresults, want just one list with arg_grid and reps as attributes
   res <- purrr::flatten(x)
 
-  arg_grid <- attr(x, "arg_grid") # try to grab the arg grid from the results
-
-  # Otherwise just use the specified one; will only work if all conditions are complete
   if(is.null(arg_grid)){
-    arg_grid <- expand_grid_dgraph(dgraph, layer = layer.id)
+    arg_grid <- attr(x, "arg_grid") # try to grab the arg grid from the results
   }
-
-  tidy.gresults(res, arg_grid = arg_grid, .reps = attr(dgraph, ".control")$.reps)
+  attributes(res) <- attributes(x)
+  tidy.gresults(res, arg_grid = arg_grid)
 }
 
 

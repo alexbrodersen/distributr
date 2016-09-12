@@ -177,10 +177,14 @@ collect.dgraph <- function(x, dir = getwd(), layer=NULL, node=NULL, task=NULL){
     last.layer <- tail(gtools::mixedsort(layers), n=1)
     res <- load_results(last.layer, dir = dir)
   }
+
   class(res) <- c(class(res), "dgraph")
 
   ## todo: should return arg_grid of completed conditions as attribute
-
+  arg_grid <- expand_grid_dgraph(x, layer = layer)
+  .reps <- attr(x, ".control")$.reps
+  attr(res, "arg_grid") <- arg_grid
+  attr(res, ".reps") <- .reps
   return(res)
 }
 
