@@ -23,6 +23,7 @@ layer <- function(..., .reduce = FALSE){
     .id = max(sapply(.dgraph, function(l){attr(l, ".id")})) + 1
     .dgraph  <- add_layer(layer, .dgraph = .dgraph, .id= .id, .reduce = .reduce)
   } else {
+    if(.reduce) { stop("can't reduce on first layer") }
     .dgraph <- layer_to_dgraph(layer) %>% control()
   }
   class(.dgraph) <- c(class(.dgraph), "dgraph")
@@ -33,7 +34,7 @@ layer <- function(..., .reduce = FALSE){
 grid_map <- layer
 
 #' @export
-grid_reduce <- layer(..., .reduce = TRUE)
+grid_reduce <- function(...){ layer(..., .reduce = TRUE) }
 
 # takes a function f, and lifts it so that it can be applied to a node of the given parameters
 # but delay evaluation
@@ -65,7 +66,7 @@ is.dgraph <- function(x){ "dgraph" %in% class(x)}
 layer_to_dgraph <- function(.layer){
   .layer <- assign_node_ids(.layer, start = 0)
   attr(.layer, ".id") <- 1
-  graph <- layer_to_graph(.layer, graph = NULL)
+  graph <- layer_to_graph(.layer, .reduce = FALSE, graph = NULL)
   .dgraph <- list(.layer)
   attr(.dgraph, ".graph") <- graph
   class(.dgraph) <- "dgraph"
@@ -109,15 +110,19 @@ layer_to_graph <- function(l, graph = NULL, .reduce){
     dep <- sub_graph$node.pos
     pos.start <- max(sub_graph$node.pos) + 1
 
-    # basically, don't grid over all dependencies, just choose the last one.
-    if(.reduce) dep <- max(dep)
+    # basically, don't grid over all dependencies.
+    # setting this to 0 is a flag for do.one to load previous layer instead of a particular node.
+    if(.reduce) dep <- 0
 
     # create a row for each dependency
     dep.rows <- expand.grid(layer = lid, dep=dep, node.id=node.ids)
 
     dep.rows$node.pos <- pos.start : (pos.start + nrow(dep.rows) - 1)
-    dep.rows$ntasks <- rep(ntasks, each = length(dep)) *
-      rep(sub_graph$ntasks, times = n.nodes)
+    if(.reduce) {
+      dep.rows$ntasks <- 1
+    } else {
+      dep.rows$ntasks <- rep(ntasks, each = length(dep)) * rep(sub_graph$ntasks, times = n.nodes)
+    }
     dep.rows$tlow <- head(c(start + 1, start + 1 + cumsum(dep.rows$ntasks)), -1)
     dep.rows$tup <- cumsum(dep.rows$ntasks) + start
     graph <- rbind(graph, dep.rows)

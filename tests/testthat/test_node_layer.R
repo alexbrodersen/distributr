@@ -38,6 +38,13 @@ expect_equal(sapply(o[[1]], function(node){node$.id}), c(1,2))
 expect_equal(sapply(o[[2]], function(node){node$.id}), c(3, 4))
 expect_equal(sapply(o, function(l){attr(l, ".id")}), c(1, 2))
 
+context("layer_reduce")
+o <- o %>% layer(node(tidy), .reduce = TRUE)
+graph <- attr(o, ".graph")
+expect_true(graph[with(graph, layer == 3),]$dep == 0)
+expect_true(graph[with(graph, layer == 3),]$ntasks == 1)
+expect_true(nrow(graph) == 7)
+expect_true(max(graph$layer) == 3)
 
 context("get_node")
 for(i in 1:4) expect_true(get_node(o, i)$.id == i)
@@ -65,8 +72,5 @@ ans <- dplyr::bind_rows(list(expand.grid(a=1:3, b=1:3, arg2=1),
 pg <- param.grid[,c("a", "b", "arg2", "arg1")]
 expect_equal(pg, ans)
 
-context("collect_node")
-o <- layer(node(collect_node))
-expect_true(is.dgraph(o))
 
 

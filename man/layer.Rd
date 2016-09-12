@@ -4,10 +4,12 @@
 \alias{layer}
 \title{Add layer to dgraph}
 \usage{
-layer(...)
+layer(..., .reduce = FALSE)
 }
 \arguments{
 \item{...}{nodes, separated by commas}
+
+\item{.reduce}{if TRUE, the results of previous layers are expanded by nodes, otherwise reduced}
 }
 \description{
 Add layer to dgraph

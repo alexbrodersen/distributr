@@ -114,8 +114,15 @@ write_doone_dgraph <- function(dgraph, dir, script.name="doone.R"){
     all <- append(list(t = prev_t), node$.args) %>% expand.grid
     args <- all[param.id, ]
 
-    prev_res <- paste0(\"t\", args$t, \".Rdata\") %>%
-      load_results(.)
+    if(dep_graph$dep == 0){
+      layers <- list.files(paste0(dir, \"/results\"))
+      # the first layer will never have dep == 0
+      last.layer <- dep_graph$layer - 1
+      prev_res <- load_results(last.layer, dir = dir)
+    } else {
+      prev_res <- paste0(\"t\", args$t, \".Rdata\") %>%
+        load_results(.)
+    }
 
     # assumes that the results are passed as the first argument to the function.
     args <- purrr::flatten(list(prev_res, args[-1]))
