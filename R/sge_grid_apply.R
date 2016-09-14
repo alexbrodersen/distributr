@@ -90,7 +90,7 @@ write_submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1, queue=
     "#$ -N ", job.name, "\n",
     "#$ -t 1:", tasks, "\n",
     "#$ -o ", out.dir, " \n\n",
-    "Rscript ", script.name, " $SGE_TASK_ID $NSLOTS")
+    "Rscript ", script.name, " $SGE_TASK_ID $NSLOTS \n")
   cat(temp,file=paste0(dir, "submit"))
 }
 
@@ -100,12 +100,13 @@ write_doone <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
   suppressMessages(library(distributr))
   args <- as.numeric(commandArgs(trailingOnly=TRUE))
   cond <- args[1]
+  ncores <- args[2]
   reps <- ", reps," # this is reps per chunk
   load('arg_grid.Rdata')
   params <- arg_grid[cond,]
   rep.id <- (reps*(params$chunk-1)+1):(reps*params$chunk)
   params$chunk <- NULL # because f doesn't take chunk usually
-  res.l <- do.rep(wrapWE(.f), as.list(params), .reps=reps, .rep.cores=", mc.cores, ", .verbose=", verbose," )
+  res.l <- do.rep(wrapWE(.f), as.list(params), .reps=reps, .rep.cores=ncores, .verbose=", verbose," )
   dir <- paste0('results/')
   fn <- paste0(dir, cond,'.Rdata')
   save(res.l, file=fn)")

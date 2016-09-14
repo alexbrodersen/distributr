@@ -88,6 +88,7 @@ write_doone_dgraph <- function(dgraph, dir, script.name="doone.R"){
   suppressMessages(library(distributr))
   args <- as.numeric(commandArgs(trailingOnly=TRUE))
   t <- args[1]
+  ncores <- args[2]
   load(\"dgraph.Rdata\")
   graph <- attr(dgraph, \".graph\")
   sub_graph <- graph[graph$tlow <= t & graph$tup >= t, ]
@@ -140,7 +141,7 @@ write_doone_dgraph <- function(dgraph, dir, script.name="doone.R"){
       names(args)[1] <- names(formals(node$.f))[1]
 
       res.l <- grid_apply(.f = node$.f, args,
-        .reps = 1, .mc.cores = control$.mc.cores, .verbose = control$.verbose)
+        .reps = 1, .mc.cores = ncores, .verbose = control$.verbose)
     }
   }
   fn <- paste0(\"results/layer\", sub_graph$layer, \"/node_pos\", sub_graph$node.pos, \"_t\", t, \".Rdata\")

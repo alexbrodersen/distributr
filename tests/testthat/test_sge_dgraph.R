@@ -22,7 +22,7 @@ setwd(fdir)
 context("sge_dgraph_doone")
 
 for(i in 1:39) {
-  cmd <- paste0("Rscript doone.R ", i)
+  cmd <- paste0("Rscript doone.R ", i, " 1")
   system(cmd)
 }
 setwd("../")

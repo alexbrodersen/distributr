@@ -16,24 +16,24 @@ setup(out, dir="tmp", .reps = 6)
 
 ## This is a hack to get the tests to run from this directory
 setwd("tmp")
-system("Rscript doone.R 1 ")
-system("Rscript doone.R 2 ")
+system("Rscript doone.R 1 1")
+system("Rscript doone.R 2 1")
 setwd("../")
 
 clean("tmp")
 
 setup(out, dir="tmp", .reps = 5, .verbose=2)
 setwd("tmp")
-system("Rscript doone.R 1 ")
-system("Rscript doone.R 2 ")
+system("Rscript doone.R 1 1")
+system("Rscript doone.R 2 1")
 setwd("../")
 
 clean("tmp")
 
 setup(out, dir="tmp", .reps = 5, .verbose=3)
 setwd("tmp")
-system("Rscript doone.R 1 ")
-system("Rscript doone.R 2 ")
+system("Rscript doone.R 1 1")
+system("Rscript doone.R 2 1")
 setwd("../")
 
 context("test_collect_sge")
