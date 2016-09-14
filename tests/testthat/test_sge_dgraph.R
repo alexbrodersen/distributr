@@ -68,25 +68,25 @@ expect_equal(res.tidy$value, fin.ans)
 
 context("sge_dgraph_collect_node")
 
-system(paste0("rm -rf ", fdir))
-
-o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
-  layer(node(hh, arg2=1), node(gg, arg1=1)) %>%
-  layer(node(tidy), .reduce = TRUE) %>%
-  control() %>% reps(.reps)
-
-setup(o, dir = fdir)
-
-setwd(fdir)
-ntasks <- max(attr(o, ".graph")$tup)
-for(i in 1:ntasks) {
-  cmd <- paste0("Rscript doone.R ", i)
-  system(cmd)
-}
-setwd("../")
-
-collect(o, dir = fdir, layer = 3)
-load_results("layer3",dir = fdir)
+# system(paste0("rm -rf ", fdir))
+#
+# o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
+#   layer(node(hh, arg2=1), node(gg, arg1=1)) %>%
+#   layer(node(tidy), .reduce = TRUE) %>%
+#   control() %>% reps(.reps)
+#
+# setup(o, dir = fdir)
+#
+# setwd(fdir)
+# ntasks <- max(attr(o, ".graph")$tup)
+# for(i in 1:ntasks) {
+#   cmd <- paste0("Rscript doone.R ", i)
+#   system(cmd)
+# }
+# setwd("../")
+#
+# collect(o, dir = fdir, layer = 3)
+# load_results("layer3",dir = fdir)
 
 #system(paste0("rm -rf ", fdir))
 #setup(o, dir=fdir)

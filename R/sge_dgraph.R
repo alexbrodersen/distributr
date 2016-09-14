@@ -59,12 +59,12 @@ write_submit_dgraph <- function(dir, dgraph, script.name="doone.R",
       "#!/bin/", shell, " \n",
       "#$ -M ", email.addr, "\n",
       "#$ -m ", email, "\n",
-      "#$ -pe smp ",mc.cores,"\n",
+      "#$ -pe smp ",min(mc.cores), "-", max(mc.cores), "\n",
       "#$ -q ", queue, "\n",
       "#$ -N ", job_name, "\n",
       "#$ -t ", node$tlow, ":", node$tup, "\n",
       "#$ -o ", out.dir, " \n\n",
-      "Rscript ", script.name, " $SGE_TASK_ID")
+      "Rscript ", script.name, " $SGE_TASK_ID $NSLOTS")
     cat(submit_node, file=paste0(submit_dir, "/", submit_name))
 
     ### Update submit.sh which executes all scripts

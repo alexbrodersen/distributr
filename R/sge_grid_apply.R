@@ -5,7 +5,7 @@
 #' @param dir directory name relative to the current working directory, ends in '/'
 #' @param .reps total number of replications for each condition
 #' @param .chunks split \code{.reps} across this many nodes (see details)
-#' @param .mc.cores number of cores used to run replications in parallel
+#' @param .mc.cores number of cores used to run replications in parallel (can be a range)
 #' @param .verbose verbose level
 #' @param .script.name name of script
 #' @param .queue name of queue
@@ -85,12 +85,12 @@ write_submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1, queue=
     "#!/bin/", shell, " \n",
     "#$ -M ", email.addr, "\n",
     "#$ -m ", email, "\n",
-    "#$ -pe smp ",mc.cores,"\n",
+    "#$ -pe smp ",min(mc.cores), "-", max(mc.cores), "\n",
     "#$ -q ", queue, "\n",
     "#$ -N ", job.name, "\n",
     "#$ -t 1:", tasks, "\n",
     "#$ -o ", out.dir, " \n\n",
-    "Rscript ", script.name, " $SGE_TASK_ID")
+    "Rscript ", script.name, " $SGE_TASK_ID $NSLOTS")
   cat(temp,file=paste0(dir, "submit"))
 }
 

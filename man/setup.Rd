@@ -15,7 +15,7 @@ setup(x, ...)
 
 \item{.chunks}{split \code{.reps} across this many nodes (see details)}
 
-\item{.mc.cores}{number of cores used to run replications in parallel}
+\item{.mc.cores}{number of cores used to run replications in parallel (can be a range)}
 
 \item{.verbose}{verbose level}
 
