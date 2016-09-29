@@ -15,7 +15,7 @@ tidy.gresults <- function(x, arg_grid=NULL, .reps=NULL){
   if(is.null(.reps)){ .reps = attr(x, ".reps")}
 
   rep_grid <- arg_grid[rep(1:nrow(arg_grid),each=.reps), , drop=F]
-  rep_grid$rep  <- rep(1:.reps, times=nrow(arg_grid))
+  rep_grid$.rep  <- rep(1:.reps, times=nrow(arg_grid))
 
   # Stack results, adding keys according to names of elements, colnames, and rownames.
   values <- stack_list(x)

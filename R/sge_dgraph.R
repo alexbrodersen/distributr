@@ -187,8 +187,13 @@ collect.dgraph <- function(x, dir = getwd(), layer=NULL, node=NULL, task=NULL){
 
   class(res) <- c(class(res), "dgraph")
 
-  ## todo: should return arg_grid of completed conditions as attribute
   arg_grid <- expand_grid_dgraph(x, layer = layer)
+
+  ## here: select completed conditions and update arg_grid
+
+  ## since each file has t in the index, and t indexes rows of arg_grid, grab t and subset
+  # lapply(dir, )
+
   .reps <- attr(x, ".control")$.reps
   attr(res, "arg_grid") <- arg_grid
   attr(res, ".reps") <- .reps

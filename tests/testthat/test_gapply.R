@@ -70,7 +70,7 @@ out <- gapply(do.one, a=1:2, b=2, .reps=2, .verbose=0)
 out1 <- grid_apply(do.one, a=1:2, b=2, .reps=2, .verbose=0) %>% tidy
 
 grid <- expand.grid(a=1:2,b=2)
-expect_equal(colnames(out), c("a", "b", "rep", "key","value"))
+expect_equal(colnames(out), c("a", "b", ".rep", "key","value"))
 expect_equal(nrow(out), nrow(grid)*2)
 expect_equivalent(out$value,c(3,3,4,4))
 expect_equivalent(unique(out[,c("a","b")]), grid)
@@ -81,7 +81,7 @@ expect_equivalent(out, out1)
 do.one <- function(a=1,b=2){c(a+b, a - b)}
 out <- gapply(do.one,.reps=2, a=1:2,b=2,.verbose=0)
 out1 <- grid_apply(do.one,.reps=2, a=1:2,b=2,.verbose=0) %>% tidy
-expect_equal(colnames(out),c("a","b","rep", "key", "value"))
+expect_equal(colnames(out),c("a","b",".rep", "key", "value"))
 expect_equivalent(unique(out[,c("a","b")]), grid)
 expect_equal(unique(out$key),c("V1","V2"))
 expect_equivalent(out, out1)
@@ -92,7 +92,7 @@ expect_equal(out$value, ans)
 do.one <- function(a=1,b=2){data.frame(sum=a+b,sub=a-b)}
 out <- gapply(do.one,.reps=2, a=1:2,b=2,.verbose=0)
 out1 <- grid_apply(do.one,.reps=2, a=1:2,b=2,.verbose=0) %>% tidy
-expect_equal(colnames(out),c("a","b","rep", "key", "key2", "value"))
+expect_equal(colnames(out),c("a","b",".rep", "key", "key2", "value"))
 # Test that key is a factor, and has the correct levels
 expect_equal(unique(out$key),c("sum","sub"))
 expect_equivalent(out, out1)
@@ -102,7 +102,7 @@ expect_equal(out$value, ans)
 do.one <- function(a=1,b=2){data.frame(sum=a+b,sub=a-b)}
 out <- gapply(do.one,.reps=3, a=1,b=2,.verbose=0)
 out1 <- grid_apply(do.one,.reps=3, a=1,b=2,.verbose=0) %>% tidy
-expect_equal(unique(out$rep),1:3)
+expect_equal(unique(out$.rep),1:3)
 expect_equal(out$value,c(3,-1, 3, -1, 3, -1))
 expect_equivalent(out, out1)
 

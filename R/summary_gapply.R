@@ -99,11 +99,11 @@ plot.gapply <- function(object, .fun=mean, .key=NULL){
 #' @param nreps number of reps to scale to
 #' @export
 estimate_time <- function(object, nreps=NULL){
-  if(is.null(nreps)){ nreps <- c(50,100,500,1000,5000,10000)}
-  max.reps <- max(object$rep)
-  time.per.rep <- attr(object,"time")[3]/max.reps
-  times <- lapply(time.per.rep*nreps,FUN=nicetime)
-  o <- cbind(reps=nreps,times=times)
+  if(is.null(nreps)){ nreps <- c(50, 100, 500, 1000, 5000, 10000)}
+  max.reps <- max(object$.rep)
+  time.per.rep <- attr(object, "time")[3]/max.reps
+  times <- lapply(time.per.rep * nreps, FUN = nicetime)
+  o <- cbind(reps = nreps, times = times)
   return(o)
 }
 

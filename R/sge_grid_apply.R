@@ -109,7 +109,7 @@ write_doone <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
   res.l <- do.rep(wrapWE(.f), as.list(params), .reps=reps, .rep.cores=ncores, .verbose=", verbose," )
   dir <- paste0('results/')
   fn <- paste0(dir, cond,'.Rdata')
-  save(res.l, file=fn)")
+  save(res.l, file=fn) \n")
 
   cat(temp, file=paste0(dir, script.name))
 }
