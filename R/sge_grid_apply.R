@@ -62,20 +62,6 @@ setup.gresults <- function(object, dir=getwd(),  .reps=1, .chunks = 1, .mc.cores
   write_doone(.f=.f, dir=dir, reps=reps.per.chunk, mc.cores=.mc.cores, verbose=.verbose, script.name=.script.name)
 }
 
-
-
-
-#' @export
-qst <- function(){
-  mysys("qst")
-}
-
-#' @export
-mysys <- function(cmd){
-  cat(cmd,fill=T)
-  system(cmd)
-}
-
 write_submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1, queue="long",
                          job.name="patr1ckm", out.dir="SGE_Output", email="a",
                          email.addr="patr1ckm.crc.nd.edu", shell="bash"){
@@ -112,18 +98,6 @@ write_doone <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
   save(res.l, file=fn) \n")
 
   cat(temp, file=paste0(dir, script.name))
-}
-
-
-
-#' Submit jobs to SGE
-#' @export
-submit <- function(dir=getwd()){
-  wd <- getwd()
-  setwd(dir)
-  cmd <- paste0("qsub submit")
-  mysys(cmd)
-  setwd(wd)
 }
 
 #' Collect completed results files from gresults
@@ -171,7 +145,47 @@ collect.gresults <- function(object, dir=getwd()){
   return(res)
 }
 
+#' Add jobs (or rows) to argument grid
+#' @param object grid_apply object
+#' @param ... key value pairs for \code{.f} in \code{grid_apply}
+#' @return \code{grid_apply} object with updated
+#' @details If all original keys are not in ..., the values of these arguments are set
+#' to \code{NA}
+#' @export
+add_jobs <- function(object, ...){
+  arg_grid <- attr(object, "arg_grid") %>%
+    bind_rows(., expand.grid(...))
+  attr(object, "arg_grid") <- arg_grid
+  return(object)
+}
 
+add_rows <- add_jobs
+
+submit_jobs <- function(object, subset){
+
+}
+
+#' @export
+qst <- function(){
+  mysys("qst")
+}
+
+#' @export
+mysys <- function(cmd){
+  cat(cmd,fill=T)
+  system(cmd)
+}
+
+
+#' Submit jobs to SGE
+#' @export
+submit <- function(dir=getwd()){
+  wd <- getwd()
+  setwd(dir)
+  cmd <- paste0("qsub submit")
+  mysys(cmd)
+  setwd(wd)
+}
 
 #' Cleans results
 #' @param dir project directory name followed by 'slash'
@@ -205,9 +219,10 @@ sge <- function(dir=getwd()){
 #' Return parameter grid
 #'
 #' @export
-arg_grid <- function(dir=getwd()){
+get_arg_grid <- function(dir=getwd()){
   load(paste0(dir, "/arg_grid.Rdata"))
   return(arg_grid)
 }
+
 
 
