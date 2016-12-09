@@ -22,7 +22,7 @@ setwd("../")
 
 clean("tmp")
 
-setup(out, .dir="tmp", .reps = 5, .verbose=2)
+out <- setup(out, .dir="tmp", .reps = 5, .verbose=2)
 setwd("tmp")
 system("Rscript doone.R 1 1")
 system("Rscript doone.R 2 1")
@@ -30,7 +30,7 @@ setwd("../")
 
 clean("tmp")
 
-setup(out, .dir="tmp", .reps = 5, .verbose=3)
+out <- setup(out, .dir="tmp", .reps = 5, .verbose=3)
 setwd("tmp")
 system("Rscript doone.R 1 1")
 system("Rscript doone.R 2 1")

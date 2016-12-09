@@ -4,7 +4,6 @@
 #' @param object gapply object
 #' @param dir directory name relative to the current working directory, ends in '/'
 #' @param .reps total number of replications for each condition
-#' @param .chunks split \code{.reps} across this many nodes (see details)
 #' @param .mc.cores number of cores used to run replications in parallel (can be a range)
 #' @param .verbose verbose level
 #' @param .script.name name of script
@@ -15,8 +14,6 @@
 #' @param .email.addr email address
 #' @param .shell shell to use. Default is 'bash'
 #' @details
-#' The replications performed per chunk is computed as \code{ceiling(.reps/.chunks)}, which
-#' will produce more total replications than requested if \code{.reps} is not evenly divisible by \code{.chunks}
 #' @export
 setup <- function(x, ...){
   UseMethod("setup")
@@ -24,7 +21,11 @@ setup <- function(x, ...){
 
 #' Setup sge files from gresults
 #' @export
-setup.gresults <- function(object, .dir=getwd(),  .reps=1, .chunks = 1, .mc.cores=1, .verbose=1,
+setup.gresults <- function(object,
+                  .dir=getwd(),
+                  .reps=1,
+                  .mc.cores=1,
+                  .verbose=1,
                   .queue="long",
                   .script.name="doone.R",
                   .job.name="patr1ckm",
@@ -33,17 +34,36 @@ setup.gresults <- function(object, .dir=getwd(),  .reps=1, .chunks = 1, .mc.core
                   .email.addr="patr1ckm.crc.nd.edu",
                   .shell="bash"){
   arg_grid <- attr(object,"arg_grid")
+  arg_grid$.sge_id <- 1:nrow(arg_grid)
   .dir <- paste0(.dir, "/")
-  ## Chunk is the slowest varying factor. So adding replications
-  ## will be extending the grid within chunk by more chunks, which can then be
-  ## mapped onto SGE_TASK_ID. Don't change this unless you found something better
-  chunk.grid <- arg_grid[rep(1:nrow(arg_grid), times=.chunks),,drop=F]
-  chunk.grid$.chunk <- rep(1:.chunks, each=nrow(arg_grid))
-  chunk.grid$.sge_id <- 1:nrow(chunk.grid)
+
+  # 2016-12-09 Previously, I added automatic rep chunking. However, it was removed
+  #  when I decided to add .sge_id as an actual variable in arg_grid in 'setup'.
+  #  Maintaining auto chunking and .sge_id is tricky because 'tidy' needs to work
+  #  with both the non-chunked arg_grid from 'grid_apply',
+  #  and the chunked arg_grid from 'setup'.
+  #  Dealing with it has wasted so much of my time, and there is no easy solution.
+  #
+  #  The cleanest solution would be to never evaluate and store the full arg_grid, and
+  #  only subset arg_grid rows when necessary.
+  #
+  #  Simple chunking can be handled easily by the user by just including 'chunk' as a
+  #  variable. Everything would work, and .reps becomes .reps per chunk automatically.
+  #  'chunk' can then just be removed in the analysis.
+  #  The results are transparent, rather than magical (my preference).
+  #  The only drawback is that a unique
+  #  rep id must be obtained by the user if needed, but I have never needed this!
+
+  #  Replications are still the slowest varying factor, to prioritize running more
+  #  conditions rather than replications.
+
+  #  Here is the original chunking code:
+  #chunk.grid <- arg_grid[rep(1:nrow(arg_grid), times=.chunks),,drop=F]
+  #chunk.grid$.chunk <- rep(1:.chunks, each=nrow(arg_grid))
+  #chunk.grid$.sge_id <- 1:nrow(chunk.grid)
+  #reps.per.chunk <- ceiling(.reps/.chunks)
+
   .f <- attr(object,".f")
-  reps.per.chunk <- ceiling(.reps/.chunks)
-
-
 
   cmd <- paste0("mkdir -p ", .dir, "results")
   mysys(cmd)
@@ -51,24 +71,19 @@ setup.gresults <- function(object, .dir=getwd(),  .reps=1, .chunks = 1, .mc.core
   mysys(cmd)
 
   write_submit(.dir, script.name=.script.name, mc.cores=.mc.cores,
-               tasks=paste0("1:", nrow(chunk.grid)),
+               tasks=paste0("1:", nrow(arg_grid)),
                job.name=.job.name,
                out.dir = .out.dir,
                email = .email.options,
                email.addr = .email.addr,
                shell = .shell)
 
-  arg_grid <- chunk.grid
-
-  attr(arg_grid, ".reps") <- reps.per.chunk*.chunks # total actual reps
-  attr(arg_grid, ".rpc") <- reps.per.chunk # reps per chunk
-  attr(arg_grid, ".chunks") <- .chunks
-
   save(arg_grid, file=paste0(.dir, "arg_grid.Rdata"))
 
-  write_doone(.f=.f, dir=.dir, reps=reps.per.chunk, mc.cores=.mc.cores, verbose=.verbose, script.name=.script.name)
+  write_doone(.f=.f, dir=.dir, reps=.reps, mc.cores=.mc.cores, verbose=.verbose, script.name=.script.name)
 
   attr(object, "arg_grid") <- arg_grid
+  attr(object, ".reps") <- .reps
   return(object)
 }
 
@@ -100,8 +115,9 @@ write_doone <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
   reps <- ", reps," # this is reps per chunk
   load('arg_grid.Rdata')
   params <- arg_grid[cond,]
-  rep.id <- (reps*(params$.chunk-1)+1):(reps*params$.chunk)
-  params$.chunk <- NULL    # because f doesn't take chunk usually
+  #rep.id <- (reps*(params$.chunk-1)+1):(reps*params$.chunk)
+  rep.id <- 1:reps
+  #params$.chunk <- NULL    # because f doesn't take chunk usually
   params$.sge_id <- NULL  # special variable not in f
   res.l <- do.rep(wrapWE(.f), as.list(params), .reps=reps, .rep.cores=ncores, .verbose=", verbose," )
   dir <- paste0('results/')
@@ -119,8 +135,7 @@ write_doone <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
 collect.gresults <- function(object, dir=getwd()){
   dir <- paste0(dir, "/")
   load(paste0(dir, "arg_grid.Rdata"))
-  reps <- attr(arg_grid, ".reps") # Since this is from do.rep, will always be of length reps
-  rpc <- attr(arg_grid, ".rpc")
+  reps <- attr(object, ".reps")
 
   rdir <- paste0(dir, "results/")
   conds.files <- gtools::mixedsort(paste0(rdir,list.files(rdir)))
@@ -149,7 +164,6 @@ collect.gresults <- function(object, dir=getwd()){
   class(res) <- c(class(res), "gresults")
   attr(res, "arg_grid") <- cond.grid
   attr(res, ".reps") <- reps
-  attr(res, ".rpc") <- rpc
   attr(res, "err") <- err.list
   attr(res, "warn") <- warn.list
 
