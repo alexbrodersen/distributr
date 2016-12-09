@@ -24,7 +24,7 @@ setup <- function(x, ...){
 
 #' Setup sge files from gresults
 #' @export
-setup.gresults <- function(object, dir=getwd(),  .reps=1, .chunks = 1, .mc.cores=1, .verbose=1,
+setup.gresults <- function(object, .dir=getwd(),  .reps=1, .chunks = 1, .mc.cores=1, .verbose=1,
                   .queue="long",
                   .script.name="doone.R",
                   .job.name="patr1ckm",
@@ -33,21 +33,25 @@ setup.gresults <- function(object, dir=getwd(),  .reps=1, .chunks = 1, .mc.cores
                   .email.addr="patr1ckm.crc.nd.edu",
                   .shell="bash"){
   arg_grid <- attr(object,"arg_grid")
-  dir <- paste0(dir, "/")
+  .dir <- paste0(.dir, "/")
   ## Chunk is the slowest varying factor. So adding replications
   ## will be extending the grid within chunk by more chunks, which can then be
-  ## mapped onto SGE_TASK_ID. Don't change this unless you found something better design wise.
+  ## mapped onto SGE_TASK_ID. Don't change this unless you found something better
   chunk.grid <- arg_grid[rep(1:nrow(arg_grid), times=.chunks),,drop=F]
-  chunk.grid$chunk <- rep(1:.chunks, each=nrow(arg_grid))
+  chunk.grid$.chunk <- rep(1:.chunks, each=nrow(arg_grid))
+  chunk.grid$.sge_id <- 1:nrow(chunk.grid)
   .f <- attr(object,".f")
   reps.per.chunk <- ceiling(.reps/.chunks)
 
-  cmd <- paste0("mkdir -p ", dir, "results")
+
+
+  cmd <- paste0("mkdir -p ", .dir, "results")
   mysys(cmd)
-  cmd <- paste0("mkdir -p ", dir, "SGE_Output")
+  cmd <- paste0("mkdir -p ", .dir, "SGE_Output")
   mysys(cmd)
 
-  write_submit(dir, script.name=.script.name, mc.cores=.mc.cores, tasks=nrow(chunk.grid),
+  write_submit(.dir, script.name=.script.name, mc.cores=.mc.cores,
+               tasks=paste0("1:", nrow(chunk.grid)),
                job.name=.job.name,
                out.dir = .out.dir,
                email = .email.options,
@@ -55,11 +59,17 @@ setup.gresults <- function(object, dir=getwd(),  .reps=1, .chunks = 1, .mc.cores
                shell = .shell)
 
   arg_grid <- chunk.grid
+
   attr(arg_grid, ".reps") <- reps.per.chunk*.chunks # total actual reps
   attr(arg_grid, ".rpc") <- reps.per.chunk # reps per chunk
-  save(arg_grid, file=paste0(dir, "arg_grid.Rdata"))
+  attr(arg_grid, ".chunks") <- .chunks
 
-  write_doone(.f=.f, dir=dir, reps=reps.per.chunk, mc.cores=.mc.cores, verbose=.verbose, script.name=.script.name)
+  save(arg_grid, file=paste0(.dir, "arg_grid.Rdata"))
+
+  write_doone(.f=.f, dir=.dir, reps=reps.per.chunk, mc.cores=.mc.cores, verbose=.verbose, script.name=.script.name)
+
+  attr(object, "arg_grid") <- arg_grid
+  return(object)
 }
 
 write_submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1, queue="long",
@@ -74,7 +84,7 @@ write_submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1, queue=
     "#$ -pe smp ",min(mc.cores), "-", max(mc.cores), "\n",
     "#$ -q ", queue, "\n",
     "#$ -N ", job.name, "\n",
-    "#$ -t 1:", tasks, "\n",
+    "#$ -t ", tasks, "\n",
     "#$ -o ", out.dir, " \n\n",
     "Rscript ", script.name, " $SGE_TASK_ID $NSLOTS \n")
   cat(temp,file=paste0(dir, "submit"))
@@ -90,8 +100,9 @@ write_doone <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
   reps <- ", reps," # this is reps per chunk
   load('arg_grid.Rdata')
   params <- arg_grid[cond,]
-  rep.id <- (reps*(params$chunk-1)+1):(reps*params$chunk)
-  params$chunk <- NULL # because f doesn't take chunk usually
+  rep.id <- (reps*(params$.chunk-1)+1):(reps*params$.chunk)
+  params$.chunk <- NULL    # because f doesn't take chunk usually
+  params$.sge_id <- NULL  # special variable not in f
   res.l <- do.rep(wrapWE(.f), as.list(params), .reps=reps, .rep.cores=ncores, .verbose=", verbose," )
   dir <- paste0('results/')
   fn <- paste0(dir, cond,'.Rdata')
@@ -153,16 +164,46 @@ collect.gresults <- function(object, dir=getwd()){
 #' to \code{NA}
 #' @export
 add_jobs <- function(object, ...){
-  arg_grid <- attr(object, "arg_grid") %>%
-    bind_rows(., expand.grid(...))
+  arg_grid <- attr(object, "arg_grid")
+  new_grid <- expand.grid(...)
+  attr(arg_grid, ".sge_")
+  new_id <- c(attr(arg_grid, ".sge_id"),
+              (max(attr(arg_grid, ".sge_id"))+1):nrow(new_grid))
+  arg_grid <- bind_rows(arg_grid, new_grid)
+  attr(arg_grid, ".sge_id") <- new_id
   attr(object, "arg_grid") <- arg_grid
   return(object)
 }
 
 add_rows <- add_jobs
 
-submit_jobs <- function(object, subset){
 
+#' Write a submit script for a subset of jobs (rows) from argument grid
+#' @export
+#' @param ... arguments to \code{select}
+#' @inheritParams setup
+filter_jobs <- function(object, ...,
+                        .dir= getwd(),
+                        .queue="long",
+                        .script.name="doone.R",
+                        .job.name="patr1ckm",
+                        .out.dir="SGE_Output",
+                        .email.options="a",
+                        .email.addr="patr1ckm.crc.nd.edu",
+                        .shell="bash"){
+  .dir <- paste0(.dir, "/")
+  tasks <- jobs(object) %>% filter(., ...) %>%
+    rownames %>% as.numeric
+
+  if(all(tasks == tasks[1]:tasks[length(tasks)])){
+    tasks <- paste0(tasks[1], ":", tasks[length(tasks)])
+  } else {
+    tasks <- paste0(tasks, sep=", ")
+  }
+
+  write_submit(dir = .dir,tasks=tasks, queue=.queue, script.name=.script.name,
+               job.name=.job.name, out.dir=.out.dir, email=.email.options,
+               email.addr=.email.addr, shell=.shell)
 }
 
 #' @export
@@ -178,6 +219,7 @@ mysys <- function(cmd){
 
 
 #' Submit jobs to SGE
+#' @param dir directory of submission script
 #' @export
 submit <- function(dir=getwd()){
   wd <- getwd()
@@ -216,12 +258,11 @@ sge <- function(dir=getwd()){
   submit(dir)
 }
 
-#' Return parameter grid
-#'
+#' Returns the parameter grid from grid_apply
+#' @param object object from grid_apply
 #' @export
-get_arg_grid <- function(dir=getwd()){
-  load(paste0(dir, "/arg_grid.Rdata"))
-  return(arg_grid)
+jobs <- function(object){
+ attr(object, "arg_grid")
 }
 
 

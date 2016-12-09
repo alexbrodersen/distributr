@@ -4,7 +4,7 @@
 \alias{setup.gresults}
 \title{Setup sge files from gresults}
 \usage{
-\method{setup}{gresults}(object, dir = getwd(), .reps = 1, .chunks = 1,
+\method{setup}{gresults}(object, .dir = getwd(), .reps = 1, .chunks = 1,
   .mc.cores = 1, .verbose = 1, .queue = "long",
   .script.name = "doone.R", .job.name = "patr1ckm",
   .out.dir = "SGE_Output", .email.options = "a",

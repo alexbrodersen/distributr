@@ -17,13 +17,18 @@
 #' \item{\code{key2}}{the rowname(s) of the returned data frame of \code{f} if present}
 #' \item{\code{key}}{the colname(s) of the returned data frame of \code{f}}
 #' \item{\code{value}}{the value of \code{f} at a set of parameters, if \code{.eval = FALSE}, returns \code{NA}}
-#' Errors are captured using \code{try}, converted to character, and available using \code{attr(object, "err")}
+#' Errors are captured using \code{try}, converted to character, and available
+#' using \code{attr(object, "err")}
 #' @details
-#' The attributes of the object include \code{grid} (the grid of parameter values), \code{time} (elapsed time), and \code{err} (list of errors).
+#' The attributes of the object include \code{grid} (the grid of parameter values),
+#'  \code{time} (elapsed time), and \code{err} (list of errors).
 #'
-#' If the values returned by \code{f} are not named, they will be named according to the rules of \code{as.data.frame}, typically \code{V1, V2, ...}.
+#' If the values returned by \code{f} are not named, they will be named according
+#' to the rules of \code{as.data.frame}, typically \code{V1, V2, ...}.
 #'
-#' The function application to each combination of meta-parameters (not replications) are distributed in parallel via \code{mclapply} and will not work in Windows.
+#' The function application to each combination of meta-parameters (not replications)
+#' are distributed in parallel via \code{mclapply} and will not work in Windows.
+#'
 #' @examples
 #' do.one <- function(a=1,b=2){c(sum=a+b,sub=a-b)}
 #' gapply(do.one, a=1:4,b=2:3, .reps=5)

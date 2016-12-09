@@ -6,6 +6,9 @@
 \usage{
 submit(dir = getwd())
 }
+\arguments{
+\item{dir}{directory of submission script}
+}
 \description{
 Submit jobs to SGE
 }
