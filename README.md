@@ -37,7 +37,7 @@ A compute plan can be setup and executed using the Sun/Open Grid Engine schedule
 
 ```{r}
 sim <- gapply(do.one, n = c(50, 100, 500), mu = c(1,5), sd = c(1, 5, 10), .eval=F)
-sim <- setup(sim, .reps=500, .chunks = 3, .mc.cores = 5)
+sim <- setup(sim, .reps=500, .mc.cores = 5)
 submit(sim)   
 res <- collect(sim) %>% tidy
 ```
