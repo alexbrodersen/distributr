@@ -33,11 +33,11 @@ warn(sim)
 
 ### Sun/Open Grid Engine
 
-A compute plan can be setup and executed using the Sun/Open Grid Engine scheduler.
+A compute plan can be setup and executed using the Sun/Open Grid Engine scheduler. Rows of the argument grid are submitted to nodes, and replications are carried out in parallel via `mclapply`. 
 
 ```{r}
 sim <- gapply(do.one, n = c(50, 100, 500), mu = c(1,5), sd = c(1, 5, 10), .eval=F)
-setup(sim, .reps=500, .chunks = 3, .mc.cores = 5)
+sim <- setup(sim, .reps=500, .chunks = 3, .mc.cores = 5)
 submit(sim)   
 res <- collect(sim) %>% tidy
 ```
@@ -46,5 +46,5 @@ Jobs can be added and filtered
 
 ```{r}
 add_jobs(sim, n=1000, mu=10, sd=50)
-filter_jobs(sim, n < 100)
+filter_jobs(sim, n < 100, .mc.cores=5)
 ```
