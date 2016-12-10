@@ -63,6 +63,11 @@ setup.gresults <- function(object,
   #chunk.grid$.sge_id <- 1:nrow(chunk.grid)
   #reps.per.chunk <- ceiling(.reps/.chunks)
 
+  # initialize sge_id if there is none
+  if(is.null(arg_grid$.sge_id)){
+    arg_grid$.sge_id <- 1:nrow(arg_grid)
+  }
+
   .f <- attr(object,".f")
 
   cmd <- paste0("mkdir -p ", .dir, "results")
@@ -90,6 +95,7 @@ setup.gresults <- function(object,
 write_submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1, queue="long",
                          job.name="patr1ckm", out.dir="SGE_Output", email="a",
                          email.addr="patr1ckm.crc.nd.edu", shell="bash"){
+
   cmd <- paste0("touch ", dir, "submit")
   mysys(cmd)
   temp <- paste0(
@@ -102,7 +108,7 @@ write_submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1, queue=
     "#$ -t ", tasks, "\n",
     "#$ -o ", out.dir, " \n\n",
     "Rscript ", script.name, " $SGE_TASK_ID $NSLOTS \n")
-  cat(temp,file=paste0(dir, "submit"))
+  cat(temp, file=paste0(dir, "submit"))
 }
 
 write_doone <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doone.R"){
@@ -180,11 +186,16 @@ collect.gresults <- function(object, dir=getwd()){
 add_jobs <- function(object, ...){
   arg_grid <- attr(object, "arg_grid")
   new_grid <- expand.grid(...)
-  attr(arg_grid, ".sge_")
-  new_id <- c(attr(arg_grid, ".sge_id"),
-              (max(attr(arg_grid, ".sge_id"))+1):nrow(new_grid))
-  arg_grid <- bind_rows(arg_grid, new_grid)
-  attr(arg_grid, ".sge_id") <- new_id
+
+  if(!is.null(arg_grid$.sge_id)){
+    last <- max(arg_grid$.sge_id)
+    new_grid$.sge_id <- (last+1):(last+nrow(new_grid))
+    arg_grid <- bind_rows(arg_grid, new_grid)
+  } else {
+    arg_grid <- bind_rows(arg_grid, new_grid)
+    arg_grid$.sge_id <- 1:nrow(arg_grid)
+  }
+
   attr(object, "arg_grid") <- arg_grid
   return(object)
 }
@@ -192,11 +203,13 @@ add_jobs <- function(object, ...){
 add_rows <- add_jobs
 
 
-#' Write a submit script for a subset of jobs (rows) from argument grid
+#' Filter a subset of jobs (rows) from argument grid and modify submission script
+#'
 #' @export
 #' @param ... arguments to \code{select}
 #' @inheritParams setup
 filter_jobs <- function(object, ...,
+                        .mc.cores=1,
                         .dir= getwd(),
                         .queue="long",
                         .script.name="doone.R",
@@ -206,18 +219,31 @@ filter_jobs <- function(object, ...,
                         .email.addr="patr1ckm.crc.nd.edu",
                         .shell="bash"){
   .dir <- paste0(.dir, "/")
-  tasks <- jobs(object) %>% filter(., ...) %>%
-    rownames %>% as.numeric
+  arg_grid <- jobs(object)
+  if(is.null(arg_grid$.sge_id)){
+    arg_grid$.sge_id <- 1:nrow(arg_grid)
+  }
+  arg_grid <- filter(arg_grid, ...)
+  tasks <- select(arg_grid, .sge_id) %>% unlist(., use.names = F)
 
   if(all(tasks == tasks[1]:tasks[length(tasks)])){
     tasks <- paste0(tasks[1], ":", tasks[length(tasks)])
   } else {
-    tasks <- paste0(tasks, sep=", ")
+    tasks <- paste0(tasks, collapse=", ")
   }
+  print(head(arg_grid))
 
-  write_submit(dir = .dir,tasks=tasks, queue=.queue, script.name=.script.name,
-               job.name=.job.name, out.dir=.out.dir, email=.email.options,
-               email.addr=.email.addr, shell=.shell)
+  write_submit(.dir, script.name=.script.name,
+               mc.cores=.mc.cores,
+               tasks=tasks,
+               job.name=.job.name,
+               out.dir = .out.dir,
+               email = .email.options,
+               email.addr = .email.addr,
+               shell = .shell)
+
+  attr(object, "arg_grid") <- arg_grid
+  invisible(object)
 }
 
 #' @export
