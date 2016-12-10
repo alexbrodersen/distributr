@@ -3,7 +3,7 @@ Tidy distributed computing workflows for R and Sun/Open Grid Engine
 
     devtools::install_github("patr1ckm/distributr")
     
-The basic function is `grid_apply`, which applies a function over a grid of it's arguments, returning results in a list. Function applications can be executed repeatedly, in parallel, and catching warnings and errors.
+The basic function is `grid_apply`, which applies a function over a grid of it's arguments (`expand.grid(...)`), returning results in a list. Function applications can be executed repeatedly, in parallel, and catching warnings and errors.
 
 ### grid_apply
  
