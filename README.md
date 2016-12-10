@@ -45,6 +45,7 @@ res <- collect(sim) %>% tidy
 Jobs can be added and filtered
 
 ```{r}
+jobs(sim)
 add_jobs(sim, n=1000, mu=10, sd=50)
 filter_jobs(sim, n < 100, .mc.cores=5)
 ```
