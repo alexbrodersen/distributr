@@ -6,8 +6,8 @@
 \usage{
 filter_jobs(object, ..., .mc.cores = 1, .dir = getwd(), .queue = "long",
   .script.name = "doone.R", .job.name = "distributr",
-  .out.dir = "SGE_Output", .email.options = "", .email.addr = "",
-  .shell = "csh")
+  .out.dir = "SGE_Output", .email.options = "a", .email.addr = NULL,
+  .shell = "bash")
 }
 \arguments{
 \item{object}{gapply object}

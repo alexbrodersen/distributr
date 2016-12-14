@@ -31,8 +31,8 @@ setup.gresults <- function(object,
                   .job.name="distributr",
                   .out.dir="SGE_Output",
                   .email.options="a",
-                  .email.addr="",
-                  .shell="csh"){
+                  .email.addr=NULL,
+                  .shell="bash"){
   arg_grid <- attr(object,"arg_grid")
   arg_grid$.sge_id <- 1:nrow(arg_grid)
   .dir <- paste0(.dir, "/")
@@ -94,21 +94,32 @@ setup.gresults <- function(object,
 
 write_submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1, queue="long",
                          job.name="distributr", out.dir="SGE_Output", email="a",
-                         email.addr="", shell="csh"){
+                         email.addr=NULL, shell="csh"){
 
   cmd <- paste0("touch ", dir, "submit")
   mysys(cmd)
-  temp <- paste0(
-    "#!/bin/", shell, " \n",
-    "#$ -M ", email.addr, "\n",
-    "#$ -m ", email, "\n",
-    "#$ -pe smp ",min(mc.cores), "-", max(mc.cores), "\n",
-    "#$ -q ", queue, "\n",
-    "#$ -N ", job.name, "\n",
-    "#$ -t ", tasks, "\n",
-    "#$ -o ", out.dir, " \n\n",
-    "Rscript ", script.name, " $SGE_TASK_ID $NSLOTS \n")
-  cat(temp, file=paste0(dir, "submit"))
+  if(!is.null(email.addr)){
+    submit <- paste0(
+      "#!/bin/", shell, " \n",
+      "#$ -M ", email.addr, "\n",
+      "#$ -m ", email, "\n",
+      "#$ -pe smp ",min(mc.cores), "-", max(mc.cores), "\n",
+      "#$ -q ", queue, "\n",
+      "#$ -N ", job.name, "\n",
+      "#$ -t ", tasks, "\n",
+      "#$ -o ", out.dir, " \n\n",
+      "Rscript ", script.name, " $SGE_TASK_ID $NSLOTS \n")
+  } else {
+    submit <- paste0(
+      "#!/bin/", shell, " \n",
+      "#$ -pe smp ",min(mc.cores), "-", max(mc.cores), "\n",
+      "#$ -q ", queue, "\n",
+      "#$ -N ", job.name, "\n",
+      "#$ -t ", tasks, "\n",
+      "#$ -o ", out.dir, " \n\n",
+      "Rscript ", script.name, " $SGE_TASK_ID $NSLOTS \n")
+  }
+  cat(submit, file=paste0(dir, "submit"))
 }
 
 write_doone <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doone.R"){
@@ -220,9 +231,9 @@ filter_jobs <- function(object, ...,
                         .script.name="doone.R",
                         .job.name="distributr",
                         .out.dir="SGE_Output",
-                        .email.options="",
-                        .email.addr="",
-                        .shell="csh"){
+                        .email.options="a",
+                        .email.addr=NULL,
+                        .shell="bash"){
   .dir <- paste0(.dir, "/")
   arg_grid <- jobs(object)
   if(is.null(arg_grid$.sge_id)){

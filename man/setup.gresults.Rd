@@ -7,7 +7,7 @@
 \method{setup}{gresults}(object, .dir = getwd(), .reps = 1, .mc.cores = 1,
   .verbose = 1, .queue = "long", .script.name = "doone.R",
   .job.name = "distributr", .out.dir = "SGE_Output", .email.options = "a",
-  .email.addr = "", .shell = "csh")
+  .email.addr = NULL, .shell = "bash")
 }
 \description{
 Setup sge files from gresults
