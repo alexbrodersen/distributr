@@ -5,9 +5,9 @@
 \title{Filter a subset of jobs (rows) from argument grid and modify submission script}
 \usage{
 filter_jobs(object, ..., .mc.cores = 1, .dir = getwd(), .queue = "long",
-  .script.name = "doone.R", .job.name = "patr1ckm",
-  .out.dir = "SGE_Output", .email.options = "a",
-  .email.addr = "patr1ckm.crc.nd.edu", .shell = "bash")
+  .script.name = "doone.R", .job.name = "distributr",
+  .out.dir = "SGE_Output", .email.options = "", .email.addr = "",
+  .shell = "csh")
 }
 \arguments{
 \item{object}{gapply object}

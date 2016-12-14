@@ -28,11 +28,11 @@ setup.gresults <- function(object,
                   .verbose=1,
                   .queue="long",
                   .script.name="doone.R",
-                  .job.name="patr1ckm",
+                  .job.name="distributr",
                   .out.dir="SGE_Output",
                   .email.options="a",
-                  .email.addr="patr1ckm.crc.nd.edu",
-                  .shell="bash"){
+                  .email.addr="",
+                  .shell="csh"){
   arg_grid <- attr(object,"arg_grid")
   arg_grid$.sge_id <- 1:nrow(arg_grid)
   .dir <- paste0(.dir, "/")
@@ -93,8 +93,8 @@ setup.gresults <- function(object,
 }
 
 write_submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1, queue="long",
-                         job.name="patr1ckm", out.dir="SGE_Output", email="a",
-                         email.addr="patr1ckm.crc.nd.edu", shell="bash"){
+                         job.name="distributr", out.dir="SGE_Output", email="a",
+                         email.addr="", shell="csh"){
 
   cmd <- paste0("touch ", dir, "submit")
   mysys(cmd)
@@ -125,8 +125,11 @@ write_doone <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
   rep.id <- 1:reps
   #params$.chunk <- NULL    # because f doesn't take chunk usually
   params$.sge_id <- NULL  # special variable not in f
+  start <- proc.time()
   res.l <- do.rep(wrapWE(.f), as.list(params), .reps=reps, .rep.cores=ncores, .verbose=", verbose," )
+  end <- proc.time()
   dir <- paste0('results/')
+  attr(res.l, \"time\") <- start - end
   fn <- paste0(dir, cond,'.Rdata')
   save(res.l, file=fn) \n")
 
@@ -165,6 +168,8 @@ collect.gresults <- function(object, dir=getwd()){
   warn.id <- which(unlist(lapply(warn, function(x){!is.null(x)})))
   warn.list <- warn[warn.id]
   names(warn.list) <- warn.id
+
+  times <- lapply(cond.l, function(r){attr(r, "time")})
 
   res <- cond.l
   class(res) <- c(class(res), "gresults")
@@ -213,11 +218,11 @@ filter_jobs <- function(object, ...,
                         .dir= getwd(),
                         .queue="long",
                         .script.name="doone.R",
-                        .job.name="patr1ckm",
+                        .job.name="distributr",
                         .out.dir="SGE_Output",
-                        .email.options="a",
-                        .email.addr="patr1ckm.crc.nd.edu",
-                        .shell="bash"){
+                        .email.options="",
+                        .email.addr="",
+                        .shell="csh"){
   .dir <- paste0(.dir, "/")
   arg_grid <- jobs(object)
   if(is.null(arg_grid$.sge_id)){
