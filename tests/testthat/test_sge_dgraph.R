@@ -3,7 +3,7 @@ if(interactive()) setwd("tests/testthat/")
 fdir <- "tmp_nl"
 
 
-system(paste0("rm -rf ", fdir))
+system(paste0("rm -rf ", fdir), ignore.stdout = T)
 
 ff <- function(a, b){c(a + b, a - b)}
 gg <- function(y, arg1){y^2}
@@ -30,8 +30,6 @@ test_that("sge dgraph setup", {
 
 setwd(fdir)
 
-context("sge_dgraph_doone")
-
 for(i in 1:39) {
   cmd <- paste0("Rscript doone.R ", i, " 1")
   system(cmd, ignore.stdout = T)
@@ -42,7 +40,7 @@ test_that("sge dgraph load_results", {
   expect_equal(unlist(load_results("t1.Rdata", fdir)), rep(c(2, 0), .reps))
 })
 
-test_that("sge_dgraph_collect", {
+test_that("sge dgraph collect", {
   expect_equivalent(collect(o, task = 1, dir = fdir),
                     load_results("t1.Rdata", fdir))
 
@@ -73,13 +71,12 @@ test_that("sge_dgraph_collect", {
 
   res2 <- unlist(collect(o, dir = fdir))
   expect_equal(res, res2)
-})
 
-context("sge_dgraph_tidy")
-test_that("sge dgraph tidy", {
   res.tidy <- collect(o, dir = fdir) %>% tidy(., dir = fdir)
   expect_equal(res.tidy$value, fin.ans)
+
 })
+
 
 #context("sge_dgraph_collect_node")
 

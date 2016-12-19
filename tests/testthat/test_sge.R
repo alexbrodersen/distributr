@@ -46,7 +46,7 @@ test_that("setup verbose", {
 
   msg <- capture.output(clean("tmp"))
 
-  out <- setup(out, .dir="tmp", .reps = 5, .verbose=3)
+  msg <- capture.output(out <- setup(out, .dir="tmp", .reps = 5, .verbose=3))
   setwd("tmp")
   system("Rscript doone.R 1 1", ignore.stdout = T)
   system("Rscript doone.R 2 1", ignore.stdout = T)
@@ -79,8 +79,8 @@ test_that("add_jobs", {
   ans$.sge_id <- 1:nrow(ans)
   expect_equal(new_grid, ans)
 
-  clean(dir="tmp")
-  out2 <- setup(out2, .dir="tmp", .reps = 5, .verbose=3)
+  msg <- capture.output(clean(dir="tmp"))
+  msg <- capture.output(out2 <- setup(out2, .dir="tmp", .reps = 5, .verbose=3))
 
     setwd("tmp")
   for(i in 1:4) system(paste0("Rscript doone.R ", i," 1"), ignore.stdout = T)
@@ -94,17 +94,16 @@ test_that("add_jobs", {
 })
 
 test_that("filter jobs", {
-  ff <- filter_jobs(out, .dir="tmp", a==1)
+  msg <- capture.output(ff <- filter_jobs(out, .dir="tmp", a==1))
   sub <- readLines("tmp/submit")
   expect_equal(sub[grep("-t", sub)], "#$ -t 1:1")
 
   out2 <- add_jobs(out, a=5, b=c(2, 4))
-  filter_jobs(out2, .dir="tmp", a < 2 | b > 2)
+  msg <- capture.output(filter_jobs(out2, .dir="tmp", a < 2 | b > 2))
   sub <- readLines("tmp/submit")
   expect_equal(sub[grep("-t", sub)], "#$ -t 1, 4")
 })
 
-context("test_overwrite")
 test_that("overwriting prompts a msg", {
   if(interactive()){
     out <- gapply(do.one,a=1:2,b=2, .reps=2, .verbose=0, .eval = F)

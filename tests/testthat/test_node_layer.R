@@ -1,10 +1,16 @@
-context("dgraph api")
+context("node, layer")
+
+ff <- function(a, b){a + b}
+gg <- function(x, arg1){x^2}
+hh <- function(x, arg2){-x}
+
+o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
+  layer(node(hh, arg2=1), node(gg, arg1=1))
+
+ored <- o %>% layer(node(tidy), .reduce = TRUE)
+
 
 test_that("node", {
-  ff <- function(a, b){a + b}
-  gg <- function(x, arg1){x^2}
-  hh <- function(x, arg2){-x}
-
   n1 <- node(ff, a=1:3)
   expect_true(is.node(n1))
 })
@@ -13,15 +19,13 @@ test_that("layer", {
   l1 <- layer(.dgraph=NULL, node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5), .id=1)
   expect_true(is.dgraph(l1))
 
-  l1 <- distributr:::assign_node_ids(l1, start = 0)
+  l1 <- assign_node_ids(l1, start = 0)
 
   l2 <- layer(node(hh, arg2=11:14), node(gg, arg1=11:13), .id = 2)
 
   l1 <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5), .id=1)
   l2 <- layer(node(hh, arg2=1), node(gg, arg1=1), .id=2)
 
-  o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
-    layer(node(hh, arg2=1), node(gg, arg1=1))
   expect_true(!is.null(attr(o, ".control")))
   expect_true(is.dgraph(o))
 
@@ -36,18 +40,17 @@ test_that("dgraph node, layer ids", {
   expect_equal(sapply(o, function(l){attr(l, ".id")}), c(1, 2))
 })
 
+
 test_that("dgraph layer reduce", {
-  o <- o %>% layer(node(tidy), .reduce = TRUE)
-  graph <- attr(o, ".graph")
+  graph <- attr(ored, ".graph")
   expect_true(graph[with(graph, layer == 3),]$dep == 0)
   expect_true(graph[with(graph, layer == 3),]$ntasks == 1)
   expect_true(nrow(graph) == 7)
   expect_true(max(graph$layer) == 3)
 })
 
-
 test_that("dgraph get_node", {
-  for(i in 1:5) expect_true(get_node(o, i)$.id == i)
+  for(i in 1:5) expect_true(get_node(ored, i)$.id == i)
 })
 
 test_that("dgraph control", {
@@ -64,6 +67,7 @@ test_that("dgraph control", {
 
 })
 
+# 2016-12-19 doesn't work with ored?
 test_that("expand_grid_dgraph", {
   param.grid <- expand_grid_dgraph(o)
   ans <- dplyr::bind_rows(list(expand.grid(a=1:3, b=1:3, arg2=1),

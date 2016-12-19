@@ -1,4 +1,4 @@
-context("test_summary_gapply")
+context("summary gapply")
 
 
 do.one <- function(a=1,b=2){data.frame(sum=a+b,sub=a-b)}

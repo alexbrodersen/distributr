@@ -1,4 +1,4 @@
-context("test_gapply")
+context("gapply")
 
 test_that("do.rep", {
   do.one <- function(a=1,b=2){a+b}
@@ -82,6 +82,8 @@ test_that("grid_apply single named return value", {
 
 test_that("grid_apply multiple unnamd return values", {
   do.one <- function(a=1,b=2){c(a+b, a - b)}
+  grid <- expand.grid(a=1:2,b=2)
+
   out <- gapply(do.one,.reps=2, a=1:2,b=2,.verbose=0)
   out1 <- grid_apply(do.one,.reps=2, a=1:2,b=2,.verbose=0) %>% tidy
   expect_equal(colnames(out),c("a","b",".rep", "key", "value"))
@@ -100,6 +102,7 @@ test_that("grid_apply Multiple named return values", {
   # Test that key is a factor, and has the correct levels
   expect_equal(unique(out$key),c("sum","sub"))
   expect_equivalent(out, out1)
+  ans <- c(1+2, 1-2, 1+2, 1-2, 2 + 2, 2 - 2, 2 + 2, 2 - 2)
   expect_equal(out$value, ans)
 })
 
