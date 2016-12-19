@@ -42,7 +42,7 @@ submit(sim)
 res <- collect(sim) %>% tidy
 ```
 
-Jobs can be added and filtered
+Jobs can be added and filtered. The user is warned if the job data base would be corrupted.
 
 ```{r}
 jobs(sim)
