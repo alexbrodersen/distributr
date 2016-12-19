@@ -44,10 +44,10 @@ setup.gresults <- function(object,
   #  and the chunked arg_grid from 'setup'.
   #  Dealing with it has wasted so much of my time, and there is no easy solution.
   #
-  #  The cleanest solution would be to never evaluate and store the full arg_grid, and
-  #  only subset arg_grid rows when necessary.
+  #  The cleanest solution would be to never evaluate and store the full arg_grid,
+  # and only subset arg_grid rows when necessary.
   #
-  #  Simple chunking can be handled easily by the user by just including 'chunk' as a
+  #  Chunking can be handled easily by the user by just including 'chunk' as a
   #  variable. Everything would work, and .reps becomes .reps per chunk automatically.
   #  'chunk' can then just be removed in the analysis.
   #  The results are transparent, rather than magical (my preference).
@@ -83,7 +83,12 @@ setup.gresults <- function(object,
                email.addr = .email.addr,
                shell = .shell)
 
-  save(arg_grid, file=paste0(.dir, "arg_grid.Rdata"))
+  grid_name <- paste0(.dir, "arg_grid.Rdata")
+  res <- check_overwrite(object=object, .dir=.dir)
+  if(res == 1){
+    cat("writing arg_grid.Rdata", fill=T)
+    save(arg_grid, file=grid_name)
+  }
 
   write_doone(.f=.f, dir=.dir, reps=.reps, mc.cores=.mc.cores, verbose=.verbose, script.name=.script.name)
 
@@ -292,10 +297,17 @@ clean <- function(dir=getwd()){
   dir <- paste0(dir, "/")
   rdir <- paste0(dir, "results/")
   sdir <- paste0(dir, "SGE_Output/")
+  arg_name <- paste0(dir, "arg_grid.Rdata")
   if(file.exists(rdir)){
-    cmd <- paste0("rm -rf ", rdir, "*")
+    cmd <- paste0("rm -rf ", rdir, "")
     mysys(cmd)
-    cmd <- paste0("rm -rf ", sdir, "*")
+    cmd <- paste0("rm -rf ", sdir, "")
+    mysys(cmd)
+    cmd <- paste0(paste0("rm ", arg_name))
+    mysys(cmd)
+    cmd <- paste0("rm ", dir, "submit")
+    mysys(cmd)
+    cmd <- paste0("rm ", dir, "doone.R")
     mysys(cmd)
   }
 }

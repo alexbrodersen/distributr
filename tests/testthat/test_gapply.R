@@ -1,4 +1,4 @@
-context("do.rep")
+context("test_gapply")
 
 ## write tests for different numbers of parameters!
 
