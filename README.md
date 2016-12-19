@@ -42,10 +42,11 @@ submit(sim)
 res <- collect(sim) %>% tidy
 ```
 
-Jobs can be added and filtered. The user is warned if the job data base would be corrupted.
+### Job Access, Adding jobs, Selecting a subset of jobs
 
 ```{r}
-jobs(sim)
-add_jobs(sim, n=1000, mu=10, sd=50)
-filter_jobs(sim, n < 100, .mc.cores=5)
+jobs(sim)                              # access jobs grid (argument grid)
+add_jobs(sim, n=1000, mu=10, sd=50)    # add jobs to plan
+filter_jobs(sim, n < 100, .mc.cores=5) # filter jobs as in dplyr
 ```
+
