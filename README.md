@@ -3,7 +3,7 @@ Tidy distributed computing workflows for R and Sun/Open Grid Engine
 
     devtools::install_github("patr1ckm/distributr")
     
-The basic function is `grid_apply`, which applies a function over a grid of it's arguments (`expand.grid(...)`), returning results in a list. Function applications can be executed repeatedly, in parallel, and catching warnings and errors.
+The basic function is `grid_apply`, which applies a function over a grid of its arguments (`expand.grid(...)`), returning results in a list. Function applications can be executed repeatedly, in parallel, and catching warnings and errors.
 
 ### grid_apply
  
@@ -16,7 +16,7 @@ sim <- grid_apply(do.one, n = c(50, 100, 500), mu = c(1,5), sd = c(1, 5, 10),
 
 ### tidy
 
-A tidy method is provided that aggregates lists of results into a long vector, and merging results with the argument grid. `tidy` works with lists of vectors, lists, and data frames. The function `gapply` runs `grid_apply` followed by `tidy`. 
+A tidy method is provided that merges the list of results with the argument grid, putting the results in tidy (long) form. This format is convenient for plotting and further data analysis. `tidy` works with lists of vectors, lists, and data frames. The function `gapply` runs `grid_apply` followed by `tidy`. 
 
 ```{r, eval=TRUE}
 res <- sim %>% tidy
