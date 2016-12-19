@@ -16,8 +16,8 @@ test_that("setup", {
 
   ## This is a hack to get the tests to run from this directory
   setwd("tmp")
-  system("Rscript doone.R 1 1")
-  system("Rscript doone.R 2 1")
+  msg <- system("Rscript doone.R 1 1", ignore.stdout = T)
+  msg <- system("Rscript doone.R 2 1", ignore.stdout = T)
   setwd("../")
 
   expect_true(file.exists("tmp/results/1.Rdata"))
@@ -40,16 +40,16 @@ test_that("setup verbose", {
 
   msg <- capture.output(out <- setup(out, .dir="tmp", .reps = 5, .verbose=2))
   setwd("tmp")
-  system("Rscript doone.R 1 1")
-  system("Rscript doone.R 2 1")
+  system("Rscript doone.R 1 1", ignore.stdout = T)
+  system("Rscript doone.R 2 1", ignore.stdout = T)
   setwd("../")
 
   msg <- capture.output(clean("tmp"))
 
   out <- setup(out, .dir="tmp", .reps = 5, .verbose=3)
   setwd("tmp")
-  system("Rscript doone.R 1 1")
-  system("Rscript doone.R 2 1")
+  system("Rscript doone.R 1 1", ignore.stdout = T)
+  system("Rscript doone.R 2 1", ignore.stdout = T)
   setwd("../")
 })
 
@@ -58,8 +58,8 @@ test_that("collect_sge ", {
 
   ## This is a hack to get the tests to run from this directory
   setwd("tmp")
-  system("Rscript doone.R 1 1")
-  system("Rscript doone.R 2 1")
+  system("Rscript doone.R 1 1", ignore.stdout = T)
+  system("Rscript doone.R 2 1", ignore.stdout = T)
   setwd("../")
 
   outc <- collect(out, dir = "tmp") %>% tidy
@@ -81,11 +81,9 @@ test_that("add_jobs", {
 
   clean(dir="tmp")
   out2 <- setup(out2, .dir="tmp", .reps = 5, .verbose=3)
-  setwd("tmp")
-  system("Rscript doone.R 1 1")
-  system("Rscript doone.R 2 1")
-  system("Rscript doone.R 3 1")
-  system("Rscript doone.R 4 1")
+
+    setwd("tmp")
+  for(i in 1:4) system(paste0("Rscript doone.R ", i," 1"), ignore.stdout = T)
   setwd("../")
 
   outc <- collect(out2, dir = "tmp") %>% tidy
