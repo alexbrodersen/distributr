@@ -13,3 +13,4 @@ Suggests: knitr,
 VignetteBuilder: knitr
 Depends: dplyr, purrr, gtools
 
+

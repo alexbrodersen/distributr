@@ -6,6 +6,14 @@
 \usage{
 \method{tidy}{gresults}(x, arg_grid = NULL, .reps = NULL)
 }
+\arguments{
+\item{x}{results from \code{collect} or \code{grid_apply}}
+
+\item{arg_grid}{argument grid; if NULL (default) looks for arg_grid
+as an attribute to \code{x}}
+
+\item{.reps}{the number of reps to aggregate}
+}
 \description{
 Tidy an object from grid_apply
 }

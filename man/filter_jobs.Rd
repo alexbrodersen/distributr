@@ -10,15 +10,17 @@ filter_jobs(object, ..., .mc.cores = 1, .dir = getwd(), .queue = "long",
   .shell = "bash")
 }
 \arguments{
-\item{object}{gapply object}
+\item{object}{object from \code{grid_apply} or \code{gapply} with \code{.eval=FALSE}}
 
 \item{...}{arguments to \code{select}}
 
 \item{.mc.cores}{number of cores used to run replications in parallel (can be a range)}
 
+\item{.dir}{directory name relative to the current working directory}
+
 \item{.queue}{name of queue}
 
-\item{.script.name}{name of script}
+\item{.script.name}{name of script (default \code{doone.R})}
 
 \item{.job.name}{name of job}
 

@@ -51,7 +51,8 @@ are distributed in parallel via \code{mclapply} and will not work in Windows.
 }
 \section{Functions}{
 \itemize{
-\item \code{grid_apply}: same as \code{gapply}, but does not simplify results.
+\item \code{grid_apply}: same as \code{gapply}, but does not simplify results,
+leaving results as a list of vectors, lists, or data frames.
 }}
 \examples{
 do.one <- function(a=1,b=2){c(sum=a+b,sub=a-b)}

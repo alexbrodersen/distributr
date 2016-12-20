@@ -1,6 +1,7 @@
 
 #' @export
-#' @describeIn gapply same as \code{gapply}, but does not simplify results.
+#' @describeIn gapply same as \code{gapply}, but does not simplify results,
+#' leaving results as a list of vectors, lists, or data frames.
 #' @importFrom purrr transpose
 #' @importFrom parallel mclapply
 grid_apply <- function(.f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T, .paramid=NULL){

@@ -1,26 +1,98 @@
 ## Interactive setting up of simulation from gapply test object
 
-#' setup sge simulation
-#' @param object gapply object
-#' @param dir directory name relative to the current working directory, ends in '/'
+#' Setup SGE jobs
+#'
+#' In a given directory, writes the argument grid given from \code{grid_apply(.f, ..., .eval=FALSE)},
+#' an Rscript to run \code{.f} on one set of arguments,
+#' a submission script to run \code{.f} on combination of arguments,
+#' and directories to store results and job log files.
+#'
+#' @param object object from \code{grid_apply} or \code{gapply} with \code{.eval=FALSE}
+#' @param .dir directory name relative to the current working directory
 #' @param .reps total number of replications for each condition
 #' @param .mc.cores number of cores used to run replications in parallel (can be a range)
-#' @param .verbose verbose level
-#' @param .script.name name of script
+#' @param .verbose verbose level: \code{1} prints '.' for each replication,
+#' \code{2} prints '.' on completion and prints the current arguments,
+#' \code{3} prints the current arguments and results
+#' @param .script.name name of script (default \code{doone.R})
 #' @param .queue name of queue
 #' @param .job.name name of job
 #' @param .out.dir name of directory in which to put SGE output files.
 #' @param .email.options one or more characters from "bea" meaning email when "job Begins", "job Ends", and "job Aborts". Default is "a".
 #' @param .email.addr email address
 #' @param .shell shell to use. Default is 'bash'
+#' @return Invisibly, the original object with argument grid modified to append a
+#' column \code{$.sge_id} assigning each row to a unique job id.
+#'
+#' As side effects, the function writes the following objects to \code{.dir}:
+#' \item{arg_grid.Rdata}{Data frame containing the argument grid,
+#' appended with a column \code{sge_id} corresponding to the task id of each row}
+#' \item{doone.R}{Script to run one job, or one row from \code{arg_grid}}
+#' \item{submit}{Submission script specifying a task array over the grid of parameters
+#' in (all rows of) arg_grid.Rdata}
+#' \item{results/}{Folder to store results. Each file is \code{1.Rdata}, \code{2.Rdata}, ...
+#' corresponding to the task id (row in \code{arg_grid})}
+#' \item{SGE_Output/}{ Folder for output from SGE}
+#'
 #' @details
+#' Long running \code{grid_apply} computations can be easily run in parallel on
+#' SGE using array tasks. Each row in the argument grid given by \code{expand_grid(...)}
+#' is mapped to a unique task id, which is run on a separate node.
+#'  \code{setup()} makes this easy by writing
+#' the argument grid (\code{arg_grid.Rdata}), R script to run one combination of arguments, a submission
+#' script assigning all rows to a unique task id, and folders to store results in
+#' a given directory. Jobs are submitted to the scheduler by running \code{qsub submit}
+#' at the prompt, or by running \code{submit()} within R.
+#'
+#' The argument grid (\code{arg_grid}) is saved to \code{.dir} as \code{arg_grid.Rdata}.
+#' It contains the columns of \code{expand.grid(...)} from \code{grid_apply}.
+#' A column \code{$.sge_id} is appended that assigns each row a unique job id.
+#'
+#' A simple R script (\code{doone.R}) is provided that runs \code{.f} on one row
+#' of \code{arg_grid}. Running \code{doone.R} at the command line exactly replicates
+#' how the script will be run on each node.
+#'
+#' A file (\code{submit}) is also written, which specifies a task array for \code{qsub}
+#' for all jobs in \code{arg_grid}. It can be submitted to the queue by running
+#' \code{qsub submit} at the command line. Job status can be monitored with \code{qstat}.
+#' Various email
+#'
+#' Results are stored in \code{results/}, as \code{$SGE_TASK_ID.Rdata} where
+#' \code{SGE_TASK_ID} is the array task corresponding to a unique row in \code{arg_grid}.
+#' It is sometimes convenient to access this variable within \code{.f}, which can
+#' be done by \code{Sys.getenv("SGE_TASK_ID")}. This might be used to set seeds
+#' or to cache intermediate results for example.
+#'
+#' The function \code{.f} can be run multiple times for every row in \code{arg_grid}
+#' by setting \code{.reps > 1}. These replications can be run in parallel using
+#' \code{mclapply} by setting \code{.mc.cores > 1}. To decrease waiting times in the queue,
+#' \code{mc.cores} can be given a range (e.g. \code{mc.cores = c(1, 8)}), and the job will
+#' be submitted when a given set of cores in that range is available. To access the
+#' number of cores given to each job, use \code{Sys.getenv("NSLOTS")}.
+#'
+#' It is easy to corrupt \code{arg_grid.Rdata} by running \code{setup} on different
+#' sets of arguments, making future merges of results with arguments based on
+#' \code{.sge_id} invalid. If \code{arg_grid.Rdata} already exists, \code{setup}
+#' verifies with user input that an overwrite is intended.
+#' @examples
+#' \dontrun{
+#' do.one <- function(a, b){c(sum=a+b, sub=a-b)}
+#' plan <- grid_apply(do.one, a=1:5, b=3, .eval=FALSE)
+#' jobs(plan)  # shows the original argument grid
+#' plan <- setup(plan, .reps=5, .mc.cores=c(1, 5))
+#' jobs(plan)  # modified with a column showing unique job ids
+#' }
 #' @export
+#' @seealso \link{grid_apply} to define the grid, \link{jobs} to see the grid,
+#' \link{collect} to collect completed results, and \link{tidy} to merge
+#' completed results with the argument grid.
 setup <- function(x, ...){
   UseMethod("setup")
 }
 
 #' Setup sge files from gresults
 #' @export
+#' @describeIn setup
 setup.gresults <- function(object,
                   .dir=getwd(),
                   .reps=1,
@@ -145,7 +217,7 @@ write_doone <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
   res.l <- do.rep(wrapWE(.f), as.list(params), .reps=reps, .rep.cores=ncores, .verbose=", verbose," )
   end <- proc.time()
   dir <- paste0('results/')
-  attr(res.l, \"time\") <- start - end
+  attr(res.l, \"time\") <- end - start
   fn <- paste0(dir, cond,'.Rdata')
   save(res.l, file=fn) \n")
 
@@ -157,6 +229,7 @@ write_doone <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
 #' @export
 #' @importFrom gtools mixedsort
 #' @importFrom tidyr gather
+#' @importFrom dplyr collect
 collect.gresults <- function(object, dir=getwd()){
   dir <- paste0(dir, "/")
   load(paste0(dir, "arg_grid.Rdata"))

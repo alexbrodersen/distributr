@@ -1,11 +1,37 @@
 
-#' Tidy x
+#' Tidy results from grid_apply or dgraph
+#'
+#' Returns \code{key=value} pairs obtained from applying a \code{f} to a grid
+#' of parameters using \code{grid_apply}, merging with the grid of parameters.
+#' @param x results from \code{grid_apply}
+#' @param ... additional arguments passed to either \code{tidy.gresults} or
+#' \code{tidy.dgraph}
+#' @details Tidying depends on the form of the results returned from applying a
+#' function \code{f} to a grid of parameters. If the results are a data frame,
+#' the row and column names are mapped to two keys. If the results are a vector,
+#' the names of the elements are mapped to a single key. If the results are unnamed,
+#' names are assigned as in \code{as.data.frame}. See \code{\link{stack_list}} for
+#' further details.
+#' @return Returns non-error results as a \code{data.frame} in long form with
+#'  the following columns:
+#' \item{...}{Columns corresponding to grid of parameters given in
+#' \code{expand.grid(...)}}
+#' \item{\code{rep}}{the replication number}
+#' \item{\code{key2}}{the rowname(s) of the returned data frame of \code{f} if present}
+#' \item{\code{key}}{the colname(s) of the returned data frame of \code{f}} or
+#' the names of the elements of a vector returned from \code{f}, or assigned names
+#' \item{\code{value}}{the value of \code{f} at a set of parameters}
+#' @seealso \code{\link{stack_list}}
 #' @export
 tidy <- function(x, ...){
   UseMethod("tidy")
 }
 
 #' Tidy an object from grid_apply
+#' @param x results from \code{collect} or \code{grid_apply}
+#' @param arg_grid argument grid; if NULL (default) looks for arg_grid
+#'  as an attribute to \code{x}
+#' @param .reps the number of reps to aggregate
 #' @export
 tidy.gresults <- function(x, arg_grid=NULL, .reps=NULL){
   if(is.null(arg_grid)){
