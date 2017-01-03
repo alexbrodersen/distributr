@@ -52,7 +52,7 @@ test_that("wrapWE", {
 
 
 test_that("grid_apply", {
-  out <- gapply(do.one, a=c(2,1), b=2, .reps=2, .verbose=0)
+  out <- gapply(do.one, a=c(2,1), b=2, .reps=3, .verbose=0)
   expect_true(nrow(out) == 6)
 
   expect_true(!is.null(attr(out, "err")))

@@ -29,10 +29,20 @@ test_that("setup", {
   expect_identical(jobs(out), arg_grid)
 })
 
+test_that("inconsistent .reps produces error", {
+  system(paste0("mkdir -p ", fdir))
+  system(paste0("rm -rf ", fdir, "/*"))
+
+  msg <- capture.output(out <- setup(out, .dir="tmp", .reps = 6))
+
+})
+
 test_that("clean", {
   msg <- capture.output(clean("tmp"))
   expect_equal(length(dir("tmp")), 0)
 })
+
+
 
 test_that("setup verbose", {
   # This just tests that the argumnt .verbose works; can't test it locally
@@ -66,6 +76,7 @@ test_that("collect_sge ", {
   out <- gapply(do.one, a=1:2, b=2, .reps=5, .verbose=0, .eval = T)
   expect_equivalent(select(outc,-.sge_id), out)
 })
+
 
 test_that("add_jobs", {
   out2 <- add_jobs(out, a=5)
@@ -112,6 +123,8 @@ test_that("overwriting prompts a msg", {
     out3 <- setup(out, .dir="tmp", .reps = 6)
   }
 })
+
+
 
 
 if(interactive()) setwd("../../")
