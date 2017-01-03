@@ -31,17 +31,23 @@ tidy <- function(x, ...){
 #' @param x results from \code{collect} or \code{grid_apply}
 #' @param arg_grid argument grid; if NULL (default) looks for arg_grid
 #'  as an attribute to \code{x}
-#' @param .reps the number of reps to aggregate
+#' @param .reps scalar or vector of completed replications for each job (usually given via \code{collect})
 #' @export
 tidy.gresults <- function(x, arg_grid=NULL, .reps=NULL){
   if(is.null(arg_grid)){
     arg_grid <- attr(x, "arg_grid")
     if(is.null(arg_grid)) stop("can't tidy, no argument grid")
   }
-  if(is.null(.reps)){ .reps = attr(x, ".reps")}
-
-  rep_grid <- arg_grid[rep(1:nrow(arg_grid), each=.reps), , drop=F]
-  rep_grid$.rep  <- rep(1:.reps, times=nrow(arg_grid))
+  if(is.null(.reps)) .reps <- attr(x, ".reps")
+  if(length(.reps) == 1){
+    # from grid_apply
+    rep_grid <- arg_grid[rep(1:nrow(arg_grid), each=.reps), , drop=F]
+    rep_grid$.rep  <- rep(1:.reps, times=nrow(arg_grid))
+  } else {
+    # completed replications, from collect
+    rep_grid <- arg_grid[rep(1:nrow(arg_grid), times=.reps), , drop=F]
+    rep_grid$.rep <- unlist(lapply(.reps, seq_len))
+  }
 
   # Stack results, adding keys according to names of elements, colnames, and rownames.
   values <- stack_list(x)

@@ -29,14 +29,6 @@ test_that("setup", {
   expect_identical(jobs(out), arg_grid)
 })
 
-test_that("inconsistent .reps produces error", {
-  system(paste0("mkdir -p ", fdir))
-  system(paste0("rm -rf ", fdir, "/*"))
-
-  msg <- capture.output(out <- setup(out, .dir="tmp", .reps = 6))
-
-})
-
 test_that("clean", {
   msg <- capture.output(clean("tmp"))
   expect_equal(length(dir("tmp")), 0)
@@ -75,6 +67,18 @@ test_that("collect_sge ", {
   outc <- collect(out, dir = "tmp") %>% tidy
   out <- gapply(do.one, a=1:2, b=2, .reps=5, .verbose=0, .eval = T)
   expect_equivalent(select(outc,-.sge_id), out)
+})
+
+test_that("jobs can have different numbers of completed replications", {
+  load("tmp/results/2.Rdata")
+  res.l <- res.l[c(1, 3)]
+  save(res.l, file="tmp/results/2.Rdata")
+  rm(res.l)
+
+  outc <- collect(out, dir = "tmp") %>% tidy
+  expect_equal(nrow(outc), 7)
+  ans <- c(rep(NA, 5), 2, 2)
+  expect_equal(outc$value, ans)
 })
 
 

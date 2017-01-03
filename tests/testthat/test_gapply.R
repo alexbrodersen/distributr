@@ -52,7 +52,7 @@ test_that("wrapWE", {
 
 
 test_that("grid_apply", {
-  out <- gapply(do.one, a=c(2,1), b=2, .reps=3, .verbose=0)
+  out <- gapply(do.one, a=c(2,1), b=2, .reps=2, .verbose=0)
   expect_true(nrow(out) == 6)
 
   expect_true(!is.null(attr(out, "err")))
@@ -213,7 +213,7 @@ test_that("grid_apply .verbose", {
 })
 
 test_that("elapsed time", {
-  do.one <- function(a=1,b=2){Sys.sleep(1); return(1)}
+  do.one <- function(a=1,b=2){Sys.sleep(.1); return(1)}
   out <- gapply(do.one,.reps=2,.verbose=1, a=1,b=1)
   out1 <- grid_apply(do.one,.reps=2,.verbose=1, a=1,b=1)
   expect_is(attr(out,"time"), "proc_time")

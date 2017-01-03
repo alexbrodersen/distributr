@@ -233,7 +233,6 @@ write_doone <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
 collect.gresults <- function(object, dir=getwd()){
   dir <- paste0(dir, "/")
   load(paste0(dir, "arg_grid.Rdata"))
-  reps <- attr(object, ".reps")
 
   rdir <- paste0(dir, "results/")
   conds.files <- gtools::mixedsort(paste0(rdir,list.files(rdir)))
@@ -243,10 +242,12 @@ collect.gresults <- function(object, dir=getwd()){
       load(fn)
       cond.l[[i]] <- res.l
   }
+  reps <- lengths(cond.l)
 
   cond.l <- unlist(cond.l, recursive=F)
-  cond.idx <- as.numeric(gsub(".Rdata", "", basename(conds.files))) # completed conditions
-  cond.grid <- arg_grid[cond.idx,]
+
+  completed.idx <- as.numeric(gsub(".Rdata", "", basename(conds.files))) # completed conditions
+  completed.grid <- arg_grid[completed.idx,]
 
   err <- lapply(cond.l, function(r){attr(r, "err")})
   err.id <-  which(unlist(lapply(err, function(x){!is.null(x)})))
@@ -262,7 +263,7 @@ collect.gresults <- function(object, dir=getwd()){
 
   res <- cond.l
   class(res) <- c(class(res), "gresults")
-  attr(res, "arg_grid") <- cond.grid
+  attr(res, "arg_grid") <- completed.grid
   attr(res, ".reps") <- reps
   attr(res, "err") <- err.list
   attr(res, "warn") <- warn.list

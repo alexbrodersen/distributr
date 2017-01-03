@@ -12,7 +12,7 @@
 \item{arg_grid}{argument grid; if NULL (default) looks for arg_grid
 as an attribute to \code{x}}
 
-\item{.reps}{the number of reps to aggregate}
+\item{.reps}{scalar or vector of completed replications for each job (usually given via \code{collect})}
 }
 \description{
 Tidy an object from grid_apply
