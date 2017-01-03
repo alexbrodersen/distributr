@@ -58,3 +58,6 @@ add_jobs(sim, n=1000, mu=10, sd=50)    # add jobs to plan
 filter_jobs(sim, n < 100, .mc.cores=5) # filter jobs as in dplyr
 ```
 
+### Wiki
+
+More information is available on the [wiki](https://github.com/patr1ckm/distributr/wiki), for example, illustrating how chunking, random number control, and caching can all be done transparently via `do.one`. 
