@@ -46,7 +46,7 @@ sim <- setup(sim, .reps=500, .mc.cores = 5)
 submit(sim)   
 res <- collect(sim) %>% tidy
 ```
-The `setup` function asks for user confirmation if an existing argument grid would be overwritten.
+The `setup` function asks for user confirmation if an existing argument grid would be overwritten. 
 
 ### Job Access, Adding jobs, Selecting a subset of jobs
 
