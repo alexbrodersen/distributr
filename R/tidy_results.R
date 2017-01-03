@@ -42,9 +42,11 @@ tidy.gresults <- function(x, arg_grid=NULL, .reps=NULL){
   if(length(.reps) == 1){
     # from grid_apply
     rep_grid <- arg_grid[rep(1:nrow(arg_grid), each=.reps), , drop=F]
+    #if(nrow(rep_grid) != length(x)) stop("number of replications isn't correct, try setting .reps=NULL")
     rep_grid$.rep  <- rep(1:.reps, times=nrow(arg_grid))
   } else {
     # completed replications, from collect
+    #if(length(x) != length(.reps)) stop("length(reps) should be 1 or length(x)")
     rep_grid <- arg_grid[rep(1:nrow(arg_grid), times=.reps), , drop=F]
     rep_grid$.rep <- unlist(lapply(.reps, seq_len))
   }
