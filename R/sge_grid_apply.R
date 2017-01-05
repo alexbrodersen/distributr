@@ -343,8 +343,9 @@ filter_jobs <- function(object, ...,
 
 #' @export
 qst <- function(){
-  mysys("qst")
+    mysys("qstat -u $USER")
 }
+
 
 #' @export
 mysys <- function(cmd){
