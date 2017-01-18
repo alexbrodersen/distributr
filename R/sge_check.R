@@ -18,8 +18,7 @@ check_overwrite <- function(object, .dir){
 }
 
 check_valid_grid <- function(object, grid_name){
-  load(grid_name)
-  disk_grid <- arg_grid
+  disk_grid <- readRDS(grid_name)
   obj_grid <- jobs(object)
   if(is.null(obj_grid$.sge_id)){
     obj_grid$.sge_id <- 1:nrow(obj_grid)

@@ -173,6 +173,7 @@ load_results <- function(regex, dir=getwd()){
 #' @param task which task id to collect
 #' @export
 #' @importFrom gtools mixedsort
+#' @importFrom utils tail
 collect.dgraph <- function(x, dir = getwd(), layer=NULL, node=NULL, task=NULL, ...){
   # Load a particular layer, node or task
   if(any(!is.null(layer) | !is.null(node) | !is.null(task))){
