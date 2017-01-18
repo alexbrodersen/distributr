@@ -6,6 +6,11 @@
 \usage{
 check_overwrite(object, .dir)
 }
+\arguments{
+\item{object}{grid_apply object}
+
+\item{.dir}{directory}
+}
 \description{
 Asks for user input if overwrite would invalidate .sge_id
 }

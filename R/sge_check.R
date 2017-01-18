@@ -1,5 +1,7 @@
 
 #' Asks for user input if overwrite would invalidate .sge_id
+#' @param object grid_apply object
+#' @param .dir directory
 check_overwrite <- function(object, .dir){
   grid_name <- paste0(.dir, "arg_grid.Rdata")
   res <- 1

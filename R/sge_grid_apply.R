@@ -18,6 +18,7 @@
 #' @param .queue name of queue
 #' @param .job.name name of job
 #' @param .out.dir name of directory in which to put SGE output files.
+#' @param .R.version name of R version. Possible values include any in \code{module avail}. Default is 3.2.5.
 #' @param .email.options one or more characters from "bea" meaning email when "job Begins", "job Ends", and "job Aborts". Default is "a".
 #' @param .email.addr email address
 #' @param .shell shell to use. Default is 'bash'
@@ -102,6 +103,7 @@ setup.gresults <- function(object,
                   .script.name="doone.R",
                   .job.name="distributr",
                   .out.dir="SGE_Output",
+                  .R.version="3.2.5",
                   .email.options="a",
                   .email.addr=NULL,
                   .shell="bash"){
@@ -153,6 +155,7 @@ setup.gresults <- function(object,
                out.dir = .out.dir,
                email = .email.options,
                email.addr = .email.addr,
+               R.version = .R.version,
                shell = .shell)
 
   grid_name <- paste0(.dir, "arg_grid.Rdata")
@@ -171,7 +174,7 @@ setup.gresults <- function(object,
 
 write_submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1, queue="long",
                          job.name="distributr", out.dir="SGE_Output", email="a",
-                         email.addr=NULL, shell="csh"){
+                         email.addr=NULL, shell="csh", R.version="3.2.5"){
 
   cmd <- paste0("touch ", dir, "submit")
   mysys(cmd)
@@ -185,6 +188,7 @@ write_submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1, queue=
       "#$ -N ", job.name, "\n",
       "#$ -t ", tasks, "\n",
       "#$ -o ", out.dir, " \n\n",
+      "module load R/", R.version,
       "Rscript ", script.name, " $SGE_TASK_ID $NSLOTS \n")
   } else {
     submit <- paste0(
@@ -194,6 +198,7 @@ write_submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1, queue=
       "#$ -N ", job.name, "\n",
       "#$ -t ", tasks, "\n",
       "#$ -o ", out.dir, " \n\n",
+      "module load R/", R.version,
       "Rscript ", script.name, " $SGE_TASK_ID $NSLOTS \n")
   }
   cat(submit, file=paste0(dir, "submit"))
@@ -387,10 +392,11 @@ clean <- function(dir=getwd()){
   }
 }
 
-#' sge
-#'
+#' sge_test
+#' Simple test SGE configuration
+#' @param dir directory in which to run test
 #' @export
-sge <- function(dir=getwd()){
+sge_test <- function(dir=getwd()){
   f <- function(x,y){
     Sys.sleep(.5)
     stopifnot(x < 5)

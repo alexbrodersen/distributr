@@ -1,16 +1,23 @@
 Package: distributr
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Apply a function over grid of parameters, with SGE backend
 Version: 0.1.0
 Author: Patrick Miller
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Maintainer: Patrick Miller <pmille13@nd.edu>
+Description: Provides a function grid_apply that applies a function over a grid of its arguments (e.g. \code{expand.grid(a=1:4, b=3:5))}), returning results in a list. Function applications can be executed repeatedly and in parallel. A backend for execution of these grids is provided for Sun Grid Engine. Results can be easy transformed into a tidy format.
+License: License: GPL (>= 2) | file LICENSE
+URL: https://github.com/patr1ckm/distributr
+BugReports: https://github.com/patr1ckm/distributr/issues
 LazyData: TRUE
 RoxygenNote: 5.0.1
 Suggests: knitr,
     rmarkdown, testthat
 VignetteBuilder: knitr
-Depends: dplyr, purrr, gtools
+Depends: 
+  R (>= 3.0.0),
+  dplyr, 
+  purrr, 
+  gtools,
+  tidyr
 
 
