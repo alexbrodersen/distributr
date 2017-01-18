@@ -27,6 +27,8 @@ setup(x, ...)
 
 \item{.out.dir}{name of directory in which to put SGE output files.}
 
+\item{.R.version}{name of R version. Possible values include any in \code{module avail}. Default is 3.2.5.}
+
 \item{.email.options}{one or more characters from "bea" meaning email when "job Begins", "job Ends", and "job Aborts". Default is "a".}
 
 \item{.email.addr}{email address}

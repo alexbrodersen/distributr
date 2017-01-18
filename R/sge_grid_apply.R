@@ -162,7 +162,7 @@ setup.gresults <- function(object,
   res <- check_overwrite(object=object, .dir=.dir)
   if(res == 1){
     cat("writing arg_grid.Rdata", fill=T)
-    save(arg_grid, file=grid_name)
+    saveRDS(arg_grid, file=grid_name)
   }
 
   write_doone(.f=.f, dir=.dir, reps=.reps, mc.cores=.mc.cores, verbose=.verbose, script.name=.script.name)
@@ -211,8 +211,8 @@ write_doone <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
   args <- as.numeric(commandArgs(trailingOnly=TRUE))
   cond <- args[1]
   ncores <- args[2]
-  reps <- ", reps," # this is reps per chunk
-  load('arg_grid.Rdata')
+  reps <- ", reps,"
+  arg_grid <- readRDS('arg_grid.Rdata')
   params <- arg_grid[cond,]
   #rep.id <- (reps*(params$.chunk-1)+1):(reps*params$.chunk)
   rep.id <- 1:reps
@@ -224,7 +224,7 @@ write_doone <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
   dir <- paste0('results/')
   attr(res.l, \"time\") <- end - start
   fn <- paste0(dir, cond,'.Rdata')
-  save(res.l, file=fn) \n")
+  saveRDS(res.l, file=fn) \n")
 
   cat(temp, file=paste0(dir, script.name))
 }
@@ -237,14 +237,14 @@ write_doone <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
 #' @importFrom dplyr collect
 collect.gresults <- function(object, dir=getwd()){
   dir <- paste0(dir, "/")
-  load(paste0(dir, "arg_grid.Rdata"))
+  arg_grid <- readRDS(paste0(dir, "arg_grid.Rdata"))
 
   rdir <- paste0(dir, "results/")
   conds.files <- gtools::mixedsort(paste0(rdir,list.files(rdir)))
   cond.l <- list()           # list of the results from each condition
   for(i in 1:length(conds.files)){
       fn <- paste0(conds.files[i])
-      load(fn)
+      res.l <- readRDS(fn)
       cond.l[[i]] <- res.l
   }
   reps <- lengths(cond.l)
@@ -308,6 +308,7 @@ add_rows <- add_jobs
 #' @export
 #' @param ... arguments to \code{select}
 #' @inheritParams setup
+#' @importFrom dplyr select
 filter_jobs <- function(object, ...,
                         .mc.cores=1,
                         .dir= getwd(),

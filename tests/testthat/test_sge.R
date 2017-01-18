@@ -25,7 +25,7 @@ test_that("setup", {
   expect_true(file.exists("tmp/SGE_Output"))
   expect_true(file.exists("tmp/submit"))
   expect_true(file.exists("tmp/arg_grid.Rdata"))
-  load("tmp/arg_grid.Rdata")
+  arg_grid <- readRDS("tmp/arg_grid.Rdata")
   expect_identical(jobs(out), arg_grid)
 })
 
@@ -56,6 +56,7 @@ test_that("setup verbose", {
 })
 
 test_that("collect_sge ", {
+  msg <- capture.output(clean("tmp"))
   msg <- capture.output(out <- setup(out, .dir="tmp", .reps = 5))
 
   ## This is a hack to get the tests to run from this directory
@@ -70,9 +71,9 @@ test_that("collect_sge ", {
 })
 
 test_that("jobs can have different numbers of completed replications", {
-  load("tmp/results/2.Rdata")
+  res.l <- readRDS("tmp/results/2.Rdata")
   res.l <- res.l[c(1, 3)]
-  save(res.l, file="tmp/results/2.Rdata")
+  saveRDS(res.l, file="tmp/results/2.Rdata")
   rm(res.l)
 
   outc <- collect(out, dir = "tmp") %>% tidy
