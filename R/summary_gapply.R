@@ -3,11 +3,11 @@
 #' @param .reps number of reps to scale to
 #' @param .fun function to aggregate over replications
 #' @param .key A string of the character vector to filter on
+#' @param ... unused
 #' @return Prints the means over all reps for each condition and returns it invisibly. Also prints the estimated time to scale up to x reps
-#' @importFrom dplyr group_by_ summarize
-#' @importFrom tidyr %>%
+#' @importFrom dplyr group_by_ summarize %>%
 #' @export
-summary.gresults <- function(object, .reps=NULL, .fun=mean, .key=NULL){
+summary.gresults <- function(object, .reps=NULL, .fun=mean, .key=NULL, ...){
   ns <- c(attr(object, 'arg_names'),"key")
   if(is.null(.key)){
     .key <- as.character(unique(object$key))
@@ -23,13 +23,13 @@ summary.gresults <- function(object, .reps=NULL, .fun=mean, .key=NULL){
   grid <- attr(object, "arg_grid")
   cat("Number of conditions: ", nrow(grid), fill=T)
   print(head(grid))
-  cat("",fill=T)
-  if(!is.null(attr(object,"time"))){
-    cat("Estimated time for x reps:", fill=T)
-    cat("Reps \t Time", fill=T)
-    o <- estimate_time(object, nreps=.reps)
-    for(i in 1:nrow(o)){ cat(paste0(o[i,],"\t"),fill=T)}
-  }
+  #cat("",fill=T)
+  #if(!is.null(attr(object,"time"))){
+  #  cat("Estimated time for x reps:", fill=T)
+  #  cat("Reps \t Time", fill=T)
+  #  o <- estimate_time(object, nreps=.reps)
+  #  for(i in 1:nrow(o)){ cat(paste0(o[i,],"\t"),fill=T)}
+  #}
   invisible(res)
 }
 

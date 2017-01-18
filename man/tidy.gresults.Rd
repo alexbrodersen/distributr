@@ -4,7 +4,7 @@
 \alias{tidy.gresults}
 \title{Tidy an object from grid_apply}
 \usage{
-\method{tidy}{gresults}(x, arg_grid = NULL, .reps = NULL)
+\method{tidy}{gresults}(x, arg_grid = NULL, .reps = NULL, ...)
 }
 \arguments{
 \item{x}{results from \code{collect} or \code{grid_apply}}
@@ -13,6 +13,8 @@
 as an attribute to \code{x}}
 
 \item{.reps}{scalar or vector of completed replications for each job (usually given via \code{collect})}
+
+\item{...}{unused}
 }
 \description{
 Tidy an object from grid_apply

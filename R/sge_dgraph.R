@@ -1,18 +1,19 @@
 #' @export
-setup.dgraph <- function(dgraph, dir=getwd(), .mc.cores=1, .verbose=1,
+setup.dgraph <- function(object, dir=getwd(), .mc.cores=1, .verbose=1,
                          .queue="long",
                          .script.name="doone.R",
                          .job.name="patr1ckm",
                          .out.dir="SGE_Output",
                          .email.options="a",
                          .email.addr="patr1ckm.crc.nd.edu",
-                         .shell="bash"){
+                         .shell="bash", ...){
   # check whether has '/' on the end?
   fdir <- paste0(dir, "/")
   cmd <- paste0("mkdir -p ",  fdir)
   mysys(cmd)
   # write the graph to a file
-  save(dgraph, file = paste0(fdir, "dgraph.Rdata"))
+  dgraph <- object
+  saveRDS(dgraph, file = paste0(fdir, "dgraph.Rdata"))
   graph <- attr(dgraph, ".graph")
 
   # mkdir(s) for caching results
@@ -89,7 +90,7 @@ write_doone_dgraph <- function(dgraph, dir, script.name="doone.R"){
   args <- as.numeric(commandArgs(trailingOnly=TRUE))
   t <- args[1]
   ncores <- args[2]
-  load(\"dgraph.Rdata\")
+  dgraph <- readRDS(\"dgraph.Rdata\")
   graph <- attr(dgraph, \".graph\")
   sub_graph <- graph[graph$tlow <= t & graph$tup >= t, ]
   if(sub_graph$dep == sub_graph$node.id){
@@ -145,7 +146,7 @@ write_doone_dgraph <- function(dgraph, dir, script.name="doone.R"){
     }
   }
   fn <- paste0(\"results/layer\", sub_graph$layer, \"/node_pos\", sub_graph$node.pos, \"_t\", t, \".Rdata\")
-  save(res.l, file=fn)
+  saveRDS(res.l, file=fn)
   ")
   cat("cat ", paste0(dir, "doone.R"), fill=T)
   cat(doone, file=paste0(dir, "/", script.name))
@@ -158,15 +159,21 @@ load_results <- function(regex, dir=getwd()){
   res.node <- list()
   for(i in 1:length(fl)){
     fn <- paste0(dir, "/results/", fl[i])
-    load(fn)
+    res.l <- readRDS(fn)
     res.node[[i]] <- res.l
   }
   return(res.node)
 }
 
+#' Collect layers, nodes, or tasks from a completed dgraph
+#' @param x \code{dgraph object}
+#' @param dir director
+#' @param layer which layer to collect
+#' @param node which node to collect
+#' @param task which task id to collect
 #' @export
 #' @importFrom gtools mixedsort
-collect.dgraph <- function(x, dir = getwd(), layer=NULL, node=NULL, task=NULL){
+collect.dgraph <- function(x, dir = getwd(), layer=NULL, node=NULL, task=NULL, ...){
   # Load a particular layer, node or task
   if(any(!is.null(layer) | !is.null(node) | !is.null(task))){
     if(!is.null(task)) {

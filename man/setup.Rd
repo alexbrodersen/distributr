@@ -4,7 +4,7 @@
 \alias{setup}
 \title{Setup SGE jobs}
 \usage{
-setup(x, ...)
+setup(object, ...)
 }
 \arguments{
 \item{object}{object from \code{grid_apply} or \code{gapply} with \code{.eval=FALSE}}

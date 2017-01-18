@@ -4,7 +4,14 @@
 \alias{collect.gresults}
 \title{Collect completed results files from gresults}
 \usage{
-\method{collect}{gresults}(object, dir = getwd())
+\method{collect}{gresults}(x, dir = getwd(), ...)
+}
+\arguments{
+\item{x}{object from \code{grid_apply}}
+
+\item{dir}{directory}
+
+\item{...}{unused}
 }
 \description{
 Collect completed results files from gresults

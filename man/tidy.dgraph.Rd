@@ -4,12 +4,15 @@
 \alias{tidy.dgraph}
 \title{Tidying dgraph results}
 \usage{
-\method{tidy}{dgraph}(x, arg_grid = NULL, dir = getwd(), layer.id = NULL)
+\method{tidy}{dgraph}(x, arg_grid = NULL, dir = getwd(), layer.id = NULL,
+  ...)
 }
 \arguments{
 \item{x}{list of results}
 
 \item{dir}{directory}
+
+\item{...}{unused}
 
 \item{layer}{layer if not last}
 }

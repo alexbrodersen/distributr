@@ -87,7 +87,7 @@
 #' @seealso \link{grid_apply} to define the grid, \link{jobs} to see the grid,
 #' \link{collect} to collect completed results, and \link{tidy} to merge
 #' completed results with the argument grid.
-setup <- function(x, ...){
+setup <- function(object, ...){
   UseMethod("setup")
 }
 
@@ -106,7 +106,8 @@ setup.gresults <- function(object,
                   .R.version="3.2.5",
                   .email.options="a",
                   .email.addr=NULL,
-                  .shell="bash"){
+                  .shell="bash",
+                  ...){
   arg_grid <- attr(object,"arg_grid")
   arg_grid$.sge_id <- 1:nrow(arg_grid)
   .dir <- paste0(.dir, "/")
@@ -230,12 +231,14 @@ write_doone <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
 }
 
 #' Collect completed results files from gresults
-#'
+#' @param x object from \code{grid_apply}
+#' @param dir directory
+#' @param ... unused
 #' @export
 #' @importFrom gtools mixedsort
 #' @importFrom tidyr gather
 #' @importFrom dplyr collect
-collect.gresults <- function(object, dir=getwd()){
+collect.gresults <- function(x, dir=getwd(), ...){
   dir <- paste0(dir, "/")
   arg_grid <- readRDS(paste0(dir, "arg_grid.Rdata"))
 

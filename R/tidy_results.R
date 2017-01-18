@@ -32,8 +32,9 @@ tidy <- function(x, ...){
 #' @param arg_grid argument grid; if NULL (default) looks for arg_grid
 #'  as an attribute to \code{x}
 #' @param .reps scalar or vector of completed replications for each job (usually given via \code{collect})
+#' @param ... unused
 #' @export
-tidy.gresults <- function(x, arg_grid=NULL, .reps=NULL){
+tidy.gresults <- function(x, arg_grid=NULL, .reps=NULL, ...){
   if(is.null(arg_grid)){
     arg_grid <- attr(x, "arg_grid")
     if(is.null(arg_grid)) stop("can't tidy, no argument grid")
@@ -79,8 +80,9 @@ tidy.gresults <- function(x, arg_grid=NULL, .reps=NULL){
 #' @param x list of results
 #' @param dir directory
 #' @param layer layer if not last
+#' @param ... unused
 #' @export
-tidy.dgraph <- function(x, arg_grid = NULL, dir=getwd(), layer.id = NULL){
+tidy.dgraph <- function(x, arg_grid = NULL, dir=getwd(), layer.id = NULL, ...){
   # flatten because list of gresults, want just one list with arg_grid and reps as attributes
   res <- purrr::flatten(x)
 
