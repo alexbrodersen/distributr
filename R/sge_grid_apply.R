@@ -312,7 +312,7 @@ add_rows <- add_jobs
 #' @export
 #' @param ... arguments to \code{select}
 #' @inheritParams setup
-#' @importFrom dplyr select
+#' @importFrom dplyr filter
 filter_jobs <- function(object, ...,
                         .mc.cores=1,
                         .dir= getwd(),
@@ -329,7 +329,7 @@ filter_jobs <- function(object, ...,
     arg_grid$.sge_id <- 1:nrow(arg_grid)
   }
   arg_grid <- filter(arg_grid, ...)
-  tasks <- select(arg_grid, .sge_id) %>% unlist(., use.names = F)
+  tasks <- unlist(arg_grid$.sge_id, use.names = FALSE)
 
   if(all(tasks == tasks[1]:tasks[length(tasks)])){
     tasks <- paste0(tasks[1], ":", tasks[length(tasks)])
