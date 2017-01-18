@@ -15,8 +15,8 @@ summary.gresults <- function(object, .reps=NULL, .fun=mean, .key=NULL, ...){
 
   res <- object %>%
     dplyr::group_by_(.dots=ns) %>%
-    dplyr::filter(key %in% .key) %>%
-    dplyr::summarize(.fun(value)) # I don't like it, but it will work for now
+    dplyr::filter_(~key %in% .key) %>%
+    dplyr::summarize_(~.fun(value))
 
   print(res)
   cat("",fill=T)

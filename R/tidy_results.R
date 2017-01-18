@@ -112,6 +112,7 @@ tidy.dgraph <- function(x, arg_grid = NULL, dir=getwd(), layer.id = NULL, ...){
 #' Stacks a data frame or list of vectors of the same length into \code{key}, \code{key2}, and \code{value} columns,
 #'  where \code{key} and \code{key2} are the column and row names of the first element of \code{xl}. If names are null, assigns names.
 #'
+#'@importFrom dplyr data_frame
 stack_list <- function(xl){
   x <- xl[[1]]
   if(is.data.frame(x)){
@@ -184,3 +185,5 @@ stack_x <- function(x){
     }
   }
 }
+
+globalVariables(".")
