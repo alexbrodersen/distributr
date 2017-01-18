@@ -92,10 +92,15 @@ wrapWE <- function(fun){
   }
 }
 
+#' Errors from collected results
+#' @param object from a call to \code{collect.gresults}
 #' @export
 err <- function(object){
   attr(object, "err")
 }
+
+#' Warnings from collected results
+#' @param object from a call to \code{collect.gresults}
 #' @export
 warn <- function(object){
   attr(object, "warn")

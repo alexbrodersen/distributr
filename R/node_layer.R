@@ -30,9 +30,15 @@ layer <- function(..., .reduce = FALSE){
   return(.dgraph)
 }
 
+#' Alias for layer
+#' @describeIn layer
 #' @export
 grid_map <- layer
 
+#' Grid reduce,
+#' Alias for layer(..., reduce = TRUE)
+#' @param ... nodes
+#' @describeIn layer
 #' @export
 grid_reduce <- function(...){ layer(..., .reduce = TRUE) }
 
@@ -47,6 +53,14 @@ node <- function(.f, ..., .dep=NULL, .id=NULL){
   return(out)
 }
 
+#' Control for dgrpah
+#' @param .dgraph dgraph
+#' @param .reps number of replications
+#' @param .mc.cores number of cores
+#' @param .tidy whether results are tidied
+#' @param .backend backend to use. Currently only the default "sge" is defined
+#' @param .cache which layers/nodes to cache. Currently only the default "all" is defined
+#' @param .verbose verbosity in printing, can be 1, 2, or 3
 #' @export
 control <- function(.dgraph, .reps=1, .mc.cores = 1, .tidy=NULL,
                      .backend="sge", .cache="all", .verbose=1){
@@ -149,6 +163,9 @@ reps <- function(.dgraph, .reps){
   return(.dgraph)
 }
 
+#' Get node from a dgraph by id
+#' @param dgraph dgraph
+#' @param id node id
 #' @export
 get_node <- function(dgraph, id){
 
