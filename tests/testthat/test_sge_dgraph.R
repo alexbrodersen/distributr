@@ -8,9 +8,9 @@ system(paste0("rm -rf ", fdir), ignore.stdout = T)
 ff <- function(a, b){c(a + b, a - b)}
 gg <- function(y, arg1){y^2}
 hh <- function(z, arg2){-z}
-.reps <- 8
+.reps <- 2
 
-o <- layer(node(ff, a=1:3, b=1:3), node(ff, a=4:5, b=4:5)) %>%
+o <- layer(node(ff, a=1:2, b=1:2), node(ff, a=4, b=4)) %>%
   layer(node(hh, arg2=1), node(gg, arg1=1)) %>%
   control() %>% reps(.reps)
 
@@ -30,7 +30,7 @@ test_that("sge dgraph setup", {
 
 setwd(fdir)
 
-for(i in 1:39) {
+for(i in 1:15) {
   cmd <- paste0("Rscript doone.R ", i, " 1")
   system(cmd, ignore.stdout = T)
 }
@@ -45,11 +45,11 @@ test_that("sge dgraph collect", {
                     load_results("t1.Rdata", fdir))
 
   res1 <- unlist(collect(o, node = 1, dir=fdir))
-  ans1 <- unlist(grid_apply(ff, a = 1:3, b = 1:3, .reps = .reps))
+  ans1 <- unlist(grid_apply(ff, a = 1:2, b = 1:2, .reps = .reps))
   expect_equal(res1, ans1)
 
   res2 <- unlist(collect(o, node = 2, dir = fdir))
-  ans2 <- unlist(grid_apply(ff, a = 4:5, b = 4:5, .reps = .reps))
+  ans2 <- unlist(grid_apply(ff, a = 4, b = 4, .reps = .reps))
   expect_equal(res2, ans2)
 
   res3 <- unlist(collect(o, node = 3, dir = fdir))

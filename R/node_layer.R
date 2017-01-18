@@ -163,24 +163,24 @@ get_node <- function(dgraph, id){
   dgraph[[which_layer]][[pos_in_layer]]
 }
 
-# this is just a sketch right now, it's going to be complicated
-run_node <- function(dgraph, id){
-  node <- get_node(dgraph, id)
-  graph <- attr(dgraph, ".graph")
-
-  # compute/load any dependencies
-
-  # compute args
-  args <- expand.grid(node$.args)
-
-  # run grid_apply on args
-
-  args <- purrr::flatten(list(prev_res, args[-1]))
-  names(args)[1] <- names(formals(node$.f))[1]
-
-  res.l <- grid_apply(.f = node$.f, args,
-                      .reps = 1, .mc.cores = control$.mc.cores, .verbose = control$.verbose)
-}
+# # this is just a sketch right now, it's going to be complicated
+# run_node <- function(dgraph, id){
+#   node <- get_node(dgraph, id)
+#   graph <- attr(dgraph, ".graph")
+#
+#   # compute/load any dependencies
+#
+#   # compute args
+#   args <- expand.grid(node$.args)
+#
+#   # run grid_apply on args
+#
+#   args <- purrr::flatten(list(prev_res, args[-1]))
+#   names(args)[1] <- names(formals(node$.f))[1]
+#
+#   res.l <- grid_apply(.f = node$.f, args,
+#                       .reps = 1, .mc.cores = control$.mc.cores, .verbose = control$.verbose)
+# }
 
 #' Return the parameter graph implied by the dgraph grid
 #' @export
