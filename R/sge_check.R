@@ -2,12 +2,17 @@
 #' Asks for user input if overwrite would invalidate .sge_id
 #' @param object grid_apply object
 #' @param .dir directory
+#' @import utils menu
 check_overwrite <- function(object, .dir){
   grid_name <- paste0(.dir, "arg_grid.Rdata")
   res <- 1
   if(file.exists(grid_name) && !isTRUE(check_valid_grid(object, grid_name))){
     question <- "This will overwrite the existing job data base (arg_grid.Rdata), and corrupt results. Are you sure?"
-    res <- menu(c("Yes", "No"), title=question)
+    if(interactive()) {
+      res <- menu(c("Yes", "No"), title=question)
+    } else {
+      stop("This will overwrite the existing job data base (arg_grid.Rdata), and corrupt results.")
+    }
   }
   res
 }

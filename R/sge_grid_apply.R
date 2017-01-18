@@ -286,6 +286,7 @@ collect.gresults <- function(x, dir=getwd(), ...){
 #' @details If all original keys are not in ..., the values of these arguments are set
 #' to \code{NA}
 #' @export
+#' @importFrom dplyr bind_rows
 add_jobs <- function(object, ...){
   arg_grid <- attr(object, "arg_grid")
   new_grid <- expand.grid(...)

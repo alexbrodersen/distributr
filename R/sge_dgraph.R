@@ -194,7 +194,7 @@ collect.dgraph <- function(x, dir = getwd(), layer=NULL, node=NULL, task=NULL, .
 
   class(res) <- c(class(res), "dgraph")
 
-  arg_grid <- expand_grid_dgraph(x, layer = layer)
+  arg_grid <- expand_grid_dgraph(x, layer.id = layer)
 
   ## here: select completed conditions and update arg_grid
 
