@@ -6,8 +6,8 @@
 \usage{
 filter_jobs(object, ..., .mc.cores = 1, .dir = getwd(), .queue = "long",
   .script.name = "doone.R", .job.name = "distributr",
-  .out.dir = "SGE_Output", .email.options = "a", .email.addr = NULL,
-  .shell = "bash")
+  .out.dir = "SGE_Output", .R.version = "3.2.5", .email.options = "a",
+  .email.addr = NULL, .shell = "bash")
 }
 \arguments{
 \item{object}{object from \code{grid_apply} or \code{gapply} with \code{.eval=FALSE}}
@@ -25,6 +25,8 @@ filter_jobs(object, ..., .mc.cores = 1, .dir = getwd(), .queue = "long",
 \item{.job.name}{name of job}
 
 \item{.out.dir}{name of directory in which to put SGE output files.}
+
+\item{.R.version}{name of R version. Possible values include any in \code{module avail}. Default is 3.2.5.}
 
 \item{.email.options}{one or more characters from "bea" meaning email when "job Begins", "job Ends", and "job Aborts". Default is "a".}
 

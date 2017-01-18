@@ -320,6 +320,7 @@ filter_jobs <- function(object, ...,
                         .script.name="doone.R",
                         .job.name="distributr",
                         .out.dir="SGE_Output",
+                        .R.version="3.2.5",
                         .email.options="a",
                         .email.addr=NULL,
                         .shell="bash"){
@@ -345,6 +346,7 @@ filter_jobs <- function(object, ...,
                out.dir = .out.dir,
                email = .email.options,
                email.addr = .email.addr,
+               R.version = .R.version,
                shell = .shell)
 
   attr(object, "arg_grid") <- arg_grid
