@@ -2,12 +2,20 @@
 % Please edit documentation in R/sge_grid_apply.R
 \name{setup}
 \alias{setup}
+\alias{setup.gresults}
 \title{Setup SGE jobs}
 \usage{
 setup(object, ...)
+
+\method{setup}{gresults}(object, .dir = getwd(), .reps = 1, .mc.cores = 1,
+  .verbose = 1, .queue = "long", .script.name = "doone.R",
+  .job.name = "distributr", .out.dir = "SGE_Output", .R.version = "3.2.5",
+  .email.options = "a", .email.addr = NULL, .shell = "bash", ...)
 }
 \arguments{
 \item{object}{object from \code{grid_apply} or \code{gapply} with \code{.eval=FALSE}}
+
+\item{...}{unused}
 
 \item{.dir}{directory name relative to the current working directory}
 
@@ -19,9 +27,9 @@ setup(object, ...)
 \code{2} prints '.' on completion and prints the current arguments,
 \code{3} prints the current arguments and results}
 
-\item{.script.name}{name of script (default \code{doone.R})}
-
 \item{.queue}{name of queue}
+
+\item{.script.name}{name of script (default \code{doone.R})}
 
 \item{.job.name}{name of job}
 
@@ -96,6 +104,10 @@ sets of arguments, making future merges of results with arguments based on
 \code{.sge_id} invalid. If \code{arg_grid.Rdata} already exists, \code{setup}
 verifies with user input that an overwrite is intended.
 }
+\section{Methods (by class)}{
+\itemize{
+\item \code{gresults}: Setup sge files from \code{gapply, grid_apply}
+}}
 \examples{
 \dontrun{
 do.one <- function(a, b){c(sum=a+b, sub=a-b)}

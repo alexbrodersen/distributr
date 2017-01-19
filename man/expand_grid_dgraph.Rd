@@ -6,6 +6,11 @@
 \usage{
 expand_grid_dgraph(dgraph, layer.id = NULL)
 }
+\arguments{
+\item{dgraph}{dgraph}
+
+\item{layer.id}{id of the layer to expand. If NULL, expands all layers.}
+}
 \description{
 Return the parameter graph implied by the dgraph grid
 }

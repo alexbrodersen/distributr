@@ -22,6 +22,7 @@
 #' @param .email.options one or more characters from "bea" meaning email when "job Begins", "job Ends", and "job Aborts". Default is "a".
 #' @param .email.addr email address
 #' @param .shell shell to use. Default is 'bash'
+#' @param ... unused
 #' @return Invisibly, the original object with argument grid modified to append a
 #' column \code{$.sge_id} assigning each row to a unique job id.
 #'
@@ -91,9 +92,8 @@ setup <- function(object, ...){
   UseMethod("setup")
 }
 
-#' Setup sge files from gresults
 #' @export
-#' @describeIn setup
+#' @describeIn setup Setup sge files from \code{gapply, grid_apply}
 setup.gresults <- function(object,
                   .dir=getwd(),
                   .reps=1,

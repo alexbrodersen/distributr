@@ -30,20 +30,23 @@ layer <- function(..., .reduce = FALSE){
   return(.dgraph)
 }
 
-#' Alias for layer
-#' @describeIn layer
+#' Alias for \code{layer}
+#' @describeIn layer alias for \code{layer}
 #' @export
 grid_map <- layer
 
-#' Grid reduce,
-#' Alias for layer(..., reduce = TRUE)
 #' @param ... nodes
-#' @describeIn layer
+#' @describeIn layer alias for \code{layer(..., .reduce=TRUE)}
 #' @export
 grid_reduce <- function(...){ layer(..., .reduce = TRUE) }
 
-# takes a function f, and lifts it so that it can be applied to a node of the given parameters
-# but delay evaluation
+
+#' Apply a function to a grid of its parameters in a dgraph
+#' @param .f function
+#' @param ... arguments to \code{.f} given as vectors as in \code{grid_apply}
+#' @param .dep which nodes does this one depnend on?
+#' If NULL, depends on all nodes of previous layer.
+#' @param .id custom id. if \code{NULL}, one will be assigned.
 #' @export
 node <- function(.f, ..., .dep=NULL, .id=NULL){
   .args <- list(...)
@@ -69,12 +72,20 @@ control <- function(.dgraph, .reps=1, .mc.cores = 1, .tidy=NULL,
   return(.dgraph)
 }
 
-#' @export
-is.layer <- function(x){ (class(x) == "layer") && (length(class(x)) == 1)}
-#' @export
-is.node <- function(x){ "node" %in% class(x)}
+#' Checks if x is a dgraph, node or layer
+#' @param x object
 #' @export
 is.dgraph <- function(x){ "dgraph" %in% class(x)}
+
+#' @export
+#' @describeIn is.dgraph Checks if x is a layer
+is.layer <- function(x){ (class(x) == "layer") && (length(class(x)) == 1)}
+
+#' @export
+#' @describeIn is.dgraph Checks if x is a node
+is.node <- function(x){ "node" %in% class(x)}
+
+
 
 # lifts the first layer to dgraph (cannot reduce)
 layer_to_dgraph <- function(.layer){
@@ -144,12 +155,15 @@ layer_to_graph <- function(l, graph = NULL, .reduce){
   return(graph)
 }
 
+#' Apply function to all nodes in a layer
+#' @param l layer
+#' @param select name of object in layer to select. Default is a node, given by ".id"
+#' @param FUN function to apply
 #' @export
 layer_apply <- function(l, select=".id", FUN=I){
   sapply(l, function(x){FUN(x[[select]])})
 }
 
-# @export
 assign_node_ids <- function(e, start=0){
   for(i in which(sapply(e, is.node))){
     if(is.null(e[[i]]$.id)) e[[i]]$.id <- start + i
@@ -157,6 +171,9 @@ assign_node_ids <- function(e, start=0){
   return(e)
 }
 
+#' Run all computations in a graph repeatedly
+#' @param .dgraph dgraph
+#' @param .reps number of replications to run
 #' @export
 reps <- function(.dgraph, .reps){
   attr(.dgraph, ".control")[".reps"] <- .reps
@@ -200,6 +217,8 @@ get_node <- function(dgraph, id){
 # }
 
 #' Return the parameter graph implied by the dgraph grid
+#' @param dgraph dgraph
+#' @param layer.id id of the layer to expand. If NULL, expands all layers.
 #' @export
 expand_grid_dgraph <- function(dgraph, layer.id=NULL){
   # get the arguments from terminal node
