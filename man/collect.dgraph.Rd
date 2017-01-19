@@ -17,6 +17,8 @@
 \item{node}{which node to collect}
 
 \item{task}{which task id to collect}
+
+\item{...}{unused}
 }
 \description{
 Collect layers, nodes, or tasks from a completed dgraph

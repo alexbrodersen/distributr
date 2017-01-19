@@ -35,7 +35,6 @@ layer <- function(..., .reduce = FALSE){
 #' @export
 grid_map <- layer
 
-#' @param ... nodes
 #' @describeIn layer alias for \code{layer(..., .reduce=TRUE)}
 #' @export
 grid_reduce <- function(...){ layer(..., .reduce = TRUE) }

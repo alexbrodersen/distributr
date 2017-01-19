@@ -25,6 +25,9 @@ If \code{2}, prints the arguments corresponding to the completed condition.
 If \code{3}, prints the arguments and results of the completed condition.}
 
 \item{.eval}{If \code{TRUE} (default), evaluates \code{f}. If \code{FALSE}, does not evaluate \code{f} and returns \code{NA} for \code{value}.}
+
+\item{.paramid}{The index of the row of the argument grid to run.
+If \code{NULL} (default), \code{.f} is evaluated for all arguments.}
 }
 \value{
 Returns non-error results as a \code{data.frame} in long form with the following columns:

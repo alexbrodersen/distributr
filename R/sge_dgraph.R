@@ -175,6 +175,7 @@ load_results <- function(regex, dir=getwd()){
 #' @param layer which layer to collect
 #' @param node which node to collect
 #' @param task which task id to collect
+#' @param ... unused
 #' @export
 #' @importFrom gtools mixedsort
 #' @importFrom utils tail

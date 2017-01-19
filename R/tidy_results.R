@@ -78,8 +78,9 @@ tidy.gresults <- function(x, arg_grid=NULL, .reps=NULL, ...){
 #' Tidying dgraph results
 #'
 #' @param x list of results
+#' @param arg_grid argument grid
 #' @param dir directory
-#' @param layer layer if not last
+#' @param layer.id index of the layer to tidy. If \code{NULL} tidies last layer.
 #' @param ... unused
 #' @export
 tidy.dgraph <- function(x, arg_grid = NULL, dir=getwd(), layer.id = NULL, ...){

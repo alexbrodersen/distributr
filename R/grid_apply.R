@@ -2,6 +2,8 @@
 #' @export
 #' @describeIn gapply same as \code{gapply}, but does not simplify results,
 #' leaving results as a list of vectors, lists, or data frames.
+#' @param .paramid The index of the row of the argument grid to run.
+#' If \code{NULL} (default), \code{.f} is evaluated for all arguments.
 #' @importFrom purrr transpose
 #' @importFrom parallel mclapply
 grid_apply <- function(.f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T, .paramid=NULL){
