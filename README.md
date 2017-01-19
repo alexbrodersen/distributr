@@ -56,6 +56,7 @@ Jobs can be added to the compute plan via `add_jobs`. A set of jobs can be selec
 jobs(sim)                              # access jobs grid (argument grid)
 add_jobs(sim, n=1000, mu=10, sd=50)    # add jobs to plan
 filter_jobs(sim, n < 100, .mc.cores=5) # filter jobs as in dplyr
+collect(sim, filter="n < 100")         # collect results from jobs matching filter
 ```
 
 ### Wiki
