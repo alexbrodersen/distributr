@@ -10,11 +10,13 @@
 \arguments{
 \item{x}{list of results}
 
+\item{arg_grid}{argument grid}
+
 \item{dir}{directory}
 
-\item{...}{unused}
+\item{layer.id}{index of the layer to tidy. If \code{NULL} tidies last layer.}
 
-\item{layer}{layer if not last}
+\item{...}{unused}
 }
 \description{
 Tidying dgraph results

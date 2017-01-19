@@ -1,10 +1,10 @@
 Package: distributr
 Type: Package
-Title: Apply a function over grid of parameters, with SGE backend
+Title: Grid Search by applying a function over grid of its arguments, with SGE backend
 Version: 0.1.0
 Author: Patrick Miller
 Maintainer: Patrick Miller <pmille13@nd.edu>
-Description: Provides a function grid_apply that applies a function over a grid of its arguments (e.g. \code{expand.grid(a=1:4, b=3:5))}), returning results in a list. Function applications can be executed repeatedly and in parallel. A backend for execution of these grids is provided for Sun Grid Engine. Results can be easy transformed into a tidy format.
+Description: Simple grid search via \code{grid_apply}. Function applications can be executed repeatedly and in parallel. A backend for execution of these grids is provided for Sun Grid Engine. Results can be easy transformed into a tidy format.
 License: GPL-2 | file LICENSE
 URL: https://github.com/patr1ckm/distributr
 BugReports: https://github.com/patr1ckm/distributr/issues

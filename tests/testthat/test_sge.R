@@ -9,6 +9,7 @@ do.one <- function(a=1,b=2){
 out <- gapply(do.one, a=1:2, b=2, .reps=2, .verbose=0, .eval = F)
 
 test_that("setup", {
+  skip_on_cran()
   system(paste0("mkdir -p ", fdir))
   system(paste0("rm -rf ", fdir, "/*"))
 
@@ -37,6 +38,7 @@ test_that("clean", {
 
 
 test_that("setup verbose", {
+  skip_on_cran()
   # This just tests that the argumnt .verbose works; can't test it locally
   # outside of SGE.
 
@@ -56,6 +58,7 @@ test_that("setup verbose", {
 })
 
 test_that("collect_sge ", {
+  skip_on_cran()
   msg <- capture.output(clean("tmp"))
   msg <- capture.output(out <- setup(out, .dir="tmp", .reps = 5))
 
@@ -71,6 +74,7 @@ test_that("collect_sge ", {
 })
 
 test_that("jobs can have different numbers of completed replications", {
+  skip_on_cran()
   res.l <- readRDS("tmp/results/2.Rdata")
   res.l <- res.l[c(1, 3)]
   saveRDS(res.l, file="tmp/results/2.Rdata")
@@ -84,6 +88,7 @@ test_that("jobs can have different numbers of completed replications", {
 
 
 test_that("add_jobs", {
+  skip_on_cran()
   out2 <- add_jobs(out, a=5)
   new_grid <- attr(out2, "arg_grid")
   ans <- dplyr::bind_rows(attr(out, "arg_grid"), expand.grid(a=5))
@@ -110,6 +115,7 @@ test_that("add_jobs", {
 })
 
 test_that("filter jobs", {
+  skip_on_cran()
   msg <- capture.output(ff <- filter_jobs(out, .dir="tmp", a==1))
   sub <- readLines("tmp/submit")
   expect_equal(sub[grep("-t", sub)], "#$ -t 1:1")
@@ -121,6 +127,7 @@ test_that("filter jobs", {
 })
 
 test_that("overwriting prompts a msg", {
+  skip_on_cran()
   if(interactive()){
     out <- gapply(do.one,a=1:2,b=2, .reps=2, .verbose=0, .eval = F)
     out3 <- setup(out, .dir="tmp", .reps = 6)
@@ -128,9 +135,6 @@ test_that("overwriting prompts a msg", {
     out3 <- setup(out, .dir="tmp", .reps = 6)
   }
 })
-
-
-
 
 if(interactive()) setwd("../../")
 

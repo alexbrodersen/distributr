@@ -37,10 +37,12 @@ for(i in 1:15) {
 setwd("../")
 
 test_that("sge dgraph load_results", {
+  skip_on_cran()
   expect_equal(unlist(load_results("t1.Rdata", fdir)), rep(c(2, 0), .reps))
 })
 
 test_that("sge dgraph collect", {
+  skip_on_cran()
   expect_equivalent(collect(o, task = 1, dir = fdir),
                     load_results("t1.Rdata", fdir))
 

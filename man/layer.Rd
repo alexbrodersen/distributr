@@ -16,8 +16,6 @@ grid_reduce(...)
 \item{...}{nodes, separated by commas}
 
 \item{.reduce}{if TRUE, the results of previous layers are expanded by nodes, otherwise reduced}
-
-\item{...}{nodes}
 }
 \description{
 Add layer to dgraph
