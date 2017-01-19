@@ -3,7 +3,7 @@
 #'
 #' Returns \code{key=value} pairs obtained from applying a \code{f} to a grid
 #' of parameters using \code{grid_apply}, merging with the grid of parameters.
-#' @param x results from \code{grid_apply}
+#' @param x results from \code{grid_apply} or \code{collect}
 #' @param ... additional arguments passed to either \code{tidy.gresults} or
 #' \code{tidy.dgraph}
 #' @details Tidying depends on the form of the results returned from applying a
@@ -27,15 +27,14 @@ tidy <- function(x, ...){
   UseMethod("tidy")
 }
 
-#' Tidy an object from grid_apply
-#' @param x results from \code{collect} or \code{grid_apply}
+
 #' @param arg_grid argument grid; if NULL (default) looks for arg_grid
 #'  as an attribute to \code{x}
 #' @param stack if \code{TRUE} (default) stack results with \code{stack_list}. Otherwise, \code{bind_rows} is used.
 #' @param .reps scalar or vector of completed replications for each job (usually given via \code{collect})
-#' @param ... unused
 #' @imporFrom dplyr bind_cols as_data_frame
 #' @export
+#' @describeIn tidy Tidy an object from \code{grid_apply} or \code{collect}
 tidy.gresults <- function(x, arg_grid=NULL, stack=TRUE, .reps=NULL, ...){
   if(is.null(arg_grid)){
     arg_grid <- attr(x, "arg_grid")

@@ -2,15 +2,26 @@
 % Please edit documentation in R/tidy_results.R
 \name{tidy}
 \alias{tidy}
+\alias{tidy.gresults}
 \title{Tidy results from grid_apply or dgraph}
 \usage{
 tidy(x, ...)
+
+\method{tidy}{gresults}(x, arg_grid = NULL, stack = TRUE, .reps = NULL,
+  ...)
 }
 \arguments{
-\item{x}{results from \code{grid_apply}}
+\item{x}{results from \code{grid_apply} or \code{collect}}
 
 \item{...}{additional arguments passed to either \code{tidy.gresults} or
 \code{tidy.dgraph}}
+
+\item{arg_grid}{argument grid; if NULL (default) looks for arg_grid
+as an attribute to \code{x}}
+
+\item{stack}{if \code{TRUE} (default) stack results with \code{stack_list}. Otherwise, \code{bind_rows} is used.}
+
+\item{.reps}{scalar or vector of completed replications for each job (usually given via \code{collect})}
 }
 \value{
 Returns non-error results as a \code{data.frame} in long form with
@@ -35,6 +46,10 @@ the names of the elements are mapped to a single key. If the results are unnamed
 names are assigned as in \code{as.data.frame}. See \code{\link{stack_list}} for
 further details.
 }
+\section{Methods (by class)}{
+\itemize{
+\item \code{gresults}: Tidy an object from \code{grid_apply} or \code{collect}
+}}
 \seealso{
 \code{\link{stack_list}}
 }
