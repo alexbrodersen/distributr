@@ -152,6 +152,10 @@ write_doone_dgraph <- function(dgraph, dir, script.name="doone.R"){
   cat(doone, file=paste0(dir, "/", script.name))
 }
 
+#' Load files from \code{results/} satisfying regular expression
+#' @param regex regex
+#' @param dir directory
+#' @return returns list of results
 #' @export
 load_results <- function(regex, dir=getwd()){
   fns <- list.files(paste0(dir, "/results/"), recursive = T)

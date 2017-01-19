@@ -353,12 +353,15 @@ filter_jobs <- function(object, ...,
   invisible(object)
 }
 
+#' Return running jobs
 #' @export
 qst <- function(){
-    mysys("qstat -u $USER")
+  system("qstat -u $USER", intern=TRUE)
 }
 
 
+#' Run and \code{cat} a call to \code{system}
+#' @param cmd string of the command to run
 #' @export
 mysys <- function(cmd){
   cat(cmd,fill=T)
