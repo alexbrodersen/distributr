@@ -232,4 +232,16 @@ test_that("grid_apply .eval", {
   expect_equal(unlist(out$value), rep(NA,3))
 })
 
+test_that("tidy stack=FALSE", {
+  do.inner <- function(x, y){x+y}
+  do.one <- function(a, b){
+    gapply(do.inner, x=c(a, a+b), y=c(b, b+a), .reps=2)
+  }
+  res <- grid_apply(do.one, a=1:2, b=1:2, .reps=1) %>% tidy(., stack=FALSE)
+  gr <- expand.grid(a=1:2, b=1:2)
+  ans <- lapply(split(gr, 1:nrow(gr)), function(arg){
+    gapply(do.inner, x=c(arg$a, arg$a+arg$b), y=c(arg$b, arg$b+arg$a), .reps=2)}) %>% bind_rows
+  expect_equal(ans$value, res$value)
+
+})
 

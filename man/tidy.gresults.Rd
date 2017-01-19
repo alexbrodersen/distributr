@@ -4,13 +4,16 @@
 \alias{tidy.gresults}
 \title{Tidy an object from grid_apply}
 \usage{
-\method{tidy}{gresults}(x, arg_grid = NULL, .reps = NULL, ...)
+\method{tidy}{gresults}(x, arg_grid = NULL, stack = TRUE, .reps = NULL,
+  ...)
 }
 \arguments{
 \item{x}{results from \code{collect} or \code{grid_apply}}
 
 \item{arg_grid}{argument grid; if NULL (default) looks for arg_grid
 as an attribute to \code{x}}
+
+\item{stack}{if \code{TRUE} (default) stack results with \code{stack_list}. Otherwise, \code{bind_rows} is used.}
 
 \item{.reps}{scalar or vector of completed replications for each job (usually given via \code{collect})}
 

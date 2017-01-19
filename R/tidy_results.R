@@ -31,10 +31,12 @@ tidy <- function(x, ...){
 #' @param x results from \code{collect} or \code{grid_apply}
 #' @param arg_grid argument grid; if NULL (default) looks for arg_grid
 #'  as an attribute to \code{x}
+#' @param stack if \code{TRUE} (default) stack results with \code{stack_list}. Otherwise, \code{bind_rows} is used.
 #' @param .reps scalar or vector of completed replications for each job (usually given via \code{collect})
 #' @param ... unused
+#' @imporFrom dplyr bind_cols as_data_frame
 #' @export
-tidy.gresults <- function(x, arg_grid=NULL, .reps=NULL, ...){
+tidy.gresults <- function(x, arg_grid=NULL, stack=TRUE, .reps=NULL, ...){
   if(is.null(arg_grid)){
     arg_grid <- attr(x, "arg_grid")
     if(is.null(arg_grid)) stop("can't tidy, no argument grid")
@@ -53,21 +55,27 @@ tidy.gresults <- function(x, arg_grid=NULL, .reps=NULL, ...){
   }
 
   # Stack results, adding keys according to names of elements, colnames, and rownames.
-  values <- stack_list(x)
+  if(stack){
+    values <- stack_list(x)
 
-  # Expand rows by number of keys
-  if(is.data.frame(x[[1]])){
-    nkeys <- sapply(x, function(xi){prod(dim(xi))})
-  } else if(is.list(x[[1]])){
-    nkeys <- sapply(x, function(xi){sum(lengths(xi))})
+    # Expand rows by number of keys
+    if(is.data.frame(x[[1]])){
+      nkeys <- sapply(x, function(xi){prod(dim(xi))})
+    } else if(is.list(x[[1]])){
+      nkeys <- sapply(x, function(xi){sum(lengths(xi))})
+    } else {
+      nkeys <- sapply(x, length)
+    }
   } else {
-    nkeys <- sapply(x, length)
+    nkeys <- sapply(x, nrow)
+    values <- bind_rows(x)
+    #rep_grid$.rep <- NULL # I don't know, I'm guessing you probably don't want this?
   }
 
   value_grid <- rep_grid[rep(1:nrow(rep_grid), times = nkeys), ]
 
   rownames(value_grid) <- NULL
-  res <- dplyr::as_data_frame(value_grid) %>% dplyr::bind_cols(., values)
+  res <- dplyr::bind_cols(dplyr::as_data_frame(value_grid), values)
 
   new.attr.names <- setdiff(names(attributes(x)), names(attributes(res)))
   attributes(res)[new.attr.names] <- attributes(x)[new.attr.names]
@@ -187,4 +195,4 @@ stack_x <- function(x){
   }
 }
 
-globalVariables(".")
+#globalVariables(".")
