@@ -1,5 +1,5 @@
 # distributr
-Tidy distributed computing workflows for R and Sun/Open Grid Engine
+Tidy distributed grid search in R and Sun/Open Grid Engine
 
     devtools::install_github("patr1ckm/distributr")
     
