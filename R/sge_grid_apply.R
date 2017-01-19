@@ -189,7 +189,7 @@ write_submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1, queue=
       "#$ -N ", job.name, "\n",
       "#$ -t ", tasks, "\n",
       "#$ -o ", out.dir, " \n\n",
-      "module load R/", R.version,
+      "module load R/", R.version, "\n",
       "Rscript ", script.name, " $SGE_TASK_ID $NSLOTS \n")
   } else {
     submit <- paste0(
