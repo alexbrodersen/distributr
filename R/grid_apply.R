@@ -74,6 +74,9 @@ do.rep <- function(.f, ..., .reps, .verbose=1,.rep.cores=1, .eval=T, .args=NULL)
   return(res.l)
 }
 
+#' Wraps a function so that it catches and returns warnings and errors as attributes
+#' @param fun function
+#' @return \code{fun}
 #' @export
 wrapWE <- function(fun){
   function(...) {
