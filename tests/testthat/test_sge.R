@@ -71,6 +71,34 @@ test_that("collect_sge ", {
   outc <- collect(out, dir = "tmp") %>% tidy
   out <- gapply(do.one, a=1:2, b=2, .reps=5, .verbose=0, .eval = T)
   expect_equivalent(select(outc,-.sge_id), out)
+
+  outf <- collect(out, dir="tmp", filter="a < 5") %>% tidy
+  ans <- outc %>% filter(a < 5)
+  expect_equal(outf, ans)
+
+  outf <- collect(out, dir="tmp", filter= ~a < 5) %>% tidy
+  ans <- outc %>% filter(a < 5)
+  expect_equal(outf, ans)
+
+  set.seed(104)
+  outs <- collect(out, dir = "tmp", sample=1) %>% tidy
+  expect_equal(nrow(outs), nrow(outc)/2)
+  expect_true(all(outs$.sge_id) == 1)
+
+  outr <- collect(out, dir = "tmp", regex="1") %>% tidy
+  expect_equal(outr, outs)
+  outr <- collect(out, dir = "tmp", regex="2") %>% tidy
+  expect_true(all(outr$.sge_id == 2))
+  outr <- collect(out, dir = "tmp", regex="[1-2]") %>% tidy
+  expect_equal(outr, outc)
+
+  outfr <- collect(out, dir = "tmp", filter="a < 5", regex="2") %>% tidy
+  ans <- outc %>% filter(a == 2)
+  expect_equal(outfr, ans)
+
+  set.seed(104)
+  outfs <- collect(out, dir = "tmp", filter="b == 2", sample = 1) %>% tidy
+  expect_equal(outfs, outs)
 })
 
 test_that("jobs can have different numbers of completed replications", {

@@ -231,19 +231,43 @@ write_doone <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
 }
 
 #' Collect completed results files from gresults
+#'
+#' Provides arguments to return a sample of the results files of a given size,
+#' or to return results from files matching a regular expression.
+#'
 #' @param x object from \code{grid_apply}
+#' @param filter a quoted string or formula filtering jobs in \code{arg_grid} as in \code{filter}.
+#' Results for jobs matching filter are returned.
+#' If \code{NULL} (default), all results are returned.
+#' @param regex regular expression  matching files in \code{results/}.
+#' If \code{NULL} (default), all results are returned.
+#' @param sample the number of files in \code{results/} to sample from.
+#' If \code{NULL} (default), all results are returned.
 #' @param dir directory
 #' @param ... unused
+#' @details \code{filter, regex} and \code{sample} are applied to the available results in order.
+#' For example, results are filtered first, a regex is applied, then a sample is taken.
 #' @export
 #' @importFrom gtools mixedsort
 #' @importFrom tidyr gather
-#' @importFrom dplyr collect
-collect.gresults <- function(x, dir=getwd(), ...){
+#' @importFrom dplyr collect filter_
+collect.gresults <- function(x, filter=NULL, regex=NULL, sample=NULL, dir=getwd(), ...){
   dir <- paste0(dir, "/")
   arg_grid <- readRDS(paste0(dir, "arg_grid.Rdata"))
 
   rdir <- paste0(dir, "results/")
   conds.files <- gtools::mixedsort(paste0(rdir,list.files(rdir)))
+  if(!is.null(filter)){
+    collected_ids <- as.numeric(gsub(".Rdata", "", gsub(paste0(dir, "results/"), "", conds.files)))
+    grid_filter <- filter_(arg_grid, .dots=filter)
+    conds.files <- conds.files[collected_ids %in% grid_filter$.sge_id]
+  }
+  if(!is.null(regex)){
+    conds.files <- grep(conds.files, pattern = regex, value=TRUE)
+  }
+  if(!is.null(sample)){
+    conds.files <- conds.files[sample(1:length(conds.files), size = sample, replace = FALSE)]
+  }
   cond.l <- list()           # list of the results from each condition
   for(i in 1:length(conds.files)){
       fn <- paste0(conds.files[i])
