@@ -26,8 +26,21 @@ The function `gapply` runs `grid_apply` followed by `tidy`.
 ```{r, eval=TRUE}
 res <- sim %>% tidy
 res <- gapply(do.one, n = c(50, 100, 500), mu = c(1,5), sd = c(1, 5, 10), 
-              .reps=50, .mc.cores=5)
+              .reps=50, .mc.cores=5) %>% head
 ```
+
+```{r}
+# A tibble: 6 × 6
+      n    mu    sd  .rep   key     value
+  <dbl> <dbl> <dbl> <int> <chr>     <dbl>
+1    50     1     1     1    V1 1.1593344
+2    50     1     1     2    V1 1.0908722
+3    50     1     1     3    V1 0.8964487
+4    50     1     1     4    V1 0.9429766
+5    50     1     1     5    V1 1.0805689
+6    50     1     1     6    V1 0.9722816
+```
+If results are already in tidy form (e.g. `broom`), skip the stacking and just do the argument merging: `tidy(., stack=FALSE)`
 
 ### Warnings and Errors
 
