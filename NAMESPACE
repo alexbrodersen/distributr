@@ -3,7 +3,6 @@
 S3method(collect,gresults)
 S3method(setup,gresults)
 S3method(summary,gresults)
-S3method(tidy,dgraph)
 S3method(tidy,gresults)
 export(add_jobs)
 export(clean)

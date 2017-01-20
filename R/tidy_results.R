@@ -82,25 +82,6 @@ tidy.gresults <- function(x, arg_grid=NULL, stack=TRUE, .reps=NULL, ...){
   return(res)
 }
 
-#' Tidying dgraph results
-#'
-#' @param x list of results
-#' @param arg_grid argument grid
-#' @param dir directory
-#' @param layer.id index of the layer to tidy. If \code{NULL} tidies last layer.
-#' @param ... unused
-#' @export
-tidy.dgraph <- function(x, arg_grid = NULL, dir=getwd(), layer.id = NULL, ...){
-  # flatten because list of gresults, want just one list with arg_grid and reps as attributes
-  res <- purrr::flatten(x)
-
-  if(is.null(arg_grid)){
-    arg_grid <- attr(x, "arg_grid") # try to grab the arg grid from the results
-  }
-  attributes(res) <- attributes(x)
-  tidy.gresults(res, arg_grid = arg_grid)
-}
-
 
 #' Stacks a list of vectors, lists, or data frames
 #'
