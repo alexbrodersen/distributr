@@ -56,9 +56,11 @@ res <- gapply(do.one, n = c(50, 100, 500), mu = c(1,5), sd = c(1, 5, 10),
 5    50     1     1     5    V1 1.0805689
 6    50     1     1     6    V1 0.9722816
 ```
-If results are already in tidy form (e.g. `broom`), skip the stacking and just do the argument merging: `tidy(., stack=FALSE)`
+If results are already in tidy form (e.g. from `broom` or another call to `gapply`), the stacking can be skipped: `tidy(., stack=FALSE)`
 
 ## Warnings and Errors
+
+`gapply` captures both warnings and errors. These can be accessed very simply:
 
 ```{r, eval=TRUE}
 err(sim)
