@@ -165,6 +165,20 @@ test_that("overwriting prompts a msg", {
   }
 })
 
+test_that("test_job", {
+  skip_on_cran()
+   msg <- capture.output(clean("tmp/"))
+   msg <- capture.output(plan <- setup(out, .dir="tmp", .reps = 5, .verbose=0))
+   setwd("tmp/")
+   msg <- capture.output(test_job(2))
+   setwd("../")
+   res <- collect(plan, dir="tmp") %>% tidy
+   res$.sge_id <- NULL
+   msg <- capture.output(ans <- gapply(do.one, a=2, b=2, .reps=5, .verbose=0, .eval = T,
+                 .args=list(dat=data.frame(rnorm(5), rnorm(5)))))
+   expect_true(all(res==ans))
+})
+
 if(interactive()) setwd("../../")
 
 

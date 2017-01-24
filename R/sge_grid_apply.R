@@ -449,5 +449,24 @@ jobs <- function(object){
  attr(object, "arg_grid")
 }
 
+#' Runs a job on the head node
+#' @param .sge_id job id (row of \code{jobs(object)})
+#' @param .mc.cores number of cores to use
+#' @param .script.name name of the script given in \code{setup}
+#' @details
+#' Runs \code{Rscript doone.R x y} at the command line where \code{x} is \code{.sge_id},
+#' and \code{y} is \code{.mc.cores}.
+#'
+#' Note that long running jobs claiming many cores may be killed by
+#' the administrators. This should only be used for short tests, longer tests
+#' should be submitted to the cluster as usual.
+#'
+#' @seealso \code{submit}, \code{filter}
+#' @export
+test_job <- function(.sge_id=1, .mc.cores=1, .script.name="doone.R"){
+  cmd <- paste0("Rscript ", .script.name, " ", .sge_id, " ", .mc.cores)
+  mysys(cmd)
+}
+
 
 
