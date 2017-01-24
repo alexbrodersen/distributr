@@ -6,6 +6,7 @@
 #' @param ... named arguments to \code{f} in the form \code{key=c(value1,value2, ...)} etc.
 #' A grid of parameter values will be generated from values given to each named argument, as \code{expand.grid(...)}
 #' @param .reps times the function should be evaluated
+#' @param .args list of extra arguments to \code{.f} not included in the argument grid.
 #' @param .mc.cores attempts to split function evaluations over given number of cores
 #' @param .verbose If \code{1} (default), prints a \code{.} with every completed condition.
 #' If \code{2}, prints the arguments corresponding to the completed condition.
@@ -34,7 +35,8 @@
 #' gapply(do.one, a=1:4,b=2:3, .reps=5)
 #' @export
 #' @importFrom parallel mclapply
-gapply <- function(.f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T){
-  grid_apply(.f, ..., .reps = .reps, .mc.cores = .mc.cores, .verbose = .verbose, .eval = .eval) %>%
+gapply <- function(.f, ..., .reps=1, .args=NULL, .mc.cores=1, .verbose=1, .eval=T){
+  grid_apply(.f, ..., .reps = .reps, .args=.args, .mc.cores = .mc.cores,
+             .verbose = .verbose, .eval = .eval) %>%
     tidy.gresults()
 }

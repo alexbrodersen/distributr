@@ -6,9 +6,12 @@
 #' If \code{NULL} (default), \code{.f} is evaluated for all arguments.
 #' @importFrom purrr transpose
 #' @importFrom parallel mclapply
-grid_apply <- function(.f, ..., .reps=1, .mc.cores=1, .verbose=1, .eval=T, .paramid=NULL){
+grid_apply <- function(.f, ..., .reps=1, .args=NULL, .mc.cores=1, .verbose=1, .eval=T, .paramid=NULL){
   arg_grid <- expand.grid(...)
   arg.ls <- purrr::transpose(arg_grid)
+
+  # Append the non-grid arguments
+  arg.ls <- lapply(arg.ls, function(x, .args){append(x, .args)}, .args=.args)
 
   if(!is.null(.paramid)) arg.ls <- arg.ls[.paramid]
   names(arg.ls) <- NULL

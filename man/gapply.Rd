@@ -5,10 +5,11 @@
 \alias{grid_apply}
 \title{Repeatedly apply a function over a grid of values in parallel}
 \usage{
-gapply(.f, ..., .reps = 1, .mc.cores = 1, .verbose = 1, .eval = T)
+gapply(.f, ..., .reps = 1, .args = NULL, .mc.cores = 1, .verbose = 1,
+  .eval = T)
 
-grid_apply(.f, ..., .reps = 1, .mc.cores = 1, .verbose = 1, .eval = T,
-  .paramid = NULL)
+grid_apply(.f, ..., .reps = 1, .args = NULL, .mc.cores = 1,
+  .verbose = 1, .eval = T, .paramid = NULL)
 }
 \arguments{
 \item{.f}{function to be evaluated. The function must return a (named) value or (named) vector of values.}
@@ -17,6 +18,8 @@ grid_apply(.f, ..., .reps = 1, .mc.cores = 1, .verbose = 1, .eval = T,
 A grid of parameter values will be generated from values given to each named argument, as \code{expand.grid(...)}}
 
 \item{.reps}{times the function should be evaluated}
+
+\item{.args}{list of extra arguments to \code{.f} not included in the argument grid.}
 
 \item{.mc.cores}{attempts to split function evaluations over given number of cores}
 

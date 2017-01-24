@@ -188,7 +188,7 @@ test_that("grid_apply list of vectors", {
   expect_equivalent(out, out1)
 })
 
-test_that("list of vectors of unequal length", {
+test_that("grid_apply list of vectors of unequal length", {
   do.one <- function(a=1, b=2){
     return(list(x=c(a, a), y=c(b, b, b)))
   }
@@ -230,6 +230,16 @@ test_that("grid_apply .eval", {
 
   out <- grid_apply(do.one,.reps=3, a=1,b=2,.verbose=0, .eval=F) %>% tidy
   expect_equal(unlist(out$value), rep(NA,3))
+})
+
+test_that("grid_apply .args", {
+  do.one <- function(a=1, b=2, dat=NULL){ dat[a,b]}
+  d <- data.frame(rnorm(5), rnorm(5))
+  outl <- grid_apply(do.one, a=1:3, b=1:2, .args=list(dat=d))
+  out <- gapply(do.one, a=1:3, b=1:2, .args=list(dat=d))
+  ans <- unname(unlist(d[1:3, ]))
+  expect_equal(unlist(outl), ans)
+  expect_equal(out$value, ans)
 })
 
 test_that("tidy stack=FALSE", {
