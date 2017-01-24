@@ -2,11 +2,12 @@ context("sge grid_apply")
 if(interactive()) setwd("tests/testthat/")
 fdir <- "tmp"
 
-do.one <- function(a=1,b=2){
+do.one <- function(a=1, b=2, dat){
   if(a==1) stop("asdf")
   a
 }
-out <- gapply(do.one, a=1:2, b=2, .reps=2, .verbose=0, .eval = F)
+out <- gapply(do.one, a=1:2, b=2, .reps=2, .verbose=0, .eval = F,
+              .args=list(dat=data.frame(rnorm(5), rnorm(5))))
 
 test_that("setup", {
   skip_on_cran()

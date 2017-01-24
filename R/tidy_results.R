@@ -32,7 +32,7 @@ tidy <- function(x, ...){
 #'  as an attribute to \code{x}
 #' @param stack if \code{TRUE} (default) stack results with \code{stack_list}. Otherwise, \code{bind_rows} is used.
 #' @param .reps scalar or vector of completed replications for each job (usually given via \code{collect})
-#' @imporFrom dplyr bind_cols as_data_frame
+#' @importFrom dplyr bind_cols as_data_frame
 #' @export
 #' @describeIn tidy Tidy an object from \code{grid_apply} or \code{collect}
 tidy.gresults <- function(x, arg_grid=NULL, stack=TRUE, .reps=NULL, ...){

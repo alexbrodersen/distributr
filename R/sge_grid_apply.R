@@ -144,6 +144,7 @@ setup.gresults <- function(object,
   }
 
   .f <- attr(object,".f")
+  attr(arg_grid, ".args") <- attr(object, ".args")
 
   cmd <- paste0("mkdir -p ", .dir, "results")
   mysys(cmd)
@@ -214,13 +215,13 @@ write_doone <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
   ncores <- args[2]
   reps <- ", reps,"
   arg_grid <- readRDS('arg_grid.Rdata')
+  .args <- attr(arg_grid, '.args')
   params <- arg_grid[cond,]
-  #rep.id <- (reps*(params$.chunk-1)+1):(reps*params$.chunk)
   rep.id <- 1:reps
-  #params$.chunk <- NULL    # because f doesn't take chunk usually
   params$.sge_id <- NULL  # special variable not in f
   start <- proc.time()
-  res.l <- do.rep(wrapWE(.f), as.list(params), .reps=reps, .rep.cores=ncores, .verbose=", verbose," )
+  res.l <- do.rep(wrapWE(.f), as.list(params), .reps=reps, .args=.args,
+    .rep.cores=ncores, .verbose=", verbose," )
   end <- proc.time()
   dir <- paste0('results/')
   attr(res.l, \"time\") <- end - start

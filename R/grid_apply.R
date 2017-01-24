@@ -39,6 +39,7 @@ grid_apply <- function(.f, ..., .reps=1, .args=NULL, .mc.cores=1, .verbose=1, .e
   attr(res.l, "arg_names") <- names(arg_grid)
   attr(res.l, ".f") <- .f
   attr(res.l, "arg_grid") <- arg_grid
+  attr(res.l, ".args") <- .args
   attr(res.l, "err") <- err.list
   attr(res.l, "warn") <- warn.list
   attr(res.l, ".reps") <- .reps
