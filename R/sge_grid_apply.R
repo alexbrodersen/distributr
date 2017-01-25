@@ -8,6 +8,8 @@
 #' and directories to store results and job log files.
 #'
 #' @param object object from \code{grid_apply} or \code{gapply} with \code{.eval=FALSE}
+#' @param .seed An integer or \code{NULL} (default, no seeds are set automatically). If given, controls
+#' RNG using L'ecuyer-CMRG as in \code{parallel} by saving and accessing unique seeds in \code{seeds.Rdata}
 #' @param .dir directory name relative to the current working directory
 #' @param .reps total number of replications for each condition
 #' @param .mc.cores number of cores used to run replications in parallel (can be a range)
@@ -95,6 +97,7 @@ setup <- function(object, ...){
 #' @export
 #' @describeIn setup Setup sge files from \code{gapply, grid_apply}
 setup.gresults <- function(object,
+                  .seed=NULL,
                   .dir=getwd(),
                   .reps=1,
                   .mc.cores=1,
@@ -112,31 +115,26 @@ setup.gresults <- function(object,
   arg_grid$.sge_id <- 1:nrow(arg_grid)
   .dir <- paste0(.dir, "/")
 
-  # 2016-12-09 Previously, I added automatic rep chunking. However, it was removed
+  # 2017-01-25 Previously, I added automatic rep chunking. However, it was removed
   #  when I decided to add .sge_id as an actual variable in arg_grid in 'setup'.
   #  Maintaining auto chunking and .sge_id is tricky because 'tidy' needs to work
   #  with both the non-chunked arg_grid from 'grid_apply',
   #  and the chunked arg_grid from 'setup'.
   #  Dealing with it has wasted so much of my time, and there is no easy solution.
   #
-  #  The cleanest solution would be to never evaluate and store the full arg_grid,
-  # and only subset arg_grid rows when necessary.
-  #
-  #  Chunking can be handled easily by the user by just including 'chunk' as a
-  #  variable. Everything would work, and .reps becomes .reps per chunk automatically.
+  #  Chunking of replications can be handled easily by the user by just including 'chunk' as a
+  #  variable. .reps becomes .reps per chunk automatically.
   #  'chunk' can then just be removed in the analysis.
   #  The results are transparent, rather than magical (my preference).
-  #  The only drawback is that a unique
-  #  rep id must be obtained by the user if needed, but I have never needed this!
+  #
+  #  Chunking of conditions (running multiple rows with each submission) can
+  #  be achieved by nesting a gapply call within another. The submitted
+  #  conditions are in the outer call, while the other conditions are run in the
+  #  inner call.
 
   #  Replications are still the slowest varying factor, to prioritize running more
   #  conditions rather than replications.
 
-  #  Here is the original chunking code:
-  #chunk.grid <- arg_grid[rep(1:nrow(arg_grid), times=.chunks),,drop=F]
-  #chunk.grid$.chunk <- rep(1:.chunks, each=nrow(arg_grid))
-  #chunk.grid$.sge_id <- 1:nrow(chunk.grid)
-  #reps.per.chunk <- ceiling(.reps/.chunks)
 
   # initialize sge_id if there is none
   if(is.null(arg_grid$.sge_id)){
@@ -167,7 +165,12 @@ setup.gresults <- function(object,
     saveRDS(arg_grid, file=grid_name)
   }
 
-  write_doone(.f=.f, dir=.dir, reps=.reps, mc.cores=.mc.cores, verbose=.verbose, script.name=.script.name)
+  if(!is.null(.seed)){
+    write_seeds(.sge_ids = arg_grid$.sge_id, dir = .dir, seed=.seed)
+  }
+
+  write_doone(.f=.f, dir=.dir, seed=.seed, reps=.reps, mc.cores=.mc.cores,
+              verbose=.verbose, script.name=.script.name)
 
   attr(object, "arg_grid") <- arg_grid
   attr(object, ".reps") <- .reps
@@ -206,17 +209,29 @@ write_submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1, queue=
   cat(submit, file=paste0(dir, "submit"))
 }
 
-write_doone <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doone.R"){
-  fstr <- paste0(".f <- ", paste0(deparse(eval(.f), control="all"),collapse="\n"))
-  temp <- paste0(fstr,"
+write_doone <- function(.f, dir, seed, reps=1, mc.cores=1, verbose=1, script.name="doone.R"){
+
+  fstr <- paste0(".f <- ", paste0(deparse(eval(.f), control="all"), collapse="\n"))
+
+  if(!is.null(seed)){
+    seed_load <- paste0("\n
+  RNGkind(\"L'Ecuyer-CMRG\")
+  seeds <- readRDS('seeds.Rdata')
+  .Random.seed <- seeds[[params$.sge_id]]\n")
+  } else {
+    seed_load <- paste0("\n")
+  }
+
+  script <- paste0(fstr,"
   suppressMessages(library(distributr))
   args <- as.numeric(commandArgs(trailingOnly=TRUE))
-  cond <- args[1]
+  sge_id <- args[1]
   ncores <- args[2]
   reps <- ", reps,"
   arg_grid <- readRDS('arg_grid.Rdata')
   .args <- attr(arg_grid, '.args')
-  params <- arg_grid[cond,]
+  params <- arg_grid[sge_id,]",
+  seed_load,"
   rep.id <- 1:reps
   params$.sge_id <- NULL  # special variable not in f
   start <- proc.time()
@@ -225,10 +240,25 @@ write_doone <- function(.f, dir, reps=1, mc.cores=1, verbose=1, script.name="doo
   end <- proc.time()
   dir <- paste0('results/')
   attr(res.l, \"time\") <- end - start
-  fn <- paste0(dir, cond,'.Rdata')
+  fn <- paste0(dir, sge_id,'.Rdata')
   saveRDS(res.l, file=fn) \n")
 
-  cat(temp, file=paste0(dir, script.name))
+  cat(script, file=paste0(dir, script.name))
+}
+
+#' @importFrom parallel nextRNGStream
+write_seeds <- function(dir, .sge_ids, seed){
+  fn <- paste0(dir, "seeds.Rdata")
+  RNGkind("L'Ecuyer-CMRG")
+  set.seed(seed)
+  s <- .Random.seed
+  seeds <- vector(mode = "list", length = max(.sge_ids))
+  for(i in .sge_ids){
+    seeds[[i]] <- parallel::nextRNGStream(s)
+    s <- seeds[[i]]
+  }
+  saveRDS(seeds, file=fn)
+  cat("writing seeds.Rdata", fill=T)
 }
 
 #' Collect completed results files from gresults
@@ -405,14 +435,17 @@ submit <- function(dir=getwd()){
   setwd(wd)
 }
 
-#' Cleans results
+#' Removes all files and folders created by \code{setup} and their contents
 #' @param dir project directory name followed by 'slash'
+#' @details Removes \code{results/*}, \code{SGE_Output/*}, \code{arg_grid.Rdata},
+#' \code{submit}, \code{seeds.Rdata}, and \code{doone.R}.
 #' @export
 clean <- function(dir=getwd()){
   dir <- paste0(dir, "/")
   rdir <- paste0(dir, "results/")
   sdir <- paste0(dir, "SGE_Output/")
   arg_name <- paste0(dir, "arg_grid.Rdata")
+
   if(file.exists(rdir)){
     cmd <- paste0("rm -rf ", rdir, "")
     mysys(cmd)
@@ -424,6 +457,11 @@ clean <- function(dir=getwd()){
     mysys(cmd)
     cmd <- paste0("rm ", dir, "doone.R")
     mysys(cmd)
+    fn <- paste0(dir, "seeds.Rdata")
+    if(file.exists(fn)){
+      cmd <- paste0("rm ", dir, "seeds.Rdata")
+      mysys(cmd)
+    }
   }
 }
 

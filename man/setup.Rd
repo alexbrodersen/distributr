@@ -7,15 +7,19 @@
 \usage{
 setup(object, ...)
 
-\method{setup}{gresults}(object, .dir = getwd(), .reps = 1, .mc.cores = 1,
-  .verbose = 1, .queue = "long", .script.name = "doone.R",
-  .job.name = "distributr", .out.dir = "SGE_Output", .R.version = "3.2.5",
-  .email.options = "a", .email.addr = NULL, .shell = "bash", ...)
+\method{setup}{gresults}(object, .seed = NULL, .dir = getwd(), .reps = 1,
+  .mc.cores = 1, .verbose = 1, .queue = "long",
+  .script.name = "doone.R", .job.name = "distributr",
+  .out.dir = "SGE_Output", .R.version = "3.2.5", .email.options = "a",
+  .email.addr = NULL, .shell = "bash", ...)
 }
 \arguments{
 \item{object}{object from \code{grid_apply} or \code{gapply} with \code{.eval=FALSE}}
 
 \item{...}{unused}
+
+\item{.seed}{An integer or \code{NULL} (default, no seeds are set automatically). If given, controls
+RNG using L'ecuyer-CMRG as in \code{parallel} by saving and accessing unique seeds in \code{seeds.Rdata}}
 
 \item{.dir}{directory name relative to the current working directory}
 

@@ -31,6 +31,8 @@ test_that("setup", {
   expect_identical(jobs(out), arg_grid)
 })
 
+
+
 test_that("clean", {
   msg <- capture.output(clean("tmp"))
   expect_equal(length(dir("tmp")), 0)
@@ -177,6 +179,40 @@ test_that("test_job", {
    msg <- capture.output(ans <- gapply(do.one, a=2, b=2, .reps=5, .verbose=0, .eval = T,
                  .args=list(dat=data.frame(rnorm(5), rnorm(5)))))
    expect_true(all(res==ans))
+})
+
+test_that("setup seeds", {
+  do.one <- function(a=1, b=2, dat){
+    if(a==1) stop("asdf")
+    rnorm(1, a, .01)
+  }
+  out <- gapply(do.one, a=1:2, b=2, .reps=2, .verbose=0, .eval = F,
+                .args=list(dat=data.frame(rnorm(5), rnorm(5))))
+
+  skip_on_cran()
+  system(paste0("mkdir -p ", fdir))
+  system(paste0("rm -rf ", fdir, "/*"))
+
+  msg <- capture.output(out <- setup(out, .dir="tmp", .reps = 6, .seed=104))
+  expect_true(file.exists("tmp/seeds.Rdata"))
+
+  setwd("tmp")
+  msg <- system("Rscript doone.R 1 1", ignore.stdout = T)
+  msg <- system("Rscript doone.R 2 1", ignore.stdout = T)
+  setwd("../")
+
+  o1 <- collect(out, dir = "tmp")
+  system(paste0("rm -rf ", fdir, "/*"))
+  msg <- capture.output(out <- setup(out, .dir="tmp", .reps = 6, .seed=104))
+
+  ## This is a hack to get the tests to run from this directory
+  setwd("tmp")
+  msg <- system("Rscript doone.R 1 1", ignore.stdout = T)
+  msg <- system("Rscript doone.R 2 1", ignore.stdout = T)
+  setwd("../")
+  o2 <- collect(out, dir = "tmp")
+  expect_equal(o1, o2)
+
 })
 
 if(interactive()) setwd("../../")

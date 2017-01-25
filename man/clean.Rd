@@ -2,7 +2,7 @@
 % Please edit documentation in R/sge_grid_apply.R
 \name{clean}
 \alias{clean}
-\title{Cleans results}
+\title{Removes all files and folders created by \code{setup} and their contents}
 \usage{
 clean(dir = getwd())
 }
@@ -10,6 +10,10 @@ clean(dir = getwd())
 \item{dir}{project directory name followed by 'slash'}
 }
 \description{
-Cleans results
+Removes all files and folders created by \code{setup} and their contents
+}
+\details{
+Removes \code{results/*}, \code{SGE_Output/*}, \code{arg_grid.Rdata},
+\code{submit}, \code{seeds.Rdata}, and \code{doone.R}.
 }
 
