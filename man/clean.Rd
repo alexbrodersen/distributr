@@ -7,7 +7,7 @@
 clean(dir = getwd())
 }
 \arguments{
-\item{dir}{project directory name followed by 'slash'}
+\item{dir}{project directory name}
 }
 \description{
 Removes all files and folders created by \code{setup} and their contents

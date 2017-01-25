@@ -16,7 +16,7 @@ filter_jobs(object, ..., .mc.cores = 1, .dir = getwd(), .queue = "long",
 
 \item{.mc.cores}{number of cores used to run replications in parallel (can be a range)}
 
-\item{.dir}{directory name relative to the current working directory}
+\item{.dir}{directory name relative to the current working directory (no trailing backslash)}
 
 \item{.queue}{name of queue}
 

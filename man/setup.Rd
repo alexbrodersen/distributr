@@ -16,12 +16,12 @@ setup(object, ...)
 \arguments{
 \item{object}{object from \code{grid_apply} or \code{gapply} with \code{.eval=FALSE}}
 
-\item{...}{unused}
+\item{...}{arguments to methods}
 
 \item{.seed}{An integer or \code{NULL} (default, no seeds are set automatically). If given, controls
 RNG using L'ecuyer-CMRG as in \code{parallel} by saving and accessing unique seeds in \code{seeds.Rdata}}
 
-\item{.dir}{directory name relative to the current working directory}
+\item{.dir}{directory name relative to the current working directory (no trailing backslash)}
 
 \item{.reps}{total number of replications for each condition}
 
@@ -57,6 +57,7 @@ appended with a column \code{sge_id} corresponding to the task id of each row}
 \item{doone.R}{Script to run one job, or one row from \code{arg_grid}}
 \item{submit}{Submission script specifying a task array over the grid of parameters
 in (all rows of) arg_grid.Rdata}
+\item{seeds.Rdata}{If \code{.seed} is specified, a list of seeds for each job.}
 \item{results/}{Folder to store results. Each file is \code{1.Rdata}, \code{2.Rdata}, ...
 corresponding to the task id (row in \code{arg_grid})}
 \item{SGE_Output/}{ Folder for output from SGE}
@@ -69,16 +70,16 @@ and directories to store results and job log files.
 }
 \details{
 Long running \code{grid_apply} computations can be easily run in parallel on
-SGE using array tasks. Each row in the argument grid given by \code{expand_grid(...)}
+SGE using array tasks. Each row in the argument grid given by \code{grid_apply(f, ...)}
 is mapped to a unique task id, which is run on a separate node.
  \code{setup()} makes this easy by writing
-the argument grid (\code{arg_grid.Rdata}), R script to run one combination of arguments, a submission
-script assigning all rows to a unique task id, and folders to store results in
+the argument grid (\code{arg_grid.Rdata}), an R script to run one combination of arguments, a submission
+script assigning all rows to a unique task id, seeds (if specified), and folders to store results in
 a given directory. Jobs are submitted to the scheduler by running \code{qsub submit}
 at the prompt, or by running \code{submit()} within R.
 
 The argument grid (\code{arg_grid}) is saved to \code{.dir} as \code{arg_grid.Rdata}.
-It contains the columns of \code{expand.grid(...)} from \code{grid_apply}.
+It contains the columns of \code{expand.grid(...)} from \code{grid_apply(.f, ...)}.
 A column \code{$.sge_id} is appended that assigns each row a unique job id.
 
 A simple R script (\code{doone.R}) is provided that runs \code{.f} on one row
@@ -93,8 +94,15 @@ Various email
 Results are stored in \code{results/}, as \code{$SGE_TASK_ID.Rdata} where
 \code{SGE_TASK_ID} is the array task corresponding to a unique row in \code{arg_grid}.
 It is sometimes convenient to access this variable within \code{.f}, which can
-be done by \code{Sys.getenv("SGE_TASK_ID")}. This might be used to set seeds
-or to cache intermediate results for example.
+be done by \code{Sys.getenv("SGE_TASK_ID")}. This might be used to
+cache intermediate results.
+
+
+If \code{.seed} is given, a list of seeds is generated in \code{seeds.Rdata} using
+ L'ecuyer-CMRG streams for reproducible random number generation. A unique seed is
+ generated for each independent job in the argument grid.
+ Subsequent calls to setup using the same .seed generate the same seeds and reproducible results.
+ See \code{parallel::nextRNGStream} for more details.
 
 The function \code{.f} can be run multiple times for every row in \code{arg_grid}
 by setting \code{.reps > 1}. These replications can be run in parallel using
@@ -106,7 +114,8 @@ number of cores given to each job, use \code{Sys.getenv("NSLOTS")}.
 It is easy to corrupt \code{arg_grid.Rdata} by running \code{setup} on different
 sets of arguments, making future merges of results with arguments based on
 \code{.sge_id} invalid. If \code{arg_grid.Rdata} already exists, \code{setup}
-verifies with user input that an overwrite is intended.
+prompts the user for verification that an overwrite is intended, or stops with an error
+if not run interactively.
 }
 \section{Methods (by class)}{
 \itemize{
@@ -125,5 +134,7 @@ jobs(plan)  # modified with a column showing unique job ids
 \link{grid_apply} to define the grid, \link{jobs} to see the grid,
 \link{collect} to collect completed results, and \link{tidy} to merge
 completed results with the argument grid.
+ \link{test_job} Runs a job with a given id on the head node.
+ \link{filter_jobs} writes a submission script for jobs matching conditions as in \code{dplyr::filter}
 }
 
