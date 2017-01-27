@@ -35,11 +35,9 @@ If \code{3}, prints the arguments and results of the completed condition.}
 If \code{NULL} (default), \code{.f} is evaluated for all arguments.}
 }
 \value{
-Returns non-error results as a \code{data.frame} in long form with the following columns:
+Returns results as a \code{data.frame} in long form with the following columns:
 \item{...}{Columns corresponding to grid of parameters given in \code{expand.grid(...)}}
-\item{\code{rep}}{the replication number}
-\item{\code{key2}}{the rowname(s) of the returned data frame of \code{f} if present}
-\item{\code{key}}{the colname(s) of the returned data frame of \code{f}}
+\item{\code{.rep}}{the replication number}
 \item{\code{value}}{the value of \code{f} at a set of parameters, if \code{.eval = FALSE}, returns \code{NA}}
 Errors are captured using \code{try}, converted to character, and available
 using \code{attr(object, "err")}
@@ -50,9 +48,6 @@ gapply (grid apply) applies a function to a grid of it's parameters in parallel,
 \details{
 The attributes of the object include \code{grid} (the grid of parameter values),
  \code{time} (elapsed time), and \code{err} (list of errors).
-
-If the values returned by \code{f} are not named, they will be named according
-to the rules of \code{as.data.frame}, typically \code{V1, V2, ...}.
 
 The function application to each combination of meta-parameters (not replications)
 are distributed in parallel via \code{mclapply} and will not work in Windows.

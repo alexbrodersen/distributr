@@ -19,31 +19,28 @@ tidy(x, ...)
 \item{arg_grid}{argument grid; if NULL (default) looks for arg_grid
 as an attribute to \code{x}}
 
-\item{stack}{if \code{TRUE} (default) stack results with \code{stack_list}. Otherwise, \code{bind_rows} is used.}
+\item{stack}{if \code{TRUE} (default) stack results into \code{key, value} pairs. Otherwise, \code{bind_rows} is used.}
 
 \item{.reps}{scalar or vector of completed replications for each job (usually given via \code{collect})}
 }
 \value{
-Returns non-error results as a \code{data.frame} in long form with
+Returns results as a \code{data.frame} in long form with
  the following columns:
 \item{...}{Columns corresponding to grid of parameters given in
 \code{expand.grid(...)}}
 \item{\code{rep}}{the replication number}
-\item{\code{key2}}{the rowname(s) of the returned data frame of \code{f} if present}
-\item{\code{key}}{the colname(s) of the returned data frame of \code{f}} or
-the names of the elements of a vector returned from \code{f}, or assigned names
 \item{\code{value}}{the value of \code{f} at a set of parameters}
 }
 \description{
-Returns \code{key=value} pairs obtained from applying a \code{f} to a grid
-of parameters using \code{grid_apply}, merging with the grid of parameters.
+Merges the results of \code{grid_apply} with the argument grid, with multiple return values
+as separate columns.
 }
 \details{
-Tidying depends on the form of the results returned from applying a
-function \code{f} to a grid of parameters. If the results are a data frame,
-the row and column names are mapped to two keys. If the results are a vector,
-the names of the elements are mapped to a single key. If the results are unnamed,
-names are assigned as in \code{as.data.frame}. See \code{\link{stack_list}} for
+If results are of varying length, it can be useful to 'stack'
+them into \code{key, value} pairs by setting \code{stack=TRUE}.
+When stacking, vectors ar mapped to a single key and data frames are mapped to two keys (rownames and column names).
+If the results are unnamed, names are assigned as in \code{as.data.frame}.
+See \code{\link{stack_list}} for
 further details.
 }
 \section{Methods (by class)}{

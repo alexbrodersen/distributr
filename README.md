@@ -46,17 +46,16 @@ res <- gapply(do.one, n = c(50, 100, 500), mu = c(1,5), sd = c(1, 5, 10),
 ```
 
 ```{r}
-# A tibble: 6 × 6
-      n    mu    sd  .rep   key     value
-  <dbl> <dbl> <dbl> <int> <chr>     <dbl>
-1    50     1     1     1    V1 1.1593344
-2    50     1     1     2    V1 1.0908722
-3    50     1     1     3    V1 0.8964487
-4    50     1     1     4    V1 0.9429766
-5    50     1     1     5    V1 1.0805689
-6    50     1     1     6    V1 0.9722816
+   n mu sd .rep     value
+1 50  1  1    1 0.9476228
+2 50  1  1    2 0.7545730
+3 50  1  1    3 0.9154810
+4 50  1  1    4 1.0704074
+5 50  1  1    5 0.9840148
+6 50  1  1    6 1.1933439
 ```
-If results are already in tidy form (e.g. from `broom` or another call to `gapply`), the stacking can be skipped: `tidy(., stack=FALSE)`
+If results are of varying length, it can be helpful to stack them into `key, value` pairs
+with `tidy(., stack=TRUE)`.
 
 ## Warnings and Errors
 
