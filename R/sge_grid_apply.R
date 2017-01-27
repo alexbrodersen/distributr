@@ -107,7 +107,7 @@ setup <- function(object, ...){
 
 #' @export
 #' @describeIn setup Setup sge files from \code{gapply, grid_apply}
-setup.gresults <- function(object,
+setup.gapply <- function(object,
                   .seed=NULL,
                   .dir=getwd(),
                   .reps=1,
@@ -187,6 +187,9 @@ setup.gresults <- function(object,
   attr(object, ".reps") <- .reps
   return(object)
 }
+
+#' @export
+setup.gresults <- setup.gapply
 
 write_submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1, queue="long",
                          job.name="distributr", out.dir="SGE_Output", email="a",
@@ -336,7 +339,7 @@ collect.gapply <- function(x, filter=NULL, regex=NULL, sample=NULL, dir=getwd(),
   times <- lapply(cond.l, function(r){attr(r, "time")})
 
   res <- cond.l
-  class(res) <- c(class(res), "gresults")
+  class(res) <- c("gapply", class(res))
   attr(res, "arg_grid") <- completed.grid
   attr(res, ".reps") <- reps
   attr(res, "err") <- err.list
@@ -344,6 +347,9 @@ collect.gapply <- function(x, filter=NULL, regex=NULL, sample=NULL, dir=getwd(),
 
   return(res)
 }
+
+#' @export
+collect.gresults <- collect.gapply
 
 #' Add jobs (or rows) to argument grid
 #' @param object grid_apply object
@@ -369,9 +375,6 @@ add_jobs <- function(object, ...){
   attr(object, "arg_grid") <- arg_grid
   return(object)
 }
-
-add_rows <- add_jobs
-
 
 #' Filter a subset of jobs (rows) from argument grid and modify submission script
 #'

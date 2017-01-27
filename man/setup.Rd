@@ -2,12 +2,12 @@
 % Please edit documentation in R/sge_grid_apply.R
 \name{setup}
 \alias{setup}
-\alias{setup.gresults}
+\alias{setup.gapply}
 \title{Setup SGE jobs}
 \usage{
 setup(object, ...)
 
-\method{setup}{gresults}(object, .seed = NULL, .dir = getwd(), .reps = 1,
+\method{setup}{gapply}(object, .seed = NULL, .dir = getwd(), .reps = 1,
   .mc.cores = 1, .verbose = 1, .queue = "long",
   .script.name = "doone.R", .job.name = "distributr",
   .out.dir = "SGE_Output", .R.version = "3.2.5", .email.options = "a",
@@ -119,7 +119,7 @@ if not run interactively.
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{gresults}: Setup sge files from \code{gapply, grid_apply}
+\item \code{gapply}: Setup sge files from \code{gapply, grid_apply}
 }}
 \examples{
 \dontrun{

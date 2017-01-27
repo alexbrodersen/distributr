@@ -77,13 +77,14 @@ tidy.gapply <- function(x, arg_grid=NULL, stack=FALSE, .reps=NULL, ...){
   }
 
   rownames(value_grid) <- NULL
-  res <- as.tbl(cbind(value_grid, value))
+  res <- cbind(value_grid, value)
 
   new.attr.names <- setdiff(names(attributes(x)), names(attributes(res)))
   attributes(res)[new.attr.names] <- attributes(x)[new.attr.names]
   attr(res, "class") <- c("gresults", class(res))
   return(res)
 }
+
 
 
 #' Stacks a list of vectors, lists, or data frames
