@@ -12,6 +12,7 @@
 #' If \code{2}, prints the arguments corresponding to the completed condition.
 #' If \code{3}, prints the arguments and results of the completed condition.
 #' @param .eval If \code{TRUE} (default), evaluates \code{f}. If \code{FALSE}, does not evaluate \code{f} and returns \code{NA} for \code{value}.
+#' @param .stack whether results should be stacked (see \code{tidy})
 #' @return Returns non-error results as a \code{data.frame} in long form with the following columns:
 #' \item{...}{Columns corresponding to grid of parameters given in \code{expand.grid(...)}}
 #' \item{\code{rep}}{the replication number}
@@ -35,8 +36,8 @@
 #' gapply(do.one, a=1:4,b=2:3, .reps=5)
 #' @export
 #' @importFrom parallel mclapply
-gapply <- function(.f, ..., .reps=1, .args=NULL, .mc.cores=1, .verbose=1, .eval=T){
+gapply <- function(.f, ..., .reps=1, .args=NULL, .mc.cores=1, .verbose=1, .eval=T, .stack=FALSE){
   grid_apply(.f, ..., .reps = .reps, .args=.args, .mc.cores = .mc.cores,
              .verbose = .verbose, .eval = .eval) %>%
-    tidy.gresults()
+    tidy.gresults(., stack=.stack)
 }

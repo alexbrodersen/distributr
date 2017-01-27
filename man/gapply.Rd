@@ -6,7 +6,7 @@
 \title{Repeatedly apply a function over a grid of values in parallel}
 \usage{
 gapply(.f, ..., .reps = 1, .args = NULL, .mc.cores = 1, .verbose = 1,
-  .eval = T)
+  .eval = T, .stack = FALSE)
 
 grid_apply(.f, ..., .reps = 1, .args = NULL, .mc.cores = 1,
   .verbose = 1, .eval = T, .paramid = NULL)
@@ -28,6 +28,8 @@ If \code{2}, prints the arguments corresponding to the completed condition.
 If \code{3}, prints the arguments and results of the completed condition.}
 
 \item{.eval}{If \code{TRUE} (default), evaluates \code{f}. If \code{FALSE}, does not evaluate \code{f} and returns \code{NA} for \code{value}.}
+
+\item{.stack}{whether results should be stacked (see \code{tidy})}
 
 \item{.paramid}{The index of the row of the argument grid to run.
 If \code{NULL} (default), \code{.f} is evaluated for all arguments.}

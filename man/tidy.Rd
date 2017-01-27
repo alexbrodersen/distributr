@@ -7,7 +7,7 @@
 \usage{
 tidy(x, ...)
 
-\method{tidy}{gresults}(x, arg_grid = NULL, stack = TRUE, .reps = NULL,
+\method{tidy}{gresults}(x, arg_grid = NULL, stack = FALSE, .reps = NULL,
   ...)
 }
 \arguments{

@@ -35,7 +35,7 @@ tidy <- function(x, ...){
 #' @importFrom dplyr bind_cols as_data_frame
 #' @export
 #' @describeIn tidy Tidy an object from \code{grid_apply} or \code{collect}
-tidy.gresults <- function(x, arg_grid=NULL, stack=TRUE, .reps=NULL, ...){
+tidy.gresults <- function(x, arg_grid=NULL, stack=FALSE, .reps=NULL, ...){
   if(is.null(arg_grid)){
     arg_grid <- attr(x, "arg_grid")
     if(is.null(arg_grid)) stop("can't tidy, no argument grid")
@@ -55,8 +55,7 @@ tidy.gresults <- function(x, arg_grid=NULL, stack=TRUE, .reps=NULL, ...){
 
   # Stack results, adding keys according to names of elements, colnames, and rownames.
   if(stack){
-    values <- stack_list(x)
-
+    value <- stack_list(x)
     # Expand rows by number of keys
     if(is.data.frame(x[[1]])){
       nkeys <- sapply(x, function(xi){prod(dim(xi))})
@@ -65,16 +64,21 @@ tidy.gresults <- function(x, arg_grid=NULL, stack=TRUE, .reps=NULL, ...){
     } else {
       nkeys <- sapply(x, length)
     }
+    value_grid <- rep_grid[rep(1:nrow(rep_grid), times = nkeys), ]
+
   } else {
-    nkeys <- sapply(x, nrow)
-    values <- bind_rows(x)
-    #rep_grid$.rep <- NULL # I don't know, I'm guessing you probably don't want this?
+    #values <- bind_rows(x) # this seg faults when l[[i]] is scalar
+    value <- do.call(rbind, x)
+    if(is.data.frame(x[[1]])){
+      nkeys <- sapply(x, function(xi){nrow(xi)})
+      value_grid <- rep_grid[rep(1:nrow(rep_grid), times = nkeys), ]
+    } else {
+      value_grid <- rep_grid
+    }
   }
 
-  value_grid <- rep_grid[rep(1:nrow(rep_grid), times = nkeys), ]
-
   rownames(value_grid) <- NULL
-  res <- dplyr::bind_cols(dplyr::as_data_frame(value_grid), values)
+  res <- cbind(value_grid, value)
 
   new.attr.names <- setdiff(names(attributes(x)), names(attributes(res)))
   attributes(res)[new.attr.names] <- attributes(x)[new.attr.names]
@@ -105,8 +109,8 @@ tidy.gresults <- function(x, arg_grid=NULL, stack=TRUE, .reps=NULL, ...){
 stack_list <- function(xl){
   x <- xl[[1]]
   if(is.data.frame(x)){
-    same_dimensions <- lapply(xl, dim) %>%
-      sapply(., function(dims){ identical(dims, dim(x))}) %>% all
+    dims <- lapply(xl, dim)
+    same_dimensions <- sapply(dims, function(dims){ identical(dims, dim(x))}) %>% all
 
     if(same_dimensions){
       value <- data_frame(key = rep(rep(colnames(x), each = nrow(x)), times = length(xl)),
@@ -117,8 +121,8 @@ stack_list <- function(xl){
     }
 
   } else if(is.list(x)){
-    same_dimensions <- lapply(xl, lengths) %>%
-      sapply(., function(dims){ lengths(x) == length(x[[1]]) }) %>% all
+    lens <- lapply(xl, lengths)
+    same_dimensions <- sapply(lens, function(dims){ lengths(x) == length(x[[1]]) }) %>% all
 
     if(same_dimensions){
       x <- as.data.frame(x)
