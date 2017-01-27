@@ -34,7 +34,7 @@ tidy <- function(x, ...){
 #' @importFrom dplyr bind_cols as_data_frame
 #' @export
 #' @describeIn tidy Tidy an object from \code{grid_apply} or \code{collect}
-tidy.gresults <- function(x, arg_grid=NULL, stack=FALSE, .reps=NULL, ...){
+tidy.gapply <- function(x, arg_grid=NULL, stack=FALSE, .reps=NULL, ...){
   if(is.null(arg_grid)){
     arg_grid <- attr(x, "arg_grid")
     if(is.null(arg_grid)) stop("can't tidy, no argument grid")
@@ -77,7 +77,7 @@ tidy.gresults <- function(x, arg_grid=NULL, stack=FALSE, .reps=NULL, ...){
   }
 
   rownames(value_grid) <- NULL
-  res <- cbind(value_grid, value)
+  res <- as.tbl(cbind(value_grid, value))
 
   new.attr.names <- setdiff(names(attributes(x)), names(attributes(res)))
   attributes(res)[new.attr.names] <- attributes(x)[new.attr.names]

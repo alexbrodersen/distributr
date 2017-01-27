@@ -34,7 +34,7 @@ grid_apply <- function(.f, ..., .reps=1, .args=NULL, .mc.cores=1, .verbose=1, .e
   warn.list <- warn[warn.id]
   names(warn.list) <- warn.id
 
-  class(res.l) <- c("gresults", class(res.l))
+  class(res.l) <- c("gapply", class(res.l))
   attr(res.l, "time") <- end-start
   attr(res.l, "arg_names") <- names(arg_grid)
   attr(res.l, ".f") <- .f

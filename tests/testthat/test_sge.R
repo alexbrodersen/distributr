@@ -97,7 +97,7 @@ test_that("collect_sge ", {
 
   outfr <- collect(out, dir = "tmp", filter="a < 5", regex="2") %>% tidy
   ans <- outc %>% filter(a == 2)
-  expect_equal(outfr, ans)
+  expect_equivalent(outfr, ans)
 
   set.seed(104)
   outfs <- collect(out, dir = "tmp", filter="b == 2", sample = 1) %>% tidy

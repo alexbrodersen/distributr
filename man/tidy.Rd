@@ -2,12 +2,12 @@
 % Please edit documentation in R/tidy_results.R
 \name{tidy}
 \alias{tidy}
-\alias{tidy.gresults}
+\alias{tidy.gapply}
 \title{Tidy results from grid_apply or dgraph}
 \usage{
 tidy(x, ...)
 
-\method{tidy}{gresults}(x, arg_grid = NULL, stack = FALSE, .reps = NULL,
+\method{tidy}{gapply}(x, arg_grid = NULL, stack = FALSE, .reps = NULL,
   ...)
 }
 \arguments{
@@ -45,7 +45,7 @@ further details.
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{gresults}: Tidy an object from \code{grid_apply} or \code{collect}
+\item \code{gapply}: Tidy an object from \code{grid_apply} or \code{collect}
 }}
 \seealso{
 \code{\link{stack_list}}

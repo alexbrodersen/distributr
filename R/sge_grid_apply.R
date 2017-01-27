@@ -293,7 +293,7 @@ write_seeds <- function(dir, .sge_ids, seed){
 #' @importFrom gtools mixedsort
 #' @importFrom tidyr gather
 #' @importFrom dplyr collect filter_
-collect.gresults <- function(x, filter=NULL, regex=NULL, sample=NULL, dir=getwd(), ...){
+collect.gapply <- function(x, filter=NULL, regex=NULL, sample=NULL, dir=getwd(), ...){
   dir <- paste0(dir, "/")
   arg_grid <- readRDS(paste0(dir, "arg_grid.Rdata"))
 

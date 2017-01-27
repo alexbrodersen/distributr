@@ -35,7 +35,7 @@ The arguments to grid over must be scalar. Other arguments (such as data) can be
 
 ## tidy
 
-A tidy method is provided that merges the list of results with the argument grid, putting the results in tidy (long) form. This format is convenient for plotting and further data analysis. `tidy` works with lists of vectors, lists, and data frames. If present, names of elements of vectors or lists are used as a key. For a list of data frames, the row and column names are `key` and `key2`.
+A tidy method is provided that merges the list of results with the argument grid, putting the results in tidy form. This format is convenient for plotting and further data analysis. `tidy` works with lists of vectors, lists, and data frames. 
 
 The function `gapply` runs `grid_apply` followed by `tidy`. 
 

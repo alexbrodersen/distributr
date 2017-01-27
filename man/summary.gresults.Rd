@@ -2,26 +2,22 @@
 % Please edit documentation in R/summary_gapply.R
 \name{summary.gresults}
 \alias{summary.gresults}
-\title{\code{summary} method for class \code{"gapply"}}
+\title{Print a summary of \code{gresults}}
 \usage{
-\method{summary}{gresults}(object, .reps = NULL, .fun = mean, .key = NULL,
-  ...)
+\method{summary}{gresults}(object, .reps = NULL, ...)
 }
 \arguments{
 \item{object}{gresults object}
 
 \item{.reps}{number of reps to scale to}
 
-\item{.fun}{function to aggregate over replications}
-
-\item{.key}{A string of the character vector to filter on}
-
 \item{...}{unused}
 }
 \value{
-Prints the means over all reps for each condition and returns it invisibly. Also prints the estimated time to scale up to x reps
+Prints the first few conditions, a summary of conditions, and estimated time to scale up to x reps.
+ Returns the estimated time invisibly.
 }
 \description{
-\code{summary} method for class \code{"gapply"}
+Print a summary of \code{gresults}
 }
 

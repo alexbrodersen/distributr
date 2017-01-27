@@ -1,36 +1,46 @@
-#' \code{summary} method for class \code{"gapply"}
+#' Print a summary of \code{gresults}
 #' @param object gresults object
 #' @param .reps number of reps to scale to
-#' @param .fun function to aggregate over replications
-#' @param .key A string of the character vector to filter on
 #' @param ... unused
-#' @return Prints the means over all reps for each condition and returns it invisibly. Also prints the estimated time to scale up to x reps
-#' @importFrom dplyr group_by_ summarize %>%
+#' @return
+#'  Prints the first few conditions, a summary of conditions, and estimated time to scale up to x reps.
+#'  Returns the estimated time invisibly.
 #' @export
-summary.gresults <- function(object, .reps=NULL, .fun=mean, .key=NULL, ...){
-  ns <- c(attr(object, 'arg_names'),"key")
-  if(is.null(.key)){
-    .key <- as.character(unique(object$key))
-  }
-
-  res <- object %>%
-    dplyr::group_by_(.dots=ns) %>%
-    dplyr::filter_(~key %in% .key) %>%
-    dplyr::summarize_(~.fun(value))
-
-  print(res)
+summary.gresults <- function(object, .reps=NULL, ...){
+  print(object)
   cat("",fill=T)
   grid <- attr(object, "arg_grid")
+
   cat("Number of conditions: ", nrow(grid), fill=T)
-  print(head(grid))
-  #cat("",fill=T)
-  #if(!is.null(attr(object,"time"))){
-  #  cat("Estimated time for x reps:", fill=T)
-  #  cat("Reps \t Time", fill=T)
-  #  o <- estimate_time(object, nreps=.reps)
-  #  for(i in 1:nrow(o)){ cat(paste0(o[i,],"\t"),fill=T)}
-  #}
-  invisible(res)
+  cat("Time:", attr(object, "time"), fill=T)
+
+  cat("",fill=T)
+  if(!is.null(attr(object,"time"))){
+    cat("Estimated time for x reps:", fill=T)
+    cat("Reps \t Time", fill=T)
+    o <- estimate_time(object, nreps=.reps)
+    for(i in 1:nrow(o)){ cat(paste0(o[i,],"\t"),fill=T)}
+  }
+  invisible(o)
+}
+
+#' @export
+summary.gapply <- summary.gresults
+
+#' @export
+print.gapply <- function(x, ...){
+  y <- x
+  attr(y, "time") <- NULL
+  attr(y, "arg_names") <- NULL
+  attr(y, ".f") <- NULL
+  attr(y, "arg_grid") <- NULL
+  attr(y, ".args") <- NULL
+  attr(y, "err") <- NULL
+  attr(y, "warn") <- NULL
+  attr(y, ".reps") <- NULL
+  class(y) <- c("list")
+  print(y, ...)
+  return(x)
 }
 
 # #' Plot simulation object
