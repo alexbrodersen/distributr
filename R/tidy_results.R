@@ -110,19 +110,19 @@ stack_list <- function(xl){
   x <- xl[[1]]
   if(is.data.frame(x)){
     dims <- lapply(xl, dim)
-    same_dimensions <- sapply(dims, function(dims){ identical(dims, dim(x))}) %>% all
+    same_dimensions <- all(sapply(dims, function(dims){ identical(dims, dim(x))}))
 
     if(same_dimensions){
       value <- data_frame(key = rep(rep(colnames(x), each = nrow(x)), times = length(xl)),
                           key2 = rep(rownames(x), times = length(xl) * ncol(x)),
                           value = unlist(xl, use.names = F))
     } else {
-      value <- lapply(xl, stack_x) %>% bind_rows
+      value <- bind_rows(lapply(xl, stack_x))
     }
 
   } else if(is.list(x)){
     lens <- lapply(xl, lengths)
-    same_dimensions <- sapply(lens, function(dims){ lengths(x) == length(x[[1]]) }) %>% all
+    same_dimensions <- all(sapply(lens, function(dims){ lengths(x) == length(x[[1]]) }))
 
     if(same_dimensions){
       x <- as.data.frame(x)
@@ -130,7 +130,7 @@ stack_list <- function(xl){
                           key2 = rep(rownames(x), times = length(xl) * ncol(x)),
                           value = unlist(xl, use.names = F))
     } else {
-      value <- lapply(xl, stack_x) %>% bind_rows
+      value <- bind_rows(lapply(xl, stack_x))
     }
 
   } else {
@@ -145,7 +145,7 @@ stack_list <- function(xl){
                             value = unlist(xl, use.names = F))
       }
     } else{
-      value <- lapply(xl, stack_x) %>% bind_rows
+      value <- bind_rows(lapply(xl, stack_x))
     }
   }
   return(value)

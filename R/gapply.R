@@ -32,7 +32,6 @@
 #' @export
 #' @importFrom parallel mclapply
 gapply <- function(.f, ..., .reps=1, .args=NULL, .mc.cores=1, .verbose=1, .eval=T, .stack=FALSE){
-  grid_apply(.f, ..., .reps = .reps, .args=.args, .mc.cores = .mc.cores,
-             .verbose = .verbose, .eval = .eval) %>%
-    tidy(., stack=.stack)
+  tidy(grid_apply(.f, ..., .reps = .reps, .args=.args, .mc.cores = .mc.cores,
+             .verbose = .verbose, .eval = .eval), stack=.stack)
 }

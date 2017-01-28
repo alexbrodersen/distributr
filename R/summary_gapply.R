@@ -43,67 +43,6 @@ print.gapply <- function(x, ...){
   return(x)
 }
 
-# #' Plot simulation object
-# #'
-# #' Automatic plotting method for aggregating over replications
-# #' @export
-# plot.gapply <- function(object, .fun=mean, .key=NULL){
-#   require(ggplot2)
-#   sum <- summary(object, .fun=.fun, .key=.key)
-#   arg.names <- attr(object, "arg.names")
-#   levels <- lapply(object[arg.names], unique)
-#   num.levels <- unlist(lapply(levels, length))
-#   map.args <- arg.names[order(num.levels,decreasing=T)] # arg with the most levels is first
-#   n.args <- length(map.args)
-#   key.levels <- length(unique(sum$key))
-#
-#
-#   if(key.levels > 1){
-#     if(n.args == 1){
-#       ## Simple box plot of all the reps
-#       g <- ggplot(object, aes(y="value", x=map.args[1])) +
-#         geom_boxplot()
-#       return(g)
-#     }
-#     if(n.args == 2){
-#       ## map second varying factor onto color, and reduce reps by .fun
-#       g <- ggplot(sum, aes(y=".fun(value)", x=map.args[1], col=map.args[2], group=map.args[2])) +
-#         geom_line() + geom_point()
-#       return(g)
-#     }
-#     if(n.args == 3){
-#       form <- as.formula(paste0(". ~",map.args[3]))
-#     }
-#     if(n.args == 4){
-#       form <- as.formula(paste0(map.args[4]," ~ ",map.args[3]))
-#     }
-#     if(n.args >= 5){
-#       rhs <- paste0(map.args[5:n.args], collapse = " + ")
-#       form <- as.formula(paste0(map.args[4]," ~ ", rhs))
-#     }
-#     g <- ggplot(sum, aes(y=".fun(value)", x=map.args[1], col=map.args[2], group=map.args[2])) +
-#       geom_line() + geom_point() +
-#       facet_grid(form)
-#     return(g)
-#   } else { # multiple keys
-#     lhs <- paste0("key", collapse = " + ")
-#     rhs <- paste0(map.args[3:n.args], collapse = " + ")
-#     rhs <- gsub("NA \\+ ", "", rhs)
-#     form <- paste0(lhs, " ~ ", rhs)
-#     if(n.args == 1){
-#       ## Simple box plot of all the reps
-#       g <- ggplot(object, aes(y="value", x=map.args[1])) +
-#         geom_boxplot()
-#       return(g)
-#     }
-#     paste0("ggplot(sum, aes(y='.fun(value)', x=", map.args[1], ", col=", map.args[2], ", group=", map.args[2])
-#     g <- ggplot(sum, aes(y=".fun(value)", x=as.symbol(map.args[1]), col=map.args[2], group=map.args[2])) +
-#           geom_line() + geom_point() +
-#           facet_grid(form)
-#   }
-#   return(g)
-# }
-
 #' Estimate time for a given number of reps
 #' @param object gapply object
 #' @param nreps number of reps to scale to
