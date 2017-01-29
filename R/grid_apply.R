@@ -4,11 +4,10 @@
 #' leaving results as a list of vectors, lists, or data frames.
 #' @param .paramid The index of the row of the argument grid to run.
 #' If \code{NULL} (default), \code{.f} is evaluated for all arguments.
-#' @importFrom purrr transpose
 #' @importFrom parallel mclapply
 grid_apply <- function(.f, ..., .reps=1, .args=NULL, .mc.cores=1, .verbose=1, .eval=T, .paramid=NULL){
   arg_grid <- expand.grid(...)
-  arg.ls <- purrr::transpose(arg_grid)
+  arg.ls <- split(arg_grid, 1:nrow(arg_grid))
 
   # Append the non-grid arguments
   arg.ls <- lapply(arg.ls, function(x, .args){append(x, .args)}, .args=.args)

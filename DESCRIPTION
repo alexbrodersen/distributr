@@ -16,7 +16,7 @@ VignetteBuilder: knitr
 Depends: 
   R (>= 3.0.0),
   dplyr, 
-  purrr, 
-  utils
+  utils,
+  parallel
 
 
