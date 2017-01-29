@@ -1,3 +1,4 @@
+require(dplyr, quietly = T)
 context("gapply")
 
 test_that("do.rep", {

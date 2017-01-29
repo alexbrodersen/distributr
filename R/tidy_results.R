@@ -29,9 +29,8 @@ tidy <- function(x, ...){
 
 #' @param arg_grid argument grid; if NULL (default) looks for arg_grid
 #'  as an attribute to \code{x}
-#' @param stack if \code{TRUE} (default) stack results into \code{key, value} pairs. Otherwise, \code{bind_rows} is used.
+#' @param stack if \code{TRUE} (default) stack results into \code{key, value} pairs. Otherwise, \code{bind_rows} is used. (requires \code{dplyr})
 #' @param .reps scalar or vector of completed replications for each job (usually given via \code{collect})
-#' @importFrom dplyr bind_cols as_data_frame
 #' @export
 #' @describeIn tidy Tidy an object from \code{grid_apply} or \code{collect}
 tidy.gapply <- function(x, arg_grid=NULL, stack=FALSE, .reps=NULL, ...){
@@ -54,6 +53,10 @@ tidy.gapply <- function(x, arg_grid=NULL, stack=FALSE, .reps=NULL, ...){
 
   # Stack results, adding keys according to names of elements, colnames, and rownames.
   if(stack){
+    if (!requireNamespace("dplyr", quietly = TRUE)) {
+      stop("dplyr needed to stack Please install it.",
+           call. = FALSE)
+    }
     value <- stack_list(x)
     # Expand rows by number of keys
     if(is.data.frame(x[[1]])){
@@ -105,7 +108,6 @@ tidy.gapply <- function(x, arg_grid=NULL, stack=FALSE, .reps=NULL, ...){
 #' Stacks a data frame or list of vectors of the same length into \code{key}, \code{key2}, and \code{value} columns,
 #'  where \code{key} and \code{key2} are the column and row names of the first element of \code{xl}. If names are null, assigns names.
 #'
-#'@importFrom dplyr data_frame
 stack_list <- function(xl){
   x <- xl[[1]]
   if(is.data.frame(x)){
@@ -113,11 +115,11 @@ stack_list <- function(xl){
     same_dimensions <- all(sapply(dims, function(dims){ identical(dims, dim(x))}))
 
     if(same_dimensions){
-      value <- data_frame(key = rep(rep(colnames(x), each = nrow(x)), times = length(xl)),
+      value <- dplyr::data_frame(key = rep(rep(colnames(x), each = nrow(x)), times = length(xl)),
                           key2 = rep(rownames(x), times = length(xl) * ncol(x)),
                           value = unlist(xl, use.names = F))
     } else {
-      value <- bind_rows(lapply(xl, stack_x))
+      value <- dplyr::bind_rows(lapply(xl, stack_x))
     }
 
   } else if(is.list(x)){
@@ -126,11 +128,11 @@ stack_list <- function(xl){
 
     if(same_dimensions){
       x <- as.data.frame(x)
-      value <- data_frame(key = rep(rep(colnames(x), each = nrow(x)), times = length(xl)),
+      value <- dplyr::data_frame(key = rep(rep(colnames(x), each = nrow(x)), times = length(xl)),
                           key2 = rep(rownames(x), times = length(xl) * ncol(x)),
                           value = unlist(xl, use.names = F))
     } else {
-      value <- bind_rows(lapply(xl, stack_x))
+      value <- dplyr::bind_rows(lapply(xl, stack_x))
     }
 
   } else {
@@ -138,14 +140,14 @@ stack_list <- function(xl){
 
     if(same_dimensions){
       if(is.null(names(x))){
-        value <- data_frame(key = rep(paste0("V", seq_along(x)), times = length(xl)),
+        value <- dplyr::data_frame(key = rep(paste0("V", seq_along(x)), times = length(xl)),
                             value = unlist(xl, use.names = F))
       } else {
-        value <- data_frame(key = rep(names(x), times = length(xl)),
+        value <- dplyr::data_frame(key = rep(names(x), times = length(xl)),
                             value = unlist(xl, use.names = F))
       }
     } else{
-      value <- bind_rows(lapply(xl, stack_x))
+      value <- dplyr::bind_rows(lapply(xl, stack_x))
     }
   }
   return(value)
@@ -165,18 +167,17 @@ stack_list <- function(xl){
 #' @param x a vector or data frame
 stack_x <- function(x){
   if(is.data.frame(x)){
-      data_frame(key = rep(colnames(x), each = nrow(x)),
+      dplyr::data_frame(key = rep(colnames(x), each = nrow(x)),
                  key2 = rep(rownames(x), times = ncol(x)),
                  value = unlist(x, use.names = F))
   } else {
     if(is.list(x)) x <- unlist(x)
 
     if(is.null(names(x))){
-      data_frame(key = paste0("V", seq_along(x)), value = x)
+      dplyr::data_frame(key = paste0("V", seq_along(x)), value = x)
     } else {
-      data_frame(key = names(x), value = x)
+      dplyr::data_frame(key = names(x), value = x)
     }
   }
 }
 
-#globalVariables(".")

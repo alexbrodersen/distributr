@@ -19,7 +19,7 @@ tidy(x, ...)
 \item{arg_grid}{argument grid; if NULL (default) looks for arg_grid
 as an attribute to \code{x}}
 
-\item{stack}{if \code{TRUE} (default) stack results into \code{key, value} pairs. Otherwise, \code{bind_rows} is used.}
+\item{stack}{if \code{TRUE} (default) stack results into \code{key, value} pairs. Otherwise, \code{bind_rows} is used. (requires \code{dplyr})}
 
 \item{.reps}{scalar or vector of completed replications for each job (usually given via \code{collect})}
 }

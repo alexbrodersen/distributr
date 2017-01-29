@@ -15,7 +15,6 @@ Suggests: knitr,
 VignetteBuilder: knitr
 Depends: 
   R (>= 3.0.0),
-  dplyr,
   utils,
   parallel
 
