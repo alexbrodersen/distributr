@@ -61,7 +61,6 @@ grid_apply <- function(.f, ..., .reps=1, .args=NULL, .mc.cores=1, .verbose=1, .e
 #' If \code{3}, prints the arguments and results of the completed condition.
 #' @export
 #' @importFrom parallel mclapply
-#' @importFrom dplyr rbind_all as.tbl
 #' @importFrom utils head
 do.rep <- function(.f, ..., .reps, .verbose=1,.rep.cores=1, .eval=T, .args=NULL){
   if(.verbose %in% c(2,3) & .eval){cat(paste(names(...),"=", ...),fill=T)}

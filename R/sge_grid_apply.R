@@ -275,12 +275,19 @@ write_seeds <- function(dir, .sge_ids, seed){
   cat("writing seeds.Rdata", fill=T)
 }
 
+#' Collect results from SGE
+#' @param x object from \code{grid_apply(..., .eval=FALSE)}
+#' @param ... other arguments to collect
+#' @export
+collect <- function(x, ...){
+  UseMethod("collect")
+}
+
 #' Collect completed results files from gresults
 #'
 #' Provides arguments to return a sample of the results files of a given size,
 #' or to return results from files matching a regular expression.
 #'
-#' @param x object from \code{grid_apply}
 #' @param filter a quoted string or formula filtering jobs in \code{arg_grid} as in \code{filter}.
 #' Results for jobs matching filter are returned.
 #' If \code{NULL} (default), all results are returned.
@@ -289,10 +296,10 @@ write_seeds <- function(dir, .sge_ids, seed){
 #' @param sample the number of files in \code{results/} to sample from.
 #' If \code{NULL} (default), all results are returned.
 #' @param dir directory
-#' @param ... unused
 #' @details \code{filter, regex} and \code{sample} are applied to the available results in order.
 #' For example, results are filtered first, a regex is applied, then a sample is taken.
 #' @export
+#' @describeIn collect collect results from \code{grid_apply, gapply}
 #' @importFrom dplyr collect filter_
 collect.gapply <- function(x, filter=NULL, regex=NULL, sample=NULL, dir=getwd(), ...){
   dir <- paste0(dir, "/")
