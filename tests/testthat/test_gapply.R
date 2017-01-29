@@ -201,18 +201,15 @@ test_that("grid_apply list of vectors", {
 
 test_that("grid_apply list of vectors of unequal length", {
   do.one <- function(a=1, b=2){
-    return(list(x=c(a, a), y=c(b, b, b)))
+    return(list(x=rep(a,a), y=rep(b,b)))
   }
   out <- gapply(do.one, a=1:2, b=1:2, .reps = 1)
-  expect_equal(out$x, list(c(1,1), c(2,2), c(1,1), c(2,2)))
-  expect_equal(out$y, list(c(1,1,1), c(1,1,1), c(2,2,2), c(2,2,2)))
+  expect_equal(out$x, list(c(1), c(2,2), c(1), c(2,2)))
+  expect_equal(out$y, list(c(1), c(1), c(2,2), c(2,2)))
 
   out <- gapply(do.one, a=1:2, b=1:2, .reps = 1, .stack=T)
-  expect_equal(out$key, rep(c("x1", "x2", "y1", "y2", "y3"), times = 4))
-  expect_equal(out$value, c(1, 1, 1, 1, 1,
-                            2, 2, 1, 1, 1,
-                            1, 1, 2, 2, 2,
-                            2, 2, 2, 2, 2))
+  l <- grid_apply(do.one, a=1:2, b=1:2, .reps=1)
+  expect_equivalent(out$value, unlist(l))
 })
 
 test_that("grid_apply .verbose", {

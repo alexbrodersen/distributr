@@ -70,11 +70,13 @@ tidy.gapply <- function(x, arg_grid=NULL, stack=FALSE, .reps=NULL, ...){
 
   } else {
     #values <- bind_rows(x) # this seg faults when l[[i]] is scalar
+    if(any(lengths(x) != length(x[[1]]))) stop("cannot tidy, try tidy(., stack=T)")
     value <- do.call(rbind, x)
     if(is.data.frame(x[[1]])){
       nkeys <- sapply(x, function(xi){nrow(xi)})
       value_grid <- rep_grid[rep(1:nrow(rep_grid), times = nkeys), ]
     } else {
+      value <- do.call(rbind, x)
       value_grid <- rep_grid
     }
   }
@@ -124,7 +126,7 @@ stack_list <- function(xl){
 
   } else if(is.list(x)){
     lens <- lapply(xl, lengths)
-    same_dimensions <- all(sapply(lens, function(dims){ lengths(x) == length(x[[1]]) }))
+    same_dimensions <- all(sapply(lens, function(dims){ dims == lengths(x) }))
 
     if(same_dimensions){
       x <- as.data.frame(x)
@@ -132,6 +134,7 @@ stack_list <- function(xl){
                           key2 = rep(rownames(x), times = length(xl) * ncol(x)),
                           value = unlist(xl, use.names = F))
     } else {
+      # future: consider unlist(xl) with key=names(unlist(xl))?
       value <- dplyr::bind_rows(lapply(xl, stack_x))
     }
 
