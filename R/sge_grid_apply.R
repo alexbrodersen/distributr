@@ -288,8 +288,8 @@ collect <- function(x, ...){
 #' Provides arguments to return a sample of the results files of a given size,
 #' or to return results from files matching a regular expression.
 #'
-#' @param filter a quoted string or formula filtering jobs in \code{arg_grid} as in \code{filter}.
-#' Results for jobs matching filter are returned.
+#' @param filter a quoted string or formula filtering jobs in \code{arg_grid} as in \code{dplyr::filter}.
+#' Results for jobs matching filter are returned (requires \code{dplyr})
 #' If \code{NULL} (default), all results are returned.
 #' @param regex regular expression  matching files in \code{results/}.
 #' If \code{NULL} (default), all results are returned.
@@ -300,7 +300,7 @@ collect <- function(x, ...){
 #' For example, results are filtered first, a regex is applied, then a sample is taken.
 #' @export
 #' @describeIn collect collect results from \code{grid_apply, gapply}
-#' @importFrom dplyr collect filter_
+#' @importFrom dplyr filter_
 collect.gapply <- function(x, filter=NULL, regex=NULL, sample=NULL, dir=getwd(), ...){
   dir <- paste0(dir, "/")
   arg_grid <- readRDS(paste0(dir, "arg_grid.Rdata"))
@@ -311,6 +311,10 @@ collect.gapply <- function(x, filter=NULL, regex=NULL, sample=NULL, dir=getwd(),
   conds.files <- fns[order(ids)]
 
   if(!is.null(filter)){
+    if (!requireNamespace("dplyr", quietly = TRUE)) {
+      stop("dplyr needed to filter. Please install it.",
+           call. = FALSE)
+    }
     grid_filter <- filter_(arg_grid, .dots=filter)
     conds.files <- conds.files[ids %in% grid_filter$.sge_id]
   }
@@ -385,10 +389,11 @@ add_jobs <- function(object, ...){
 
 #' Filter a subset of jobs (rows) from argument grid and modify submission script
 #'
+#' Requires \code{dplyr}.
+#'
 #' @export
-#' @param ... arguments to \code{select}
+#' @param ... arguments to \code{dplyr::filter}
 #' @inheritParams setup
-#' @importFrom dplyr filter
 filter_jobs <- function(object, ...,
                         .mc.cores=1,
                         .dir= getwd(),
@@ -405,7 +410,11 @@ filter_jobs <- function(object, ...,
   if(is.null(arg_grid$.sge_id)){
     arg_grid$.sge_id <- 1:nrow(arg_grid)
   }
-  arg_grid <- filter(arg_grid, ...)
+  if (!requireNamespace("dplyr", quietly = TRUE)) {
+    stop("dplyr needed for this function to work. Please install it.",
+         call. = FALSE)
+  }
+  arg_grid <- dplyr::filter(arg_grid, ...)
   tasks <- unlist(arg_grid$.sge_id, use.names = FALSE)
 
   if(all(tasks == tasks[1]:tasks[length(tasks)])){

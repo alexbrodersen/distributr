@@ -12,7 +12,7 @@ filter_jobs(object, ..., .mc.cores = 1, .dir = getwd(), .queue = "long",
 \arguments{
 \item{object}{object from \code{grid_apply} or \code{gapply} with \code{.eval=FALSE}}
 
-\item{...}{arguments to \code{select}}
+\item{...}{arguments to \code{dplyr::filter}}
 
 \item{.mc.cores}{number of cores used to run replications in parallel (can be a range)}
 
@@ -35,6 +35,6 @@ filter_jobs(object, ..., .mc.cores = 1, .dir = getwd(), .queue = "long",
 \item{.shell}{shell to use. Default is 'bash'}
 }
 \description{
-Filter a subset of jobs (rows) from argument grid and modify submission script
+Requires \code{dplyr}.
 }
 

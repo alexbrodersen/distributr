@@ -15,8 +15,8 @@ collect(x, ...)
 
 \item{...}{other arguments to collect}
 
-\item{filter}{a quoted string or formula filtering jobs in \code{arg_grid} as in \code{filter}.
-Results for jobs matching filter are returned.
+\item{filter}{a quoted string or formula filtering jobs in \code{arg_grid} as in \code{dplyr::filter}.
+Results for jobs matching filter are returned (requires \code{dplyr})
 If \code{NULL} (default), all results are returned.}
 
 \item{regex}{regular expression  matching files in \code{results/}.
