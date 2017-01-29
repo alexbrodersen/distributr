@@ -197,6 +197,14 @@ test_that("grid_apply list of vectors", {
                             2, 2, 1, 1,
                             1, 1, 2, 2,
                             2, 2, 2, 2))
+
+  do.one <- function(a=1){
+    return(rnorm(a))
+  }
+  expect_error(out <- gapply(do.one, a=1:5))
+  out <- grid_apply(do.one, a=1:5)
+  ans <- unlist(out)
+  expect_equal(ans, tidy(out, stack=T)$value)
 })
 
 test_that("grid_apply list of vectors of unequal length", {
