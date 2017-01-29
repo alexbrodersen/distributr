@@ -126,14 +126,14 @@ test_that("jobs can have different numbers of completed replications", {
 test_that("add_jobs", {
   skip_on_cran()
   skip_on_travis()
-  out2 <- add_jobs(out, a=5)
+  out2 <- add_jobs(out, a=5, b=1)
   new_grid <- attr(out2, "arg_grid")
-  ans <- dplyr::bind_rows(attr(out, "arg_grid"), expand.grid(a=5))
+  ans <- rbind(attr(out, "arg_grid"), expand.grid(a=5, b=1))
   ans$.sge_id=1:nrow(ans)
   expect_equal(new_grid, ans)
   out2 <- add_jobs(out, a=5, b=c(2, 4))
   new_grid <- attr(out2, "arg_grid")
-  ans <- dplyr::bind_rows(attr(out, "arg_grid"), expand.grid(a=5, b=c(2, 4)))
+  ans <- rbind(attr(out, "arg_grid"), expand.grid(a=5, b=c(2, 4)))
   ans$.sge_id <- 1:nrow(ans)
   expect_equal(new_grid, ans)
 

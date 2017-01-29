@@ -300,7 +300,6 @@ collect <- function(x, ...){
 #' For example, results are filtered first, a regex is applied, then a sample is taken.
 #' @export
 #' @describeIn collect collect results from \code{grid_apply, gapply}
-#' @importFrom dplyr filter_
 collect.gapply <- function(x, filter=NULL, regex=NULL, sample=NULL, dir=getwd(), ...){
   dir <- paste0(dir, "/")
   arg_grid <- readRDS(paste0(dir, "arg_grid.Rdata"))
@@ -315,7 +314,7 @@ collect.gapply <- function(x, filter=NULL, regex=NULL, sample=NULL, dir=getwd(),
       stop("dplyr needed to filter. Please install it.",
            call. = FALSE)
     }
-    grid_filter <- filter_(arg_grid, .dots=filter)
+    grid_filter <- dplyr::filter_(arg_grid, .dots=filter)
     conds.files <- conds.files[ids %in% grid_filter$.sge_id]
   }
   if(!is.null(regex)){
@@ -369,7 +368,6 @@ collect.gresults <- collect.gapply
 #' @details If all original keys are not in ..., the values of these arguments are set
 #' to \code{NA}
 #' @export
-#' @importFrom dplyr bind_rows
 add_jobs <- function(object, ...){
   arg_grid <- attr(object, "arg_grid")
   new_grid <- expand.grid(...)
@@ -377,9 +375,9 @@ add_jobs <- function(object, ...){
   if(!is.null(arg_grid$.sge_id)){
     last <- max(arg_grid$.sge_id)
     new_grid$.sge_id <- (last+1):(last+nrow(new_grid))
-    arg_grid <- bind_rows(arg_grid, new_grid)
+    arg_grid <- rbind(arg_grid, new_grid)
   } else {
-    arg_grid <- bind_rows(arg_grid, new_grid)
+    arg_grid <- rbind(arg_grid, new_grid)
     arg_grid$.sge_id <- 1:nrow(arg_grid)
   }
 
