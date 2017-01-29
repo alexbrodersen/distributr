@@ -293,7 +293,6 @@ write_seeds <- function(dir, .sge_ids, seed){
 #' @details \code{filter, regex} and \code{sample} are applied to the available results in order.
 #' For example, results are filtered first, a regex is applied, then a sample is taken.
 #' @export
-#' @importFrom gtools mixedsort
 #' @importFrom tidyr gather
 #' @importFrom dplyr collect filter_
 collect.gapply <- function(x, filter=NULL, regex=NULL, sample=NULL, dir=getwd(), ...){
@@ -301,11 +300,13 @@ collect.gapply <- function(x, filter=NULL, regex=NULL, sample=NULL, dir=getwd(),
   arg_grid <- readRDS(paste0(dir, "arg_grid.Rdata"))
 
   rdir <- paste0(dir, "results/")
-  conds.files <- gtools::mixedsort(paste0(rdir,list.files(rdir)))
+  fns <- paste0(rdir, dir(rdir))
+  ids <- as.numeric(gsub(".Rdata", "", dir(rdir)))
+  conds.files <- fns[order(ids)]
+
   if(!is.null(filter)){
-    collected_ids <- as.numeric(gsub(".Rdata", "", gsub(paste0(dir, "results/"), "", conds.files)))
     grid_filter <- filter_(arg_grid, .dots=filter)
-    conds.files <- conds.files[collected_ids %in% grid_filter$.sge_id]
+    conds.files <- conds.files[ids %in% grid_filter$.sge_id]
   }
   if(!is.null(regex)){
     conds.files <- grep(conds.files, pattern = regex, value=TRUE)

@@ -1,6 +1,6 @@
 Package: distributr
 Type: Package
-Title: Grid Search by applying a function over grid of its arguments, with SGE backend
+Title: Grid search by applying a function over grid of its arguments, with SGE backend
 Version: 0.1.0
 Author: Patrick Miller
 Maintainer: Patrick Miller <pmille13@nd.edu>
