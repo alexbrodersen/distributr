@@ -293,7 +293,6 @@ write_seeds <- function(dir, .sge_ids, seed){
 #' @details \code{filter, regex} and \code{sample} are applied to the available results in order.
 #' For example, results are filtered first, a regex is applied, then a sample is taken.
 #' @export
-#' @importFrom tidyr gather
 #' @importFrom dplyr collect filter_
 collect.gapply <- function(x, filter=NULL, regex=NULL, sample=NULL, dir=getwd(), ...){
   dir <- paste0(dir, "/")
