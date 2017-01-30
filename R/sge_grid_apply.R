@@ -324,10 +324,12 @@ collect.gapply <- function(x, filter=NULL, regex=NULL, sample=NULL, dir=getwd(),
     conds.files <- conds.files[sample(1:length(conds.files), size = sample, replace = FALSE)]
   }
   cond.l <- list()           # list of the results from each condition
+  pb <- txtProgressBar(min=0, max=length(conds.files), style=3)
   for(i in 1:length(conds.files)){
       fn <- paste0(conds.files[i])
       res.l <- readRDS(fn)
       cond.l[[i]] <- res.l
+      setTxtProgressBar(pb, i)
   }
   reps <- lengths(cond.l)
 
