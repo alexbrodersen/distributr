@@ -7,7 +7,6 @@
 #'  Returns the estimated time invisibly.
 #' @export
 summary.gresults <- function(object, .reps=NULL, ...){
-  print(object)
   cat("",fill=T)
   grid <- attr(object, "arg_grid")
 

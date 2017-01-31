@@ -7,7 +7,7 @@
 \usage{
 setup(object, ...)
 
-\method{setup}{gapply}(object, .seed = NULL, .dir = getwd(), .reps = 1,
+\method{setup}{gapply}(object, .dir = getwd(), .reps = 1, .seed = NULL,
   .mc.cores = 1, .verbose = 1, .queue = "long",
   .script.name = "doone.R", .job.name = "distributr",
   .out.dir = "SGE_Output", .R.version = "3.2.5", .email.options = "a",
@@ -18,12 +18,12 @@ setup(object, ...)
 
 \item{...}{arguments to methods}
 
-\item{.seed}{An integer or \code{NULL} (default, no seeds are set automatically). If given, controls
-RNG using L'ecuyer-CMRG as in \code{parallel} by saving and accessing unique seeds in \code{seeds.Rdata}}
-
 \item{.dir}{directory name relative to the current working directory (no trailing backslash)}
 
 \item{.reps}{total number of replications for each condition}
+
+\item{.seed}{An integer or \code{NULL} (default, no seeds are set automatically). If given, controls
+RNG using L'ecuyer-CMRG as in \code{parallel} by saving and accessing unique seeds in \code{seeds.Rdata}}
 
 \item{.mc.cores}{number of cores used to run replications in parallel (can be a range)}
 

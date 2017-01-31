@@ -108,9 +108,9 @@ setup <- function(object, ...){
 #' @export
 #' @describeIn setup Setup sge files from \code{gapply, grid_apply}
 setup.gapply <- function(object,
-                  .seed=NULL,
                   .dir=getwd(),
                   .reps=1,
+                  .seed=NULL,
                   .mc.cores=1,
                   .verbose=1,
                   .queue="long",
@@ -506,7 +506,7 @@ sge_test <- function(dir=getwd()){
     x
   }
   out <- gapply(f, x=3:8, y=1:2, .eval=F)
-  setup(out, dir)
+  setup(out, .dir=dir)
   submit(dir)
 }
 
