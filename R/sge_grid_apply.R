@@ -324,12 +324,12 @@ collect.gapply <- function(x, filter=NULL, regex=NULL, sample=NULL, dir=getwd(),
     conds.files <- conds.files[sample(1:length(conds.files), size = sample, replace = FALSE)]
   }
   cond.l <- list()           # list of the results from each condition
-  pb <- txtProgressBar(min=0, max=length(conds.files), style=3)
+  #pb <- txtProgressBar(min=0, max=length(conds.files), style=3)
   for(i in 1:length(conds.files)){
       fn <- paste0(conds.files[i])
       res.l <- readRDS(fn)
       cond.l[[i]] <- res.l
-      setTxtProgressBar(pb, i)
+      #setTxtProgressBar(pb, i)
   }
   reps <- lengths(cond.l)
 
@@ -498,6 +498,7 @@ clean <- function(dir=getwd()){
 #' sge_test
 #' Simple test SGE configuration
 #' @param dir directory in which to run test
+#' @return A \code{gresults} object with the submitted plan
 #' @export
 sge_test <- function(dir=getwd()){
   f <- function(x,y){
@@ -506,8 +507,9 @@ sge_test <- function(dir=getwd()){
     x
   }
   out <- gapply(f, x=3:8, y=1:2, .eval=F)
-  setup(out, .dir=dir)
+  plan <- setup(out, .dir=dir)
   submit(dir)
+  return(plan)
 }
 
 #' Returns the parameter grid from grid_apply

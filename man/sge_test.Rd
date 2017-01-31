@@ -10,6 +10,9 @@ sge_test(dir = getwd())
 \arguments{
 \item{dir}{directory in which to run test}
 }
+\value{
+A \code{gresults} object with the submitted plan
+}
 \description{
 sge_test
 Simple test SGE configuration
