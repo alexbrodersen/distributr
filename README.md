@@ -43,7 +43,7 @@ The function `gapply` runs `grid_apply` followed by `tidy`.
 ```{r, eval=TRUE}
 res <- sim %>% tidy
 res <- gapply(do.one, n = c(50, 100, 500), mu = c(1,5), sd = c(1, 5, 10), 
-              .reps=50, .mc.cores=5) %>% head
+              .reps=50, .mc.cores=5)
 ```
 
 ```{r}
@@ -75,7 +75,7 @@ A compute plan can be setup and executed using the Sun/Open Grid Engine schedule
 sim <- gapply(do.one, n = c(50, 100, 500), mu = c(1,5), sd = c(1, 5, 10), .eval=F)
 sim <- setup(sim, .reps=500, .mc.cores = 5)
 submit(sim)   
-res <- collect(sim) %>% tidy
+res <- tidy(collect(sim))
 ```
 The `setup` function asks for user confirmation if an existing argument grid would be overwritten. 
 
