@@ -209,7 +209,7 @@ write_submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1, queue=
       "#$ -t ", tasks, "\n",
       "#$ -o ", out.dir, " \n\n",
       "module load R/", R.version, "\n",
-      "Rscript ", script.name, " $SGE_TASK_ID $NSLOTS \n")
+      "Rscript ", script.name, "\n")
   } else {
     submit <- paste0(
       "#!/bin/", shell, " \n",
@@ -219,7 +219,7 @@ write_submit <- function(dir, script.name="doone.R", mc.cores=1, tasks=1, queue=
       "#$ -t ", tasks, "\n",
       "#$ -o ", out.dir, " \n\n",
       "module load R/", R.version, "\n",
-      "Rscript ", script.name, " $SGE_TASK_ID $NSLOTS \n")
+      "Rscript ", script.name, "\n")
   }
   cat(submit, file=paste0(dir, "submit"))
 }
@@ -239,9 +239,8 @@ write_doone <- function(.f, dir, seed, reps=1, mc.cores=1, verbose=1, script.nam
 
   script <- paste0(fstr,"
   suppressMessages(library(distributr))
-  args <- as.numeric(commandArgs(trailingOnly=TRUE))
-  sge_id <- args[1]
-  ncores <- args[2]
+  sge_id <- sge_task_id()
+  ncores <- sge_slots()
   reps <- ", reps,"
   arg_grid <- readRDS('arg_grid.Rdata')
   .args <- attr(arg_grid, '.args')

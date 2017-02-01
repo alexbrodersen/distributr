@@ -62,7 +62,7 @@ clean <- function(dir=getwd()){
 #' @export
 sge_test <- function(dir=getwd()){
   f <- function(x,y){
-    Sys.sleep(.5)
+    Sys.sleep(.2)
     stopifnot(x < 5)
     x
   }
