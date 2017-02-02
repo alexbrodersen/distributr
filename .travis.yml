@@ -1,11 +1,11 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
 addons:
-  hostname: distributr.travis-ci.org
+  hostname: testing-gce-1f2235af-4db8-4262-aa62-b0290ca4e007"
   hosts:
     - localhost
     - localhost.localdomain
-    - distributr.travis-ci.org
+    - testing-gce-1f2235af-4db8-4262-aa62-b0290ca4e007"
 
 
 before_install:
