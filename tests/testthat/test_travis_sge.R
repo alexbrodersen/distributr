@@ -6,9 +6,9 @@ test_that("sge works", {
 
 })
 
-test_that("sge works", {
+test_that("on_sge", {
   skip_on_cran()
-  cat("PRINT THIS", fill=T)
+  clean()
   test_it <- function(x){on_sge()}
   plan <- gapply(test_it, x=1)
   setup(plan)
