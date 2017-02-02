@@ -7,5 +7,5 @@ before_install:
   - export DRMAA_LIBRARY_PATH=/usr/lib/libdrmaa.so.1.0
 
 language: R
-sudo: false
+sudo: required 
 cache: packages
