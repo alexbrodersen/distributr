@@ -1,10 +1,12 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
 addons:
+  hostname: distributr.travis-ci.org
   hosts:
     - localhost
     - localhost.localdomain
-    - gridmap.travis-ci.org
+    - distributr.travis-ci.org
+
 
 before_install:
   - travis/install_sge.sh
