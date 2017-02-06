@@ -90,6 +90,6 @@ filter_jobs(sim, n < 100, .mc.cores=5) # filter jobs as in dplyr
 collect(sim, filter="n < 100")         # collect results from jobs matching filter
 ```
 
-### Wiki
+### More Information
 
-More information is available on the [wiki](https://github.com/patr1ckm/distributr/wiki), for example, illustrating how chunking, random number control, and caching can all be done transparently via `do.one`. 
+More information is available on the [wiki](https://github.com/patr1ckm/distributr/wiki), for example, illustrating how chunking, random number control, and caching can all be done transparently via `do.one`. These [slides](http://rpubs.com/patr1ckm/distributr) give a general overview.
