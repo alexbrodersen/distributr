@@ -75,36 +75,36 @@ test_that("collect_sge ", {
   system("Rscript doone.R 2 1", ignore.stdout = T)
   setwd("../")
 
-  outc <- collect(out, dir = "tmp") %>% tidy
+  outc <- collect(dir = "tmp") %>% tidy
   out <- gapply(do.one, a=1:2, b=2, .reps=5, .verbose=0, .eval = T)
   expect_equivalent(select(outc,-.sge_id), out)
 
-  outf <- collect(out, dir="tmp", filter="a < 5") %>% tidy
+  outf <- collect(dir="tmp", filter="a < 5") %>% tidy
   ans <- outc %>% filter(a < 5)
   expect_equivalent(outf, ans)
 
-  outf <- collect(out, dir="tmp", filter= ~a < 5) %>% tidy
+  outf <- collect(dir="tmp", filter= ~a < 5) %>% tidy
   ans <- outc %>% filter(a < 5)
   expect_equivalent(outf, ans)
 
   set.seed(104)
-  outs <- collect(out, dir = "tmp", sample=1) %>% tidy
+  outs <- collect(dir = "tmp", sample=1) %>% tidy
   expect_equal(nrow(outs), nrow(outc)/2)
   expect_true(all(outs$.sge_id) == 1)
 
-  outr <- collect(out, dir = "tmp", regex="1") %>% tidy
+  outr <- collect(dir = "tmp", regex="1") %>% tidy
   expect_equal(outr, outs)
-  outr <- collect(out, dir = "tmp", regex="2") %>% tidy
+  outr <- collect(dir = "tmp", regex="2") %>% tidy
   expect_true(all(outr$.sge_id == 2))
-  outr <- collect(out, dir = "tmp", regex="[1-2]") %>% tidy
+  outr <- collect(dir = "tmp", regex="[1-2]") %>% tidy
   expect_equal(outr, outc)
 
-  outfr <- collect(out, dir = "tmp", filter="a < 5", regex="2") %>% tidy
+  outfr <- collect(dir = "tmp", filter="a < 5", regex="2") %>% tidy
   ans <- outc %>% filter(a == 2)
   expect_equivalent(outfr, ans)
 
   set.seed(104)
-  outfs <- collect(out, dir = "tmp", filter="b == 2", sample = 1) %>% tidy
+  outfs <- collect(dir = "tmp", filter="b == 2", sample = 1) %>% tidy
   expect_equal(outfs, outs)
 })
 
@@ -116,7 +116,7 @@ test_that("jobs can have different numbers of completed replications", {
   saveRDS(res.l, file="tmp/results/2.Rdata")
   rm(res.l)
 
-  outc <- collect(out, dir = "tmp") %>% tidy
+  outc <- tidy(collect(dir = "tmp"))
   expect_equal(nrow(outc), 7)
   ans <- c(rep(NA, 5), 2, 2)
   expect_equal(outc$value, ans)
@@ -144,7 +144,7 @@ test_that("add_jobs", {
   for(i in 1:4) system(paste0("Rscript doone.R ", i," 1"), ignore.stdout = T)
   setwd("../")
 
-  outc <- collect(out2, dir = "tmp") %>% tidy
+  outc <- collect(dir = "tmp") %>% tidy
   out <- gapply(do.one,a=1:2,b=2, .reps=5, .verbose=0, .eval = T)
   out2 <- gapply(do.one,a=5,b=c(2,4), .reps=5, .verbose=0, .eval = T)
 
@@ -183,7 +183,7 @@ test_that("test_job", {
    setwd("tmp/")
    msg <- capture.output(test_job(2))
    setwd("../")
-   res <- collect(plan, dir="tmp") %>% tidy
+   res <- collect(dir="tmp") %>% tidy
    res$.sge_id <- NULL
    msg <- capture.output(ans <- gapply(do.one, a=2, b=2, .reps=5, .verbose=0, .eval = T,
                  .args=list(dat=data.frame(rnorm(5), rnorm(5)))))
@@ -211,7 +211,7 @@ test_that("setup seeds", {
   msg <- system("Rscript doone.R 2 1", ignore.stdout = T)
   setwd("../")
 
-  o1 <- collect(out, dir = "tmp")
+  o1 <- collect(dir = "tmp")
   system(paste0("rm -rf ", fdir, "/*"))
   msg <- capture.output(out <- setup(out, .dir="tmp", .reps = 6, .seed=104))
 
@@ -220,7 +220,7 @@ test_that("setup seeds", {
   msg <- system("Rscript doone.R 1 1", ignore.stdout = T)
   msg <- system("Rscript doone.R 2 1", ignore.stdout = T)
   setwd("../")
-  o2 <- collect(out, dir = "tmp")
+  o2 <- collect(dir = "tmp")
   expect_equal(o1, o2)
 
 })
