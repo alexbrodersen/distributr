@@ -75,7 +75,7 @@ A compute plan can be setup and executed using the Sun/Open Grid Engine schedule
 sim <- gapply(do.one, n = c(50, 100, 500), mu = c(1,5), sd = c(1, 5, 10), .eval=F)
 sim <- setup(sim, .reps=500, .mc.cores = 5)
 submit(sim)   
-res <- tidy(collect(sim))
+res <- tidy(collect())
 ```
 The `setup` function asks for user confirmation if an existing argument grid would be overwritten. 
 
@@ -87,7 +87,7 @@ Jobs can be added to the compute plan via `add_jobs`. A set of jobs can be selec
 jobs(sim)                              # access jobs grid (argument grid)
 add_jobs(sim, n=1000, mu=10, sd=50)    # add jobs to plan
 filter_jobs(sim, n < 100, .mc.cores=5) # filter jobs as in dplyr
-collect(sim, filter="n < 100")         # collect results from jobs matching filter
+collect(filter="n < 100")         # collect results from jobs matching filter
 ```
 
 ### More Information
