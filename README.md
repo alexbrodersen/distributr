@@ -41,7 +41,7 @@ A tidy method is provided that merges the list of results with the argument grid
 The function `gapply` runs `grid_apply` followed by `tidy`. 
 
 ```{r, eval=TRUE}
-res <- sim %>% tidy
+res <- sim(tidy)
 res <- gapply(do.one, n = c(50, 100, 500), mu = c(1,5), sd = c(1, 5, 10), 
               .reps=50, .mc.cores=5)
 ```
