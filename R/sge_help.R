@@ -1,8 +1,3 @@
-#' Return running jobs
-#' @export
-qst <- function(){
-  system("qstat -u $USER", intern=TRUE)
-}
 
 
 #' Run and \code{cat} a call to \code{system}
