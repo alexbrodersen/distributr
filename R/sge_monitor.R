@@ -18,6 +18,7 @@ qst <- function(){
 #' \item{jclass}{class of job (usually \code{NA})}
 #' \item{slots}{Number of slots (cores) job is running with}
 #' \item{.sge_id}{the value of \code{SGE_TASK_ID} for the job}
+#' If no jobs are running or in the queue, returns \code{character(0)} (empty string).
 #' @export
 qstat <- function(user=TRUE){
 
@@ -26,18 +27,34 @@ qstat <- function(user=TRUE){
   } else {
     jstr <- system("qstat", intern=TRUE)
   }
+  if(length(jstr) > 0){
+    df <- parse_qstat(jstr)$run
+  } else {
+    df <- jstr
+  }
+  return(df)
+}
 
+parse_qstat <- function(jstr){
   lines <- strsplit(jstr, "\n")
-  # column names separated by whitespace
-  # ----------------------
-  # data separated by whitespace
+  # Sample job string:
+  #"job-ID     prior   name       user         state submit/start at     queue                          jclass                         slots ja-task-ID ",
+  #"------------------------------------------------------------------------------------------------------------------------------------------------",
+  #"    740473 0.60142 sleep_ss_l pmille13     r     02/08/2017 15:38:00 long@q16copt036.crc.nd.edu                                       24 1",
+  #"    740473 0.60142 sleep_ss_l pmille13     r     02/08/2017 15:38:00 long@q16copt036.crc.nd.edu                                       24 2",
+  #"    743563 0.00000 distributr pmille13     qw    02/11/2017 14:10:31                                                                   1 12105-24000:1"
 
   lines[[2]] <- NULL
-
   var_names <- strsplit(lines[[1]], "\\s+")[[1]]
   lines[[1]] <- NULL
-  lp <- lapply(lines, function(l){ strsplit(l[[1]], "\\s+")[[1]]})
-  df <- data.frame(do.call(rbind, lapply(lp, function(l){l[-1]})), stringsAsFactors = FALSE)
+  job_list <- lapply(lines, function(l){ strsplit(l[[1]], "\\s+")[[1]]})
+
+  qw <- sapply(job_list, function(l){any(l == "qw")})
+  running <- job_list[!qw]
+  queued <- job_list[qw]
+
+  df <- data.frame(do.call(rbind, lapply(running, function(l){l[-1]})), stringsAsFactors = FALSE)
+  # ncol(df) == 10 if jclass is empty
   if(ncol(df) == 10){
     df <- cbind(df[,1:8], NA, df[,9:10])
   }
@@ -50,6 +67,7 @@ qstat <- function(user=TRUE){
   df[,"submit/start"] <- NULL
   df <- df[,c(1:5, 10, 6:9)]
   colnames(df)[10] <- ".sge_id"
-  return(df)
+
+  return(list(run=df, qw=queued))
 }
 
