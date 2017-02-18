@@ -29,9 +29,15 @@ qstat <- function(user=TRUE){
   }
   if(length(jstr) > 0){
     df <- parse_qstat(jstr)$run
+    jids <- unique(df[,"job_id"])
+    job_usage <- lapply(jids, function(jid){
+      system(paste0("qstat -j ", jid), intern=T)})
+    usage_df <- do.call(rbind, lapply(job_usage, parse_usage))
+    df <- merge(df, usage_df, by=c("job_id", ".sge_id"))
   } else {
     df <- jstr
   }
+  class(df) <- c("data.frame", "qstat")
   return(df)
 }
 
@@ -66,8 +72,63 @@ parse_qstat <- function(jstr){
   df[,"at"] <- NULL
   df[,"submit/start"] <- NULL
   df <- df[,c(1:5, 10, 6:9)]
-  colnames(df)[10] <- ".sge_id"
+  colnames(df)[c(1, 10)] <- c("job_id", ".sge_id")
 
   return(list(run=df, qw=queued))
+}
+
+
+# is it a task array?
+parse_usage <- function(mstr){
+  job_id <- as.numeric(strsplit(grep("job_number", mstr, value=T), "\\s+")[[1]][2])
+  is_task_array <- any(grepl("job-array tasks:", mstr))
+  if(is_task_array){
+    tasks <- grep("job-array tasks:", mstr, value=T)
+    arange <- regmatches(tasks, regexpr("(\\d*-\\d*:\\d)", tasks))
+    task_range <- as.numeric(regmatches(arange, gregexpr("\\d*", arange))[[1]])
+    task_low <- task_range[1]
+    task_up <- task_range[3]
+
+    job_state <- lapply(grep("job_state", mstr, value=T),
+           function(x){ strsplit(x, "(\\s+)")[[1]]})
+    status <- do.call(rbind, lapply(job_state, function(j){
+      data.frame(.sge_id=as.numeric(gsub(":", "", j[2])),
+                 status = j[3], stringsAsFactors = F)}))
+
+    usage <- lapply(grep("usage", mstr, value=T),
+                    function(l){ strsplit(l[[1]], "\\s+,?")[[1]]})
+    get_info <- function(regex, str_list){
+      sapply(str_list, function(l){grep(regex, l, value = T)})
+    }
+
+    maxvmem <- gsub(" maxvmem=", "", get_info("maxvmem", usage))
+    vmem_matches <- regmatches(maxvmem, regexec("(\\d*.\\d*)([A-Z])", maxvmem))
+
+    vmem <- do.call(rbind,
+      lapply(vmem_matches, function(x){
+        data.frame(mem=as.numeric(x[2]), unit=x[3], stringsAsFactors = F)}))
+    vmem$mem[vmem$unit == "M"] <- vmem$mem[vmem$unit == "M"]/1000
+
+    wallclock <- gsub(",", "", gsub("wallclock=", "",
+                      strsplit(get_info("wallclock", usage), "\\s+")))
+
+    time <- lapply(strsplit(wallclock, ":"), as.numeric)
+    pad_days <- lapply(time, function(t){c(rep(0, 4-length(t)), t)})
+    seconds <- sapply(pad_days, function(t){
+      60*60*24*t[1] +
+      60*60*t[2] +
+      60*t[3] +
+      t[4]})
+
+    meta <- data.frame(job_id, status, maxvmem=vmem$mem, wallclock=seconds)
+
+  } else {
+    # need a test string for this
+    meta <- NULL
+
+  }
+
+  return(meta)
+
 }
 
