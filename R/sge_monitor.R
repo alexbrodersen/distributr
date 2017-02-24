@@ -34,6 +34,7 @@ qstat <- function(user=TRUE){
       system(paste0("qstat -j ", jid), intern=T)})
     usage_df <- do.call(rbind, lapply(job_usage, parse_usage))
     df <- merge(df, usage_df, by=c("job_id", ".sge_id"))
+    df$status <- NULL
   } else {
     df <- jstr
   }

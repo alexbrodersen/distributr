@@ -1,8 +1,6 @@
 context("sge qstat")
 
 test_that("sge qstat works", {
-  skip_on_cran()
-
   x <- c("job-ID     prior   name       user         state submit/start at     queue                          jclass                         slots ja-task-ID ",
     "------------------------------------------------------------------------------------------------------------------------------------------------",
     "    740473 0.60142 sleep_ss_l pmille13     r     02/08/2017 15:38:00 long@q16copt036.crc.nd.edu                                       24 1",
