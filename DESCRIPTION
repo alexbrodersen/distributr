@@ -3,7 +3,7 @@ Type: Package
 Title: Grid Search with SGE Backend
 Version: 0.1.0
 Author: Patrick Miller
-Maintainer: Patrick Miller <pmille13@nd.edu>
+Maintainer: Patrick Miller <patrick.mil10@gmail.com>
 Description: Simple grid search via \code{grid_apply}. Function applications can be executed repeatedly and in parallel. A backend for execution of these grids is provided for Sun Grid Engine. Results can be easy transformed into a tidy format.
 License: GPL-2 | file LICENSE
 URL: https://github.com/patr1ckm/distributr
