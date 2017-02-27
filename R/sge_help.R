@@ -58,12 +58,12 @@ clean <- function(dir=getwd()){
 #' @return A \code{gresults} object with the submitted plan
 #' @export
 sge_test <- function(dir=getwd(), wait=.2, ntasks=12){
-  f <- function(x,y){
+  f <- function(x,y, wait){
     Sys.sleep(wait)
     stopifnot(x < 5)
     x
   }
-  out <- gapply(f, x=1:ntasks, y=1, .eval=F)
+  out <- gapply(f, x=1:ntasks, y=1, wait=wait, .eval=F)
   plan <- setup(out, .dir=dir)
   submit(dir)
   return(plan)
