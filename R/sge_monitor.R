@@ -79,7 +79,6 @@ parse_qstat <- function(jstr){
 }
 
 
-# is it a task array?
 parse_usage <- function(mstr){
   job_id <- as.numeric(strsplit(grep("job_number", mstr, value=T), "\\s+")[[1]][2])
   is_task_array <- any(grepl("job-array tasks:", mstr))
@@ -95,6 +94,8 @@ parse_usage <- function(mstr){
     status <- do.call(rbind, lapply(job_state, function(j){
       data.frame(.sge_id=as.numeric(gsub(":", "", j[2])),
                  status = j[3], stringsAsFactors = F)}))
+    # remove jobs that have exited
+    status <- status[status$status != "x", ]
 
     usage <- lapply(grep("usage", mstr, value=T),
                     function(l){ strsplit(l[[1]], "\\s+,?")[[1]]})
