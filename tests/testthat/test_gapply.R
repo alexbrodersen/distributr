@@ -1,4 +1,3 @@
-require(dplyr, quietly = T)
 context("gapply")
 
 test_that("do.rep", {
@@ -53,6 +52,7 @@ test_that("wrapWE", {
 
 
 test_that("grid_apply", {
+  require(dplyr, quietly = T)
   out <- gapply(do.one, a=c(2,1), b=2, .reps=2, .verbose=0, .stack=T)
   expect_true(nrow(out) == 6)
 
@@ -81,7 +81,9 @@ test_that("grid_apply single named return value", {
   expect_equivalent(out, out1)
 })
 
-test_that("grid_apply multiple unnamd return values", {
+test_that("grid_apply multiple unnamed return values", {
+  require(dplyr, quietly = T)
+
   do.one <- function(a=1,b=2){c(a+b, a - b)}
   grid <- expand.grid(a=1:2,b=2)
 
@@ -104,6 +106,8 @@ test_that("grid_apply multiple unnamd return values", {
 })
 
 test_that("grid_apply Multiple named return values", {
+  require(dplyr, quietly = T)
+
   do.one <- function(a=1,b=2){data.frame(sum=a+b,sub=a-b)}
   out <- gapply(do.one,.reps=2, a=1:2,b=2,.verbose=0, .stack=F)
   out1 <- grid_apply(do.one,.reps=2, a=1:2,b=2,.verbose=0) %>% tidy(., stack=F)
@@ -127,6 +131,8 @@ test_that("grid_apply Multiple named return values", {
 })
 
 test_that("grid_apply .reps", {
+  require(dplyr, quietly = T)
+
   do.one <- function(a=1,b=2){data.frame(sum=a+b,sub=a-b)}
   out <- gapply(do.one,.reps=3, a=1,b=2,.verbose=0)
   out1 <- grid_apply(do.one,.reps=3, a=1,b=2,.verbose=0) %>% tidy
@@ -141,6 +147,8 @@ test_that("grid_apply .reps", {
 
 
 test_that("grid_apply data frame returns unequal returns", {
+  require(dplyr, quietly = T)
+
   # Different numbers of rows
   do.one <- function(a){
     return(rep(a, a))
@@ -165,6 +173,8 @@ test_that("grid_apply data frame returns unequal returns", {
 
 
 test_that("grid_apply list returns", {
+  require(dplyr, quietly = T)
+
   do.one <- function(a=1, b=2){
     return(list(x=a + b, y=a - b))
   }
@@ -180,6 +190,8 @@ test_that("grid_apply list returns", {
 })
 
 test_that("grid_apply list of vectors", {
+  require(dplyr, quietly = T)
+
   do.one <- function(a=1, b=2){
     return(list(x=c(a, a), y=c(b, b)))
   }
@@ -208,6 +220,8 @@ test_that("grid_apply list of vectors", {
 })
 
 test_that("grid_apply list of vectors of unequal length", {
+  require(dplyr, quietly = T)
+
   do.one <- function(a=1, b=2){
     return(list(x=rep(a,a), y=rep(b,b)))
   }

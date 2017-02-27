@@ -5,10 +5,14 @@
 \title{sge_test
 Simple test SGE configuration}
 \usage{
-sge_test(dir = getwd())
+sge_test(dir = getwd(), wait = 0.2, ntasks = 12)
 }
 \arguments{
 \item{dir}{directory in which to run test}
+
+\item{wait}{number of seconds a job sould take (default is .2)}
+
+\item{ntasks}{number of tasks to run (default is 12)}
 }
 \value{
 A \code{gresults} object with the submitted plan

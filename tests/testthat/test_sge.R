@@ -1,6 +1,8 @@
 context("sge grid_apply")
 if(interactive()) setwd("tests/testthat/")
 fdir <- "tmp"
+require(dplyr, quietly = T)
+
 
 do.one <- function(a=1, b=2, dat){
   if(a==1) stop("asdf")

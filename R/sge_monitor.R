@@ -98,38 +98,64 @@ parse_usage <- function(mstr){
 
     usage <- lapply(grep("usage", mstr, value=T),
                     function(l){ strsplit(l[[1]], "\\s+,?")[[1]]})
+
     get_info <- function(regex, str_list){
       sapply(str_list, function(l){grep(regex, l, value = T)})
     }
 
-    maxvmem <- gsub(" maxvmem=", "", get_info("maxvmem", usage))
-    vmem_matches <- regmatches(maxvmem, regexec("(\\d*.\\d*)([A-Z])", maxvmem))
 
-    vmem <- do.call(rbind,
-      lapply(vmem_matches, function(x){
-        data.frame(mem=as.numeric(x[2]), unit=x[3], stringsAsFactors = F)}))
-    vmem$mem[vmem$unit == "M"] <- vmem$mem[vmem$unit == "M"]/1000
+    maxvmem <- do.call(rbind, lapply(get_info("maxvmem", usage), mem_to_df))
+    vmem <- do.call(rbind, lapply(get_info("^vmem", usage), mem_to_df))
+
+    vmem$mem[vmem$unit %in% "M"] <- vmem$mem[vmem$unit %in% "M"]/1000
+    maxvmem$mem[maxvmem$unit %in% "M"] <- maxvmem$mem[maxvmem$unit %in% "M"]/1000
+
 
     wallclock <- gsub(",", "", gsub("wallclock=", "",
                       strsplit(get_info("wallclock", usage), "\\s+")))
+    cpu <- gsub(",", "", gsub("cpu=", "",
+                strsplit(get_info("cpu", usage), "\\s+")))
 
-    time <- lapply(strsplit(wallclock, ":"), as.numeric)
-    pad_days <- lapply(time, function(t){c(rep(0, 4-length(t)), t)})
-    seconds <- sapply(pad_days, function(t){
-      60*60*24*t[1] +
-      60*60*t[2] +
-      60*t[3] +
-      t[4]})
+    # mem unit is always gb ?
+    mem <- as.numeric(sapply(strsplit(get_info("^mem", usage), "="), `[`, 2))
 
-    meta <- data.frame(job_id, status, maxvmem=vmem$mem, wallclock=seconds)
+    wall_sec <- clock_to_sec(wallclock)
+    cpu_sec <- clock_to_sec(cpu)
+
+    meta <- data.frame(job_id,
+                       status,
+                       maxvmem=maxvmem$mem,
+                       mem=mem,
+                       vmem=vmem$mem,
+                       wallclock=wall_sec,
+                       cpu=cpu_sec)
 
   } else {
     # need a test string for this
     meta <- NULL
 
   }
-
   return(meta)
+}
 
+clock_to_sec <- function(x){
+  time <- lapply(strsplit(x, ":"), as.numeric)
+  pad_days <- lapply(time, function(t){c(rep(0, 4-length(t)), t)})
+  seconds <- sapply(pad_days, function(t){
+    60*60*24*t[1] +
+      60*60*t[2] +
+      60*t[3] +
+      t[4]})
+  return(seconds)
+}
+
+mem_to_df <- function(x){
+  if(grepl("N/A", x)){
+    df <- data.frame(mem=NA, unit=NA)
+  } else {
+    match <- regmatches(x, regexec("(\\d*.\\d*)([A-Z])", x))[[1]]
+    df <- data.frame(mem=as.numeric(match[2]), unit=match[3], stringsAsFactors = F)
+  }
+  return(df)
 }
 

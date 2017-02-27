@@ -1,4 +1,4 @@
-context("sge qstat")
+context("sge monitor")
 
 test_that("sge qstat works", {
   x <- c("job-ID     prior   name       user         state submit/start at     queue                          jclass                         slots ja-task-ID ",
@@ -218,8 +218,101 @@ test_that("sge parse qstat -j works", {
                 "usage             12890:    wallclock=00:32:13, cpu=00:22:49, mem=587.35102 GBs, io=0.29858, vmem=11.209G, maxvmem=11.209G",
                 "scheduling info:            (Collecting of scheduler job information is turned off)"
   )
-  df <- parse_usage(stat_str)
+  df <- distributr:::parse_usage(stat_str)
   expect_equal(nrow(df), 72)
   expect_true(all(df$status == "r"))
   expect_true(all(df$job_id == 744755))
 })
+
+test_that("sge parse_usage works with N/A maxvmem", {
+  str2 <- c("==============================================================",
+     "job_number:                 773756", "jclass:                     NONE",
+     "exec_file:                  job_scripts/773756", "submission_time:            02/27/2017 16:23:30.327",
+     "owner:                      pmille13", "uid:                        190142",
+     "group:                      campus", "gid:                        1313",
+     "sge_o_home:                 /afs/crc.nd.edu/user/p/pmille13",
+     "sge_o_log_name:             pmille13", "sge_o_path:                 /afs/crc.nd.edu/x86_64_linux/r/R/3.2.5/gcc-4.9.2/bin:/afs/crc.nd.edu/x86_64_linux/g/gdb/7.11/gcc/4.9.2/build_RH7/bin:/opt/crc/gcc/4.9.2/gcc-4.4.7/bin:/opt/crc/usr/local/bin:/opt/sge/bin/lx-amd64:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/afs/nd.edu/user37/condor/software/bin:/afs/nd.edu/user37/condor/software/sbin:/afs/crc.nd.edu/user/p/pmille13/bin:/afs/crc.nd.edu/user/p/pmille13/bin",
+     "sge_o_shell:                /bin/bash", "sge_o_workdir:              /afs/crc.nd.edu/user/p/pmille13/test",
+     "sge_o_host:                 crcfe02", "account:                    sge",
+     "cwd:                        /afs/crc.nd.edu/user/p/pmille13/test",
+     "merge:                      y", "mail_list:                  pmille13@crcfe02.crc.nd.edu",
+     "notify:                     FALSE", "job_name:                   distributr",
+     "stdout_path_list:           NONE:NONE:SGE_Output", "priority:                   0",
+     "jobshare:                   0", "hard_queue_list:            long",
+     "shell_list:                 NONE:/bin/bash", "env_list:                   BASH_ENV=/afs/crc.nd.edu/user/p/pmille13/.bash_profile",
+     "script_file:                submit", "parallel environment:  smp range: 1",
+     "verify_suitable_queues:     2", "department:                 defaultdepartment",
+     "job-array tasks:            1-24:1", "task_concurrency:           0",
+     "binding:                    NONE", "mbind:                      NONE",
+     "submit_cmd:                 qsub.orig -S /bin/bash -v BASH_ENV=/afs/crc.nd.edu/user/p/pmille13/.bash_profile submit",
+     "start_time            1:    02/27/2017 16:23:31.820", "start_time            2:    02/27/2017 16:23:31.821",
+     "start_time            3:    02/27/2017 16:23:31.822", "start_time            4:    02/27/2017 16:23:31.824",
+     "start_time            5:    02/27/2017 16:23:31.825", "start_time            6:    02/27/2017 16:23:31.826",
+     "start_time            7:    02/27/2017 16:23:31.828", "start_time            8:    02/27/2017 16:23:31.829",
+     "start_time            9:    02/27/2017 16:23:31.831", "start_time           10:    02/27/2017 16:23:31.832",
+     "start_time           11:    02/27/2017 16:23:31.833", "start_time           12:    02/27/2017 16:23:32.038",
+     "start_time           13:    02/27/2017 16:23:32.039", "start_time           14:    02/27/2017 16:23:32.041",
+     "start_time           15:    02/27/2017 16:23:32.042", "start_time           16:    02/27/2017 16:23:32.043",
+     "start_time           17:    02/27/2017 16:23:32.044", "start_time           18:    02/27/2017 16:23:32.045",
+     "start_time           19:    02/27/2017 16:23:32.046", "start_time           20:    02/27/2017 16:23:32.047",
+     "start_time           21:    02/27/2017 16:23:32.047", "start_time           22:    02/27/2017 16:23:32.048",
+     "start_time           23:    02/27/2017 16:23:32.049", "start_time           24:    02/27/2017 16:23:32.050",
+     "job_state             1:    r", "job_state             2:    t",
+     "job_state             3:    t", "job_state             4:    r",
+     "job_state             5:    r", "job_state             6:    r",
+     "job_state             7:    r", "job_state             8:    r",
+     "job_state             9:    r", "job_state            10:    r",
+     "job_state            11:    r", "job_state            12:    t",
+     "job_state            13:    t", "job_state            14:    t",
+     "job_state            15:    t", "job_state            16:    t",
+     "job_state            17:    t", "job_state            18:    t",
+     "job_state            19:    t", "job_state            20:    t",
+     "job_state            21:    t", "job_state            22:    t",
+     "job_state            23:    t", "job_state            24:    t",
+     "exec_host_list        1:    d12chas476.crc.nd.edu:1", "exec_host_list        2:    d12chas476.crc.nd.edu:1",
+     "exec_host_list        3:    d12chas476.crc.nd.edu:1", "exec_host_list        4:    q16copt032.crc.nd.edu:1",
+     "exec_host_list        5:    q16copt032.crc.nd.edu:1", "exec_host_list        6:    q16copt032.crc.nd.edu:1",
+     "exec_host_list        7:    q16copt032.crc.nd.edu:1", "exec_host_list        8:    q16copt032.crc.nd.edu:1",
+     "exec_host_list        9:    q16copt032.crc.nd.edu:1", "exec_host_list       10:    q16copt032.crc.nd.edu:1",
+     "exec_host_list       11:    q16copt032.crc.nd.edu:1", "exec_host_list       12:    q16copt032.crc.nd.edu:1",
+     "exec_host_list       13:    q16copt032.crc.nd.edu:1", "exec_host_list       14:    q16copt032.crc.nd.edu:1",
+     "exec_host_list       15:    q16copt032.crc.nd.edu:1", "exec_host_list       16:    q16copt032.crc.nd.edu:1",
+     "exec_host_list       17:    q16copt032.crc.nd.edu:1", "exec_host_list       18:    q16copt032.crc.nd.edu:1",
+     "exec_host_list       19:    q16copt032.crc.nd.edu:1", "exec_host_list       20:    q16copt032.crc.nd.edu:1",
+     "exec_host_list       21:    q16copt032.crc.nd.edu:1", "exec_host_list       22:    q16copt032.crc.nd.edu:1",
+     "exec_host_list       23:    q16copt032.crc.nd.edu:1", "exec_host_list       24:    q16copt032.crc.nd.edu:1",
+     "usage                 1:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                 2:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                 3:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                 4:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                 5:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                 6:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                 7:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                 8:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                 9:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                10:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                11:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                12:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                13:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                14:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                15:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                16:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                17:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                18:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                19:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                20:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                21:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                22:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                23:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "usage                24:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+     "scheduling info:            (Collecting of scheduler job information is turned off)"
+     )
+  x <- distributr:::parse_usage(str2)
+  expect_equal(nrow(x), 24)
+  expect_true(all(is.na(x$maxvmem)))
+  expect_true(all(is.na(x$vmem)))
+  expect_true(all(x$mem == 0))
+  expect_true(all(x$wallclock == 0))
+  expect_true(all(x$cpu == 0))
+})
+
