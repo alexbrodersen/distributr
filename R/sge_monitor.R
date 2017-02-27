@@ -111,30 +111,27 @@ parse_usage <- function(mstr){
     vmem$mem[vmem$unit %in% "M"] <- vmem$mem[vmem$unit %in% "M"]/1000
     maxvmem$mem[maxvmem$unit %in% "M"] <- maxvmem$mem[maxvmem$unit %in% "M"]/1000
 
-
-    wallclock <- gsub(",", "", gsub("wallclock=", "",
-                      strsplit(get_info("wallclock", usage), "\\s+")))
-    cpu <- gsub(",", "", gsub("cpu=", "",
-                strsplit(get_info("cpu", usage), "\\s+")))
-
-    # mem unit is always gb ?
-    mem <- as.numeric(sapply(strsplit(get_info("^mem", usage), "="), `[`, 2))
-
-    wall_sec <- clock_to_sec(wallclock)
-    cpu_sec <- clock_to_sec(cpu)
-
-    meta <- data.frame(job_id,
-                       status,
-                       maxvmem=maxvmem$mem,
-                       mem=mem,
-                       vmem=vmem$mem,
-                       wallclock=wall_sec,
-                       cpu=cpu_sec)
-
+    if(nrow(status) > 0){
+      wallclock <- gsub(",", "", gsub("wallclock=", "",
+                                      strsplit(get_info("wallclock", usage), "\\s+")))
+      cpu <- gsub(",", "", gsub("cpu=", "",
+                                strsplit(get_info("cpu", usage), "\\s+")))
+      mem <- as.numeric(sapply(strsplit(get_info("^mem", usage), "="), `[`, 2))
+      wall_sec <- clock_to_sec(wallclock)
+      cpu_sec <- clock_to_sec(cpu)
+      meta <- data.frame(job_id,
+                         status,
+                         maxvmem=maxvmem$mem,
+                         mem=mem,
+                         vmem=vmem$mem,
+                         wallclock=wall_sec,
+                         cpu=cpu_sec)
+    } else {
+      meta <- NULL
+    }
   } else {
-    # need a test string for this
+    # need a test string for non task arrays
     meta <- NULL
-
   }
   return(meta)
 }

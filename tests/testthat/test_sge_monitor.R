@@ -40,6 +40,11 @@ test_that("exited jobs filtered", {
   expect_true(nrow(x) == 19)
 })
 
+test_that("parses no running jobs", {
+  x <- parse_usage(str4)
+  expect_null(x)
+})
+
 if(interactive()) setwd("../../")
 
 
