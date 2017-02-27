@@ -35,6 +35,7 @@ test_that("setup", {
 
 
 test_that("clean", {
+  skip_on_cran()
   msg <- capture.output(clean("tmp"))
   expect_equal(length(dir("tmp")), 0)
 })
