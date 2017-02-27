@@ -218,7 +218,7 @@ test_that("sge parse qstat -j works", {
                 "usage             12890:    wallclock=00:32:13, cpu=00:22:49, mem=587.35102 GBs, io=0.29858, vmem=11.209G, maxvmem=11.209G",
                 "scheduling info:            (Collecting of scheduler job information is turned off)"
   )
-  df <- distributr:::parse_usage(stat_str)
+  df <- parse_usage(stat_str)
   expect_equal(nrow(df), 72)
   expect_true(all(df$status == "r"))
   expect_true(all(df$job_id == 744755))
@@ -307,7 +307,7 @@ test_that("sge parse_usage works with N/A maxvmem", {
      "usage                24:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
      "scheduling info:            (Collecting of scheduler job information is turned off)"
      )
-  x <- distributr:::parse_usage(str2)
+  x <- parse_usage(str2)
   expect_equal(nrow(x), 24)
   expect_true(all(is.na(x$maxvmem)))
   expect_true(all(is.na(x$vmem)))
