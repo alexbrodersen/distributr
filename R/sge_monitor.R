@@ -85,11 +85,6 @@ parse_qstat <- function(jstr){
   #"    740473 0.60142 sleep_ss_l pmille13     r     02/08/2017 15:38:00 long@q16copt036.crc.nd.edu                                       24 2",
   #"    743563 0.00000 distributr pmille13     qw    02/11/2017 14:10:31
 
-  # Or, without tasks:
-  #"job-ID     prior   name       user         state submit/start at     queue                          jclass                         slots ja-task-ID ",
-  #  "------------------------------------------------------------------------------------------------------------------------------------------------",
-  #  "    776008 0.51187 distributr pmille13     r     02/28/2017 14:40:07 debug@d12chas532.crc.nd.edu                                       1        "
-
   lines[[2]] <- NULL
   var_names <- strsplit(lines[[1]], "\\s+")[[1]]
   lines[[1]] <- NULL
@@ -105,7 +100,8 @@ parse_qstat <- function(jstr){
     df <- cbind(df[,1:8], NA, df[,9:10])
   } else if(ncol(df) == 9){
     # ncol(df) == 9 if not a task array
-    df <- cbind(df[,1:8], NA, df[,9], NA)
+    # default task id is 1
+    df <- cbind(df[,1:8], NA, df[,9], 1)
   }
   colnames(df) <- var_names
   is_numeric <- which(colnames(df) %in% c("job-ID", "prior", "slots", "ja-task-ID"))
