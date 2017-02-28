@@ -46,14 +46,23 @@ qstat <- function(user=TRUE){
     jstr <- system("qstat", intern=TRUE)
   }
   if(length(jstr) > 0){
-    df <- parse_qstat(jstr)$run
+    df <- parse_qstat(jstr)
     jids <- unique(df[,"job_id"])
     job_usage <- lapply(jids, function(jid){
       system(paste0("qstat -j ", jid), intern=T)})
-    usage_df <- do.call(rbind, lapply(job_usage, parse_usage))
-    df <- merge(df, usage_df, by=c("job_id", ".sge_id"))
-    df$status <- NULL
+    if(length(job_usage) > 0){
+      usage_df <- do.call(rbind, lapply(job_usage, parse_usage))
+      df <- merge(df, usage_df, by=c("job_id", ".sge_id"))
+      df$status <- NULL
+    } else {
+      df$wallclock <- NA
+      df$cpu <- NA
+      df$mem <- NA
+      df$vmem <- NA
+      df$maxvmem <- NA
+    }
   } else {
+    # can't parse
     df <- jstr
   }
   class(df) <- c("qstat", "data.frame")
@@ -180,6 +189,7 @@ parse_usage <- function(mstr){
   maxvmem$mem[maxvmem$unit %in% "M"] <- maxvmem$mem[maxvmem$unit %in% "M"]/1000
 
   meta <- NULL
+  colnames(meta)
   if(nrow(status) > 0){
     wallclock <- gsub(",", "", gsub("wallclock=", "",
                                     strsplit(get_info("wallclock", usage), "\\s+")))

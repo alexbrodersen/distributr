@@ -48,6 +48,9 @@ test_that("parse_usage works with no tasks", {
   expect_true(nrow(x) == 1)
 })
 
+test_that("qstat works with qw but no info", {
+
+})
 
 if(interactive()) setwd("../../")
 
