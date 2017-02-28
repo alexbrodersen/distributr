@@ -78,11 +78,11 @@ print.qstat <- function(x, ...){
     x$start <- NULL
     x$queue <- NULL
     x$jclass <- NULL
-    x$wallclock <- sapply(x$wallclock, nicetime)
-    x$cpu <- sapply(x$cpu, nicetime)
-    x$mem <- formatC(x$mem, digits=2)
-    x$vmem <- formatC(x$vmem, digits=2)
-    x$maxvmem <- formatC(x$vmem, digits=2)
+    if(!is.na(x$wallclock)) x$wallclock <- sapply(x$wallclock, nicetime)
+    if(!is.na(x$cpu)) x$cpu <- sapply(x$cpu, nicetime)
+    if(!is.na(x$mem)) x$mem <- formatC(x$mem, digits=2)
+    if(!is.na(x$vmem)) x$vmem <- formatC(x$vmem, digits=2)
+    if(!is.na(x$maxvmem)) x$maxvmem <- formatC(x$vmem, digits=2)
   }
   print.data.frame(x)
   comment <- paste0("... with 5 more variables: prior, user, start, queue, jclass")
