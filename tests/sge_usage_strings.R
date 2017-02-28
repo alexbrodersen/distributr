@@ -1,4 +1,22 @@
-str1 <- c("==============================================================",
+# qstat task array
+stat1 <- c("job-ID     prior   name       user         state submit/start at     queue                          jclass                         slots ja-task-ID ",
+                  "------------------------------------------------------------------------------------------------------------------------------------------------",
+                  "    740473 0.60142 sleep_ss_l pmille13     r     02/08/2017 15:38:00 long@q16copt036.crc.nd.edu                                       24 1",
+                  "    740473 0.60142 sleep_ss_l pmille13     r     02/08/2017 15:38:00 long@q16copt036.crc.nd.edu                                       24 2",
+                  "    740473 0.60142 sleep_ss_l pmille13     r     02/08/2017 15:38:00 long@q16copt027.crc.nd.edu                                       24 3",
+                  "    740473 0.60142 sleep_ss_l pmille13     r     02/08/2017 15:38:00 long@q16copt060.crc.nd.edu                                       24 5",
+                  "    743563 0.50534 distributr pmille13     r     02/11/2017 19:05:02 long@d12chas447.crc.nd.edu                                        1 12103",
+                  "    743563 0.50534 distributr pmille13     r     02/11/2017 19:09:16 long@d12chas366.crc.nd.edu                                        1 12104",
+                  "    743563 0.00000 distributr pmille13     qw    02/11/2017 14:10:31                                                                   1 12105-24000:1")
+
+# qstat no task array
+stat2 <- c("job-ID     prior   name       user         state submit/start at     queue                          jclass                         slots ja-task-ID ",
+           "------------------------------------------------------------------------------------------------------------------------------------------------",
+           "    776008 0.51187 distributr pmille13     r     02/28/2017 14:40:07 debug@d12chas532.crc.nd.edu                                       1        "
+)
+
+
+use1 <- c("==============================================================",
               "job_number:                 744755", "jclass:                     NONE",
               "exec_file:                  job_scripts/744755", "submission_time:            02/13/2017 11:01:04.131",
               "owner:                      pmille13", "uid:                        190142",
@@ -201,7 +219,7 @@ str1 <- c("==============================================================",
               "scheduling info:            (Collecting of scheduler job information is turned off)"
 )
 
-str2 <- c("==============================================================",
+use2 <- c("==============================================================",
           "job_number:                 773756", "jclass:                     NONE",
           "exec_file:                  job_scripts/773756", "submission_time:            02/27/2017 16:23:30.327",
           "owner:                      pmille13", "uid:                        190142",
@@ -284,7 +302,7 @@ str2 <- c("==============================================================",
           "scheduling info:            (Collecting of scheduler job information is turned off)"
 )
 
-str3 <- c("==============================================================",
+use3 <- c("==============================================================",
   "job_number:                 773832", "jclass:                     NONE",
   "exec_file:                  job_scripts/773832", "submission_time:            02/27/2017 17:27:22.485",
   "owner:                      pmille13", "uid:                        190142",
@@ -359,7 +377,7 @@ str3 <- c("==============================================================",
   "scheduling info:            (Collecting of scheduler job information is turned off)"
 )
 
-str4 <- c("==============================================================",
+use4 <- c("==============================================================",
   "job_number:                 773999", "jclass:                     NONE",
   "submission_time:            02/27/2017 18:27:39.572", "owner:                      pmille13",
   "uid:                        190142", "group:                      campus",
@@ -381,6 +399,32 @@ str4 <- c("==============================================================",
   "scheduling info:            (Collecting of scheduler job information is turned off)"
 )
 
+# no task array
+use5 <- c("==============================================================",
+          "job_number:                 776024", "jclass:                     NONE",
+          "exec_file:                  job_scripts/776024", "submission_time:            02/28/2017 14:48:09.007",
+          "owner:                      pmille13", "uid:                        190142",
+          "group:                      campus", "gid:                        1313",
+          "sge_o_home:                 /afs/crc.nd.edu/user/p/pmille13",
+          "sge_o_log_name:             pmille13", "sge_o_path:                 /afs/crc.nd.edu/x86_64_linux/r/R/3.2.5/gcc-4.9.2/bin:/afs/crc.nd.edu/x86_64_linux/g/gdb/7.11/gcc/4.9.2/build_RH7/bin:/opt/crc/gcc/4.9.2/gcc-4.4.7/bin:/opt/crc/usr/local/bin:/opt/sge/bin/lx-amd64:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/afs/nd.edu/user37/condor/software/bin:/afs/nd.edu/user37/condor/software/sbin:/afs/crc.nd.edu/user/p/pmille13/bin:/afs/crc.nd.edu/user/p/pmille13/bin",
+          "sge_o_shell:                /bin/bash", "sge_o_workdir:              /afs/crc.nd.edu/user/p/pmille13/test2",
+          "sge_o_host:                 crcfe01", "account:                    sge",
+          "cwd:                        /afs/crc.nd.edu/user/p/pmille13/test2",
+          "merge:                      y", "mail_list:                  pmille13@crcfe01.crc.nd.edu",
+          "notify:                     FALSE", "job_name:                   distributr",
+          "stdout_path_list:           NONE:NONE:SGE_Output", "priority:                   0",
+          "jobshare:                   0", "hard_queue_list:            debug",
+          "shell_list:                 NONE:/bin/bash", "env_list:                   BASH_ENV=/afs/crc.nd.edu/user/p/pmille13/.bash_profile",
+          "script_file:                submit", "parallel environment:  smp range: 1",
+          "verify_suitable_queues:     2", "department:                 defaultdepartment",
+          "binding:                    NONE", "mbind:                      NONE",
+          "submit_cmd:                 qsub.orig -S /bin/bash -v BASH_ENV=/afs/crc.nd.edu/user/p/pmille13/.bash_profile submit",
+          "start_time            1:    02/28/2017 14:48:09.918", "job_state             1:    r",
+          "exec_host_list        1:    d12chas537.crc.nd.edu:1", "usage                 1:    wallclock=00:00:00, cpu=00:00:00, mem=0.00000 GBs, io=0.00000, vmem=N/A, maxvmem=N/A",
+          "scheduling info:            (Collecting of scheduler job information is turned off)"
+)
+
+# for testing the print method
 qout <- structure(
   list(
     job_id = c(
@@ -545,3 +589,5 @@ qout <- structure(
   row.names = c(NA,-12L),
   class = c("qstat", "data.frame")
 )
+
+

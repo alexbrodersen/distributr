@@ -83,7 +83,12 @@ parse_qstat <- function(jstr){
   #"------------------------------------------------------------------------------------------------------------------------------------------------",
   #"    740473 0.60142 sleep_ss_l pmille13     r     02/08/2017 15:38:00 long@q16copt036.crc.nd.edu                                       24 1",
   #"    740473 0.60142 sleep_ss_l pmille13     r     02/08/2017 15:38:00 long@q16copt036.crc.nd.edu                                       24 2",
-  #"    743563 0.00000 distributr pmille13     qw    02/11/2017 14:10:31                                                                   1 12105-24000:1"
+  #"    743563 0.00000 distributr pmille13     qw    02/11/2017 14:10:31
+
+  # Or, without tasks:
+  #"job-ID     prior   name       user         state submit/start at     queue                          jclass                         slots ja-task-ID ",
+  #  "------------------------------------------------------------------------------------------------------------------------------------------------",
+  #  "    776008 0.51187 distributr pmille13     r     02/28/2017 14:40:07 debug@d12chas532.crc.nd.edu                                       1        "
 
   lines[[2]] <- NULL
   var_names <- strsplit(lines[[1]], "\\s+")[[1]]
@@ -94,10 +99,13 @@ parse_qstat <- function(jstr){
   running <- job_list[!qw]
   queued <- job_list[qw]
 
-  df <- data.frame(do.call(rbind, lapply(running, function(l){l[-1]})), stringsAsFactors = FALSE)
+  df <- data.frame(do.call(rbind, lapply(running, `[`, -1)), stringsAsFactors = FALSE)
   # ncol(df) == 10 if jclass is empty
   if(ncol(df) == 10){
     df <- cbind(df[,1:8], NA, df[,9:10])
+  } else if(ncol(df) == 9){
+    # ncol(df) == 9 if not a task array
+    df <- cbind(df[,1:8], NA, df[,9], NA)
   }
   colnames(df) <- var_names
   is_numeric <- which(colnames(df) %in% c("job-ID", "prior", "slots", "ja-task-ID"))
@@ -115,57 +123,44 @@ parse_qstat <- function(jstr){
 
 parse_usage <- function(mstr){
   job_id <- as.numeric(strsplit(grep("job_number", mstr, value=T), "\\s+")[[1]][2])
-  is_task_array <- any(grepl("job-array tasks:", mstr))
-  if(is_task_array){
-    tasks <- grep("job-array tasks:", mstr, value=T)
-    arange <- regmatches(tasks, regexpr("(\\d*-\\d*:\\d)", tasks))
-    task_range <- as.numeric(regmatches(arange, gregexpr("\\d*", arange))[[1]])
-    task_low <- task_range[1]
-    task_up <- task_range[3]
 
-    job_state <- lapply(grep("job_state", mstr, value=T),
-           function(x){ strsplit(x, "(\\s+)")[[1]]})
-    status <- do.call(rbind, lapply(job_state, function(j){
-      data.frame(.sge_id=as.numeric(gsub(":", "", j[2])),
-                 status = j[3], stringsAsFactors = F)}))
-    # remove jobs that have exited
-    status <- status[status$status != "x", ]
+  job_state <- lapply(grep("job_state", mstr, value=T),
+         function(x){ strsplit(x, "(\\s+)")[[1]]})
+  status <- do.call(rbind, lapply(job_state, function(j){
+    data.frame(.sge_id=as.numeric(gsub(":", "", j[2])),
+               status = j[3], stringsAsFactors = F)}))
+  # remove jobs that have exited
+  status <- status[status$status != "x", ]
 
-    usage <- lapply(grep("usage", mstr, value=T),
-                    function(l){ strsplit(l[[1]], "\\s+,?")[[1]]})
+  usage <- lapply(grep("usage", mstr, value=T),
+                  function(l){ strsplit(l[[1]], "\\s+,?")[[1]]})
 
-    get_info <- function(regex, str_list){
-      sapply(str_list, function(l){grep(regex, l, value = T)})
-    }
+  get_info <- function(regex, str_list){
+    sapply(str_list, function(l){grep(regex, l, value = T)})
+  }
 
+  maxvmem <- do.call(rbind, lapply(get_info("maxvmem", usage), mem_to_df))
+  vmem <- do.call(rbind, lapply(get_info("^vmem", usage), mem_to_df))
 
-    maxvmem <- do.call(rbind, lapply(get_info("maxvmem", usage), mem_to_df))
-    vmem <- do.call(rbind, lapply(get_info("^vmem", usage), mem_to_df))
+  vmem$mem[vmem$unit %in% "M"] <- vmem$mem[vmem$unit %in% "M"]/1000
+  maxvmem$mem[maxvmem$unit %in% "M"] <- maxvmem$mem[maxvmem$unit %in% "M"]/1000
 
-    vmem$mem[vmem$unit %in% "M"] <- vmem$mem[vmem$unit %in% "M"]/1000
-    maxvmem$mem[maxvmem$unit %in% "M"] <- maxvmem$mem[maxvmem$unit %in% "M"]/1000
-
-    if(nrow(status) > 0){
-      wallclock <- gsub(",", "", gsub("wallclock=", "",
-                                      strsplit(get_info("wallclock", usage), "\\s+")))
-      cpu <- gsub(",", "", gsub("cpu=", "",
-                                strsplit(get_info("cpu", usage), "\\s+")))
-      mem <- as.numeric(sapply(strsplit(get_info("^mem", usage), "="), `[`, 2))
-      wall_sec <- clock_to_sec(wallclock)
-      cpu_sec <- clock_to_sec(cpu)
-      meta <- data.frame(job_id,
-                         status,
-                         maxvmem=maxvmem$mem,
-                         mem=mem,
-                         vmem=vmem$mem,
-                         wallclock=wall_sec,
-                         cpu=cpu_sec)
-    } else {
-      meta <- NULL
-    }
-  } else {
-    # need a test string for non task arrays
-    meta <- NULL
+  meta <- NULL
+  if(nrow(status) > 0){
+    wallclock <- gsub(",", "", gsub("wallclock=", "",
+                                    strsplit(get_info("wallclock", usage), "\\s+")))
+    cpu <- gsub(",", "", gsub("cpu=", "",
+                              strsplit(get_info("cpu", usage), "\\s+")))
+    mem <- as.numeric(sapply(strsplit(get_info("^mem", usage), "="), `[`, 2))
+    wall_sec <- clock_to_sec(wallclock)
+    cpu_sec <- clock_to_sec(cpu)
+    meta <- data.frame(job_id,
+                       status,
+                       maxvmem=maxvmem$mem,
+                       mem=mem,
+                       vmem=vmem$mem,
+                       wallclock=wall_sec,
+                       cpu=cpu_sec)
   }
   return(meta)
 }
