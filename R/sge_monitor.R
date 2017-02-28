@@ -38,8 +38,25 @@ qstat <- function(user=TRUE){
   } else {
     df <- jstr
   }
-  class(df) <- c("data.frame", "qstat")
+  class(df) <- c("qstat", "data.frame")
   return(df)
+}
+
+#' @export
+print.qstat <- function(x, ...){
+  obj <- x
+  x$prior <- NULL
+  x$user <- NULL
+  x$start <- NULL
+  x$queue <- NULL
+  x$jclass <- NULL
+  x$wallclock <- sapply(x$wallclock, distributr:::nicetime)
+  x$cpu <- sapply(x$cpu, distributr:::nicetime)
+  x$mem <- formatC(x$mem, digits=2)
+  x$vmem <- formatC(x$vmem, digits=2)
+  x$maxvmem <- formatC(x$vmem, digits=2)
+  print.data.frame(x)
+  invisible(obj)
 }
 
 parse_qstat <- function(jstr){
