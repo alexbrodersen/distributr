@@ -12,7 +12,8 @@ otherwise meta-data for all jobs in default queue is returned}
 }
 \value{
 A data frame with the following columns:
-\item{job-ID}{SGE job id}
+\item{job_id}{SGE job id}
+\item{.sge_id}{the value of \code{SGE_TASK_ID} for the job}
 \item{prior}{Priority of the job}
 \item{name}{job name}
 \item{user}{user name}
@@ -21,7 +22,12 @@ A data frame with the following columns:
 \item{queue}{queue and machine job is running on}
 \item{jclass}{class of job (usually \code{NA})}
 \item{slots}{Number of slots (cores) job is running with}
-\item{.sge_id}{the value of \code{SGE_TASK_ID} for the job}
+\item{maxvmem}{Maximum virtual memory used for the job (GB)}
+\item{mem}{Current physical memory used for the job (GB)}
+\item{vmem}{Current virtual memory used for the job (GB)}
+\item{wallclock}{Amount of time the job has been running (sec)}
+\item{cpu}{Amount of CPU time the job has used (sec)}
+
 If no jobs are running or in the queue, returns \code{character(0)} (empty string).
 }
 \description{
