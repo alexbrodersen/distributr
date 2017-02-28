@@ -188,7 +188,8 @@ parse_usage <- function(mstr){
   vmem$mem[vmem$unit %in% "M"] <- vmem$mem[vmem$unit %in% "M"]/1000
   maxvmem$mem[maxvmem$unit %in% "M"] <- maxvmem$mem[maxvmem$unit %in% "M"]/1000
 
-  if(!is.null(status) & nrow(status) > 0){
+  if(is.null(status)) status <- data.frame()
+  if(nrow(status) > 0){
     wallclock <- gsub(",", "", gsub("wallclock=", "",
                                     strsplit(get_info("wallclock", usage), "\\s+")))
     cpu <- gsub(",", "", gsub("cpu=", "",
