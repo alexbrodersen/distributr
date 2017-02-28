@@ -5,6 +5,10 @@ qst <- function(){
 }
 
 #' Meta-data for currently running jobs
+#'
+#' The meta-data of running SGE jobs are returned as a data frame. The
+#' meta includes status, resources requested, memory usage, and wallclock/cpu time.
+#' Works for all grid engine jobs and task arrays, including the ones created by \code{distributr}.
 #' @param user job meta-data is returned for user jobs only (default: \code{TRUE}),
 #' otherwise meta-data for all jobs in default queue is returned
 #' @return A data frame with the following columns:
@@ -23,8 +27,10 @@ qst <- function(){
 #' \item{vmem}{Current virtual memory used for the job (GB)}
 #' \item{wallclock}{Amount of time the job has been running (sec)}
 #' \item{cpu}{Amount of CPU time the job has used (sec)}
+#' The columns \code{prior}, \code{user}, \code{start}, \code{queue}, and \code{jclass}
+#' are not printed.
 #'
-#' If no jobs are running or in the queue, returns \code{character(0)} (empty string).
+#' If no jobs are running or in the queue, returns \code{data.frame()}.
 #' @export
 qstat <- function(user=TRUE){
 
@@ -51,17 +57,22 @@ qstat <- function(user=TRUE){
 #' @export
 print.qstat <- function(x, ...){
   obj <- x
-  x$prior <- NULL
-  x$user <- NULL
-  x$start <- NULL
-  x$queue <- NULL
-  x$jclass <- NULL
-  x$wallclock <- sapply(x$wallclock, nicetime)
-  x$cpu <- sapply(x$cpu, nicetime)
-  x$mem <- formatC(x$mem, digits=2)
-  x$vmem <- formatC(x$vmem, digits=2)
-  x$maxvmem <- formatC(x$vmem, digits=2)
+  if(nrow(x) > 0){
+    x$prior <- NULL
+    x$user <- NULL
+    x$start <- NULL
+    x$queue <- NULL
+    x$jclass <- NULL
+    x$wallclock <- sapply(x$wallclock, nicetime)
+    x$cpu <- sapply(x$cpu, nicetime)
+    x$mem <- formatC(x$mem, digits=2)
+    x$vmem <- formatC(x$vmem, digits=2)
+    x$maxvmem <- formatC(x$vmem, digits=2)
+  }
   print.data.frame(x)
+  comment <- paste0("... with 5 more variables: prior, user, start, queue, jclass")
+  cat(comment, sep = "\n")
+
   invisible(obj)
 }
 

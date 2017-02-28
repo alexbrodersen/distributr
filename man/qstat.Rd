@@ -27,10 +27,14 @@ A data frame with the following columns:
 \item{vmem}{Current virtual memory used for the job (GB)}
 \item{wallclock}{Amount of time the job has been running (sec)}
 \item{cpu}{Amount of CPU time the job has used (sec)}
+The columns \code{prior}, \code{user}, \code{start}, \code{queue}, and \code{jclass}
+are not printed.
 
-If no jobs are running or in the queue, returns \code{character(0)} (empty string).
+If no jobs are running or in the queue, returns \code{data.frame()}.
 }
 \description{
-Meta-data for currently running jobs
+The meta-data of running SGE jobs are returned as a data frame. The
+meta includes status, resources requested, memory usage, and wallclock/cpu time.
+Works for all grid engine jobs and task arrays, including the ones created by \code{distributr}.
 }
 
