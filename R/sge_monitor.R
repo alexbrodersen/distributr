@@ -30,8 +30,14 @@ qst <- function(){
 #' The columns \code{prior}, \code{user}, \code{start}, \code{queue}, and \code{jclass}
 #' are not printed. If no jobs are running or in the queue, returns \code{data.frame()}.
 #' For queued jobs, \code{queue = NA}, and \code{.sge_id} is the lowest task
-#' still in the queue. Will likely not work for jobs with job classes.
+#' still in the queue. Does not work for jobs with job classes.
 #' @export
+#' @examples
+#' \dontrun{
+#'
+#'sge_test(wait=20)
+#'qstat()
+#' }
 qstat <- function(user=TRUE){
 
   if(user){
