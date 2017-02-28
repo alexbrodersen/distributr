@@ -145,7 +145,8 @@ standardize_cols <- function(x, names){
     } else {
       # is a task array (use lower for qw)
       task_str <- x[[9]]
-      task_range <- as.numeric(regmatches(task_str, gregexpr("\\d*", task_str))[[1]])
+      arange <- regmatches(task_str, regexpr("(\\d*-\\d*:\\d)", task_str))
+      task_range <- as.numeric(regmatches(arange, gregexpr("\\d*", arange))[[1]])
       task_low <- task_range[1]
       #task_up <- task_range[3]
       df <- data.frame(cbind(x[1:7], X8=NA, X9=NA, X10=x[8], X11=task_low), stringsAsFactors = F)
@@ -174,6 +175,14 @@ parse_usage <- function(mstr){
                status = j[3], stringsAsFactors = F)}))
   # remove jobs that have exited
   status <- status[status$status != "x", ]
+  if(is.null(status)){
+    # grab the sge_task id
+    task_str <- grep("job-array tasks", mstr, value=TRUE)
+    arange <- regmatches(task_str, regexpr("(\\d*-\\d*:\\d)", task_str))
+    task_range <- as.numeric(regmatches(arange, gregexpr("\\d*", arange))[[1]])
+    task_low <- task_range[1]
+    status <- data.frame(status=NA, .sge_id=task_low)
+  }
 
   usage <- lapply(grep("usage", mstr, value=T),
                   function(l){ strsplit(l[[1]], "\\s+,?")[[1]]})
@@ -188,8 +197,7 @@ parse_usage <- function(mstr){
   vmem$mem[vmem$unit %in% "M"] <- vmem$mem[vmem$unit %in% "M"]/1000
   maxvmem$mem[maxvmem$unit %in% "M"] <- maxvmem$mem[maxvmem$unit %in% "M"]/1000
 
-  if(is.null(status)) status <- data.frame()
-  if(nrow(status) > 0){
+  if(!is.na(status$status)){
     wallclock <- gsub(",", "", gsub("wallclock=", "",
                                     strsplit(get_info("wallclock", usage), "\\s+")))
     cpu <- gsub(",", "", gsub("cpu=", "",
@@ -205,7 +213,7 @@ parse_usage <- function(mstr){
                        wallclock=wall_sec,
                        cpu=cpu_sec)
   } else {
-    meta = data.frame(job_id, status=NA, maxvmem=NA,
+    meta = data.frame(job_id, status, maxvmem=NA,
                       mem=NA, vmem=NA, wallclock=NA, cpu=NA)
   }
   return(meta)
