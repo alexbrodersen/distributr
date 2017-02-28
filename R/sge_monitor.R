@@ -78,11 +78,11 @@ print.qstat <- function(x, ...){
     x$start <- NULL
     x$queue <- NULL
     x$jclass <- NULL
-    if(!is.na(x$wallclock)) x$wallclock <- sapply(x$wallclock, nicetime)
-    if(!is.na(x$cpu)) x$cpu <- sapply(x$cpu, nicetime)
-    if(!is.na(x$mem)) x$mem <- formatC(x$mem, digits=2)
-    if(!is.na(x$vmem)) x$vmem <- formatC(x$vmem, digits=2)
-    if(!is.na(x$maxvmem)) x$maxvmem <- formatC(x$vmem, digits=2)
+    if(!any(is.na(x$wallclock))) x$wallclock <- sapply(x$wallclock, nicetime)
+    if(!any(is.na(x$cpu))) x$cpu <- sapply(x$cpu, nicetime)
+    if(!any(is.na(x$mem))) x$mem <- formatC(x$mem, digits=2)
+    if(!any(is.na(x$vmem))) x$vmem <- formatC(x$vmem, digits=2)
+    if(!any(is.na(x$maxvmem))) x$maxvmem <- formatC(x$vmem, digits=2)
   }
   print.data.frame(x)
   comment <- paste0("... with 5 more variables: prior, user, start, queue, jclass")
@@ -197,7 +197,7 @@ parse_usage <- function(mstr){
   vmem$mem[vmem$unit %in% "M"] <- vmem$mem[vmem$unit %in% "M"]/1000
   maxvmem$mem[maxvmem$unit %in% "M"] <- maxvmem$mem[maxvmem$unit %in% "M"]/1000
 
-  if(!is.na(status$status)){
+  if(!any(is.na(status$status))){
     wallclock <- gsub(",", "", gsub("wallclock=", "",
                                     strsplit(get_info("wallclock", usage), "\\s+")))
     cpu <- gsub(",", "", gsub("cpu=", "",
