@@ -4,11 +4,15 @@ if(interactive()) setwd("tests/testthat/")
 source("../sge_usage_strings.R") # loads str1, str2, str3 for testing
 
 test_that("parse_qstat works with tasks", {
-  df <- parse_qstat(stat1)$run
+  df <- parse_qstat(stat1)
+  expect_equal(ncol(df), 10)
+  df <- parse_qstat(stat2)
   expect_equal(ncol(df), 10)
 })
-test_that("parse_qstat works no tasks", {
-  df <- parse_qstat(stat2)$run
+test_that("parse_qstat works with qw only", {
+  df <- parse_qstat(stat3)
+  expect_equal(ncol(df), 10)
+  df <- parse_qstat(stat4)
   expect_equal(ncol(df), 10)
 })
 

@@ -28,9 +28,9 @@ qst <- function(){
 #' \item{wallclock}{Amount of time the job has been running (sec)}
 #' \item{cpu}{Amount of CPU time the job has used (sec)}
 #' The columns \code{prior}, \code{user}, \code{start}, \code{queue}, and \code{jclass}
-#' are not printed.
-#'
-#' If no jobs are running or in the queue, returns \code{data.frame()}.
+#' are not printed. If no jobs are running or in the queue, returns \code{data.frame()}.
+#' For queued jobs, \code{queue = NA}, and \code{.sge_id} is the lowest task
+#' still in the queue. Will likely not work for jobs with job classes.
 #' @export
 qstat <- function(user=TRUE){
 
@@ -79,43 +79,75 @@ print.qstat <- function(x, ...){
 parse_qstat <- function(jstr){
   lines <- strsplit(jstr, "\n")
   # Sample job string:
-  #"job-ID     prior   name       user         state submit/start at     queue                          jclass                         slots ja-task-ID ",
+  #"job-ID     prior   name       user         state submit/start at     queue                          jclass   slots ja-task-ID ",
   #"------------------------------------------------------------------------------------------------------------------------------------------------",
-  #"    740473 0.60142 sleep_ss_l pmille13     r     02/08/2017 15:38:00 long@q16copt036.crc.nd.edu                                       24 1",
-  #"    740473 0.60142 sleep_ss_l pmille13     r     02/08/2017 15:38:00 long@q16copt036.crc.nd.edu                                       24 2",
+  #"    740473 0.60142 sleep_ss_l pmille13     r     02/08/2017 15:38:00 long@q16copt036.crc.nd.edu               24 1",
+  #"    740473 0.60142 sleep_ss_l pmille13     r     02/08/2017 15:38:00 long@q16copt036.crc.nd.edu               24 2",
   #"    743563 0.00000 distributr pmille13     qw    02/11/2017 14:10:31
 
   lines[[2]] <- NULL
   var_names <- strsplit(lines[[1]], "\\s+")[[1]]
   lines[[1]] <- NULL
   job_list <- lapply(lines, function(l){ strsplit(l[[1]], "\\s+")[[1]]})
+  job_stand <- lapply(job_list, standardize_cols, names=var_names)
+  df <- data.frame(do.call(rbind, job_stand))
 
-  qw <- sapply(job_list, function(l){any(l == "qw")})
-  running <- job_list[!qw]
-  queued <- job_list[qw]
-
-  df <- data.frame(do.call(rbind, lapply(running, `[`, -1)), stringsAsFactors = FALSE)
-  # ncol(df) == 10 if jclass is empty
-  if(ncol(df) == 10){
-    df <- cbind(df[,1:8], NA, df[,9:10])
-  } else if(ncol(df) == 9){
-    # ncol(df) == 9 if not a task array
-    # default task id is 1
-    df <- cbind(df[,1:8], NA, df[,9], 1)
-  }
-  colnames(df) <- var_names
-  is_numeric <- which(colnames(df) %in% c("job-ID", "prior", "slots", "ja-task-ID"))
+  # types of columns
+  is_numeric <- which(colnames(df) %in% c("job-ID", "prior", "slots", "ja.task.ID"))
   df[, is_numeric] <- lapply(df[, is_numeric], as.numeric)
-  date_str <- paste0(df[,"submit/start"], " ", df[,"at"])
+  date_str <- paste0(df[,"submit.start"], " ", df[,"at"])
   df$start <- as.POSIXct(strptime(date_str, format("%m/%d/%Y %H:%M:%S")))
   df[,"at"] <- NULL
-  df[,"submit/start"] <- NULL
+  df[,"submit.start"] <- NULL
+
+  # reorder
   df <- df[,c(1:5, 10, 6:9)]
   colnames(df)[c(1, 10)] <- c("job_id", ".sge_id")
-
-  return(list(run=df, qw=queued))
+  return(df)
 }
 
+# confine all the hacks to here!
+#var_names
+#[1,] "X1"  "job-ID"
+#[2,] "X2"  "prior"
+#[3,] "X3"  "name"
+#[4,] "X4"  "user"
+#[5,] "X5"  "state"
+#[6,] "X6"  "submit/start"
+#[7,] "X7"  "at"
+#[8,] "X8"  "queue"
+#[9,] "X9"  "jclass"
+#[10,] "X10" "slots"
+#[11,] "X11" "ja-task-ID"
+# Todo: add suport for job classes...
+standardize_cols <- function(x, names){
+  x <- data.frame(t(x[-1]), stringsAsFactors = F)
+  df <- NULL
+  if(any(grepl("qw", x))){
+    if(ncol(x) == 8){
+      # not a task array (use 1 as default)
+      df <- data.frame(cbind(x[1:7], X8=NA, X9=NA, X10=x[8], X11=1), stringsAsFactors = F)
+    } else {
+      # is a task array (use lower for qw)
+      task_str <- x[[9]]
+      task_range <- as.numeric(regmatches(task_str, gregexpr("\\d*", task_str))[[1]])
+      task_low <- task_range[1]
+      #task_up <- task_range[3]
+      df <- data.frame(cbind(x[1:7], X8=NA, X9=NA, X10=x[8], X11=task_low), stringsAsFactors = F)
+    }
+  } else {
+    if(ncol(x) == 10){
+      # no jclass, assign NA
+      df <- data.frame(cbind(x[1:8], X9=NA, x[9:10]), stringsAsFactors = F)
+    } else if(ncol(x) == 9){
+      # not a task array
+      # default task id is 1
+      df <- data.frame(cbind(x[1:8], X9=NA, x[9], X11=1), stringsAsFactors = F)
+    }
+  }
+  colnames(df) <- names
+  return(df)
+}
 
 parse_usage <- function(mstr){
   job_id <- as.numeric(strsplit(grep("job_number", mstr, value=T), "\\s+")[[1]][2])

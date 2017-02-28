@@ -28,9 +28,9 @@ A data frame with the following columns:
 \item{wallclock}{Amount of time the job has been running (sec)}
 \item{cpu}{Amount of CPU time the job has used (sec)}
 The columns \code{prior}, \code{user}, \code{start}, \code{queue}, and \code{jclass}
-are not printed.
-
-If no jobs are running or in the queue, returns \code{data.frame()}.
+are not printed. If no jobs are running or in the queue, returns \code{data.frame()}.
+For queued jobs, \code{queue = NA}, and \code{.sge_id} is the lowest task
+still in the queue. Will likely not work for jobs with job classes.
 }
 \description{
 The meta-data of running SGE jobs are returned as a data frame. The

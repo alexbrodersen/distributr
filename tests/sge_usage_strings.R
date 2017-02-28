@@ -15,6 +15,24 @@ stat2 <- c("job-ID     prior   name       user         state submit/start at    
            "    776008 0.51187 distributr pmille13     r     02/28/2017 14:40:07 debug@d12chas532.crc.nd.edu                                       1        "
 )
 
+# qstat no task, qw only
+stat3 <- c("job-ID     prior   name       user         state submit/start at     queue                          jclass                         slots ja-task-ID ",
+  "------------------------------------------------------------------------------------------------------------------------------------------------",
+  "    776090 0.00000 distributr pmille13     qw    02/28/2017 15:30:51                                                                   1        "
+)
+
+# qstat tasks, qw only
+stat4 <- c("job-ID     prior   name       user         state submit/start at     queue                          jclass                         slots ja-task-ID ",
+  "------------------------------------------------------------------------------------------------------------------------------------------------",
+  "    776115 0.00000 distributr pmille13     qw    02/28/2017 15:51:56                                                                   1 1-12:1"
+)
+
+stat5 <- c("job-ID     prior   name       user         state submit/start at     queue                          jclass                         slots ja-task-ID ",
+           "------------------------------------------------------------------------------------------------------------------------------------------------",
+           "    776115 0.00000 distributr pmille13     qw    02/28/2017 15:51:56                             adf                                      1 1-12:1"
+)
+
+
 
 use1 <- c("==============================================================",
               "job_number:                 744755", "jclass:                     NONE",
