@@ -64,8 +64,8 @@ sge_test <- function(dir=getwd(), wait=.2, ntasks=12, queue="debug"){
     stopifnot(x < 5)
     x
   }
-  out <- gapply(f, x=1:ntasks, y=1, wait=wait, .eval=F, .queue=queue)
-  plan <- setup(out, .dir=dir)
+  out <- gapply(f, x=1:ntasks, y=1, wait=wait, .eval=F)
+  plan <- setup(out, .dir=dir, .queue=queue)
   submit(dir)
   return(plan)
 }
