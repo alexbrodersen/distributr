@@ -4,6 +4,15 @@ qst <- function(){
   system("qstat -u $USER", intern=TRUE)
 }
 
+#' Retrieve meta data for a job id (in xml)
+#' @param jid job id
+#' @param xml whether xml is returned (default: \code{FALSE})
+qst_meta <- function(jid, xml=FALSE){
+  cmd <- paste0("qstat -j ", jid)
+  if(xml) cmd <- paste(cmd, " -xml")
+  system(cmd, intern=T)
+}
+
 #' Meta-data for currently running jobs
 #'
 #' The meta-data of running SGE jobs are returned as a data frame. The
