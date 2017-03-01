@@ -7,6 +7,7 @@ qst <- function(){
 #' Retrieve meta data for a job id (in xml)
 #' @param jid job id
 #' @param xml whether xml is returned (default: \code{FALSE})
+#' @export
 qst_meta <- function(jid, xml=FALSE){
   cmd <- paste0("qstat -j ", jid)
   if(xml) cmd <- paste(cmd, " -xml")
