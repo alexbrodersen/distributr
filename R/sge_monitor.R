@@ -1,7 +1,9 @@
 #' Return running jobs as a string
 #' @export
-qst <- function(){
-  system("qstat -u $USER", intern=TRUE)
+qst <- function(xml=FALSE){
+  cmd <- "qstat -u $USER"
+  if(xml) cmd <- paste0(cmd, " -xml")
+  system(cmd, intern=TRUE)
 }
 
 #' Retrieve meta data for a job id (in xml)
@@ -12,6 +14,16 @@ qst_meta <- function(jid, xml=FALSE){
   cmd <- paste0("qstat -j ", jid)
   if(xml) cmd <- paste(cmd, " -xml")
   system(cmd, intern=T)
+}
+
+
+#' Retrieve jobids of currently running jobs
+#' @export
+all_job_ids <- function(){
+  jstr <- qst()
+  df <- distributr:::parse_qstat(jstr)
+  jids <- as.numeric(unique(df[,"job_id"]))
+  return(jids)
 }
 
 #' Meta-data for currently running jobs

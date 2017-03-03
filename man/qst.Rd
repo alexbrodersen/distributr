@@ -4,7 +4,7 @@
 \alias{qst}
 \title{Return running jobs as a string}
 \usage{
-qst()
+qst(xml = FALSE)
 }
 \description{
 Return running jobs as a string
