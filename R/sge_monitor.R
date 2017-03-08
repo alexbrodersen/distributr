@@ -1,7 +1,7 @@
 #' Return running jobs as a string
 #' @param xml whether qstat returns output as xml (default: TRUE)
 #' @export
-qst <- function(xml=TRUE){
+qst <- function(xml=FALSE){
   cmd <- "qstat -u $USER"
   if(xml) cmd <- paste0(cmd, " -xml")
   system(cmd, intern=TRUE)
@@ -55,7 +55,7 @@ qstat <- function(user=TRUE){
       system(paste0("qstat -j ", jid), intern=T)})
     if(length(job_usage) > 0){
       usage_df <- do.call(rbind, lapply(job_usage, parse_usage))
-      df <- merge(df, usage_df, by=c("job_id", ".sge_id"))
+      df <- merge(df, usage_df, by=c("jid", ".sge_id"))
       df$status <- NULL
     } else {
       df$wallclock <- NA

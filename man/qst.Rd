@@ -4,7 +4,7 @@
 \alias{qst}
 \title{Return running jobs as a string}
 \usage{
-qst(xml = TRUE)
+qst(xml = FALSE)
 }
 \arguments{
 \item{xml}{whether qstat returns output as xml (default: TRUE)}
