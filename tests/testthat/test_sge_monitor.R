@@ -1,8 +1,8 @@
 context("sge monitor")
 
-if(interactive()) setwd("tests/testthat/")
 xml <- readRDS("data/xml_samples.rds")
 use <- readRDS("data/sge_usage_strings.rds")
+if(interactive()) setwd("tests/testthat/")
 
 test_that("parse_qstat works with tasks", {
   runs <- lapply(xml$info, parse_qstat)

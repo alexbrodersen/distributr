@@ -48,9 +48,9 @@ qstat <- function(user=TRUE){
   } else {
     jstr <- system("qstat", intern=TRUE)
   }
-  if(length(jstr) > 0){
-    df <- parse_qstat(jstr)
-    jids <- unique(df[,"job_id"])
+  df <- parse_qstat(jstr)
+  if(nrow(df) > 0){
+    jids <- unique(df[,"jid"])
     job_usage <- lapply(jids, function(jid){
       system(paste0("qstat -j ", jid), intern=T)})
     if(length(job_usage) > 0){
@@ -88,8 +88,10 @@ print.qstat <- function(x, ...){
     if(!any(is.na(x$maxvmem))) x$maxvmem <- formatC(x$vmem, digits=2)
   }
   print.data.frame(x)
-  comment <- paste0("... with 5 more variables: prior, user, start, queue, jclass")
-  cat(comment, sep = "\n")
+  if(nrow(x) > 0){
+    comment <- paste0("... with 5 more variables: prior, user, start, queue, jclass")
+    cat(comment, sep = "\n")
+  }
 
   invisible(obj)
 }
