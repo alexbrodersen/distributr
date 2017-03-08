@@ -1,30 +1,22 @@
 context("sge monitor")
 
 if(interactive()) setwd("tests/testthat/")
-source("../sge_usage_strings.R") # loads str1, str2, str3 for testing
+xml <- readRDS("data/xml_samples.rds")
+use <- readRDS("data/sge_usage_strings.rds")
 
 test_that("parse_qstat works with tasks", {
-  df <- parse_qstat(stat1)
-  expect_equal(ncol(df), 10)
-  df <- parse_qstat(stat2)
-  expect_equal(ncol(df), 10)
-})
-test_that("parse_qstat works with qw only", {
-  df <- parse_qstat(stat3)
-  expect_equal(ncol(df), 10)
-  df <- parse_qstat(stat4)
-  expect_equal(ncol(df), 10)
+  runs <- lapply(xml$info, parse_qstat)
 })
 
 test_that("parse_usage works with tasks", {
-  df <- parse_usage(use1)
+  df <- parse_usage(use$use1)
   expect_equal(nrow(df), 72)
   expect_true(all(df$status == "r"))
   expect_true(all(df$job_id == 744755))
 })
 
 test_that("parse_usage works with N/A maxvmem", {
-  x <- parse_usage(use2)
+  x <- parse_usage(use$use2)
   expect_equal(nrow(x), 24)
   expect_true(all(is.na(x$maxvmem)))
   expect_true(all(is.na(x$vmem)))
@@ -34,23 +26,21 @@ test_that("parse_usage works with N/A maxvmem", {
 })
 
 test_that("parse_usage filters exited jobs", {
-  x <- parse_usage(use3)
+  x <- parse_usage(use$use3)
   expect_true(nrow(x) == 19)
 })
 
 test_that("parse_usage returns NULL with no running jobs", {
-  x <- parse_usage(use4)
-  expect_null(x)
+  x <- parse_usage(use$use4)
+  expect_equal(x, data.frame())
 })
 
 test_that("parse_usage works with no tasks", {
-  x <- parse_usage(use5)
+  x <- parse_usage(use$use5)
   expect_true(nrow(x) == 1)
 })
 
-test_that("qstat works with qw but no info", {
 
-})
 
 if(interactive()) setwd("../../")
 

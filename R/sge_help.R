@@ -53,18 +53,19 @@ clean <- function(dir=getwd()){
 #' sge_test
 #' Simple test SGE configuration
 #' @param dir directory in which to run test
+#' @param queue queue to submit jobs on (default: \code{"long"})
 #' @param wait number of seconds a job sould take (default is .2)
 #' @param ntasks number of tasks to run (default is 12)
 #' @return A \code{gresults} object with the submitted plan
 #' @export
-sge_test <- function(dir=getwd(), wait=.2, ntasks=12){
+sge_test <- function(dir=getwd(), queue="long", wait=.2, ntasks=12){
   f <- function(x,y, wait){
     Sys.sleep(wait)
     stopifnot(x < 5)
     x
   }
   out <- gapply(f, x=1:ntasks, y=1, wait=wait, .eval=F)
-  plan <- setup(out, .dir=dir)
+  plan <- setup(out, .dir=dir, .queue=queue)
   submit(dir)
   return(plan)
 }

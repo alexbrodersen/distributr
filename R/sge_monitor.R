@@ -1,7 +1,10 @@
 #' Return running jobs as a string
+#' @param xml whether qstat returns output as xml (default: TRUE)
 #' @export
-qst <- function(){
-  system("qstat -u $USER", intern=TRUE)
+qst <- function(xml=TRUE){
+  cmd <- "qstat -u $USER"
+  if(xml) cmd <- paste0(cmd, " -xml")
+  system(cmd, intern=TRUE)
 }
 
 #' Meta-data for currently running jobs
@@ -41,7 +44,7 @@ qst <- function(){
 qstat <- function(user=TRUE){
 
   if(user){
-    jstr <- qst()
+    jstr <- qst(xml=TRUE)
   } else {
     jstr <- system("qstat", intern=TRUE)
   }
@@ -127,7 +130,6 @@ parse_qstat <- function(jstr){
     date_str <- gsub("T", " ", info_df$start)
     info_df$start <- as.POSIXct(strptime(date_str, format("%Y-%m-%d %H:%M:%S")))
   }
-
   return(info_df)
 }
 
@@ -142,6 +144,8 @@ parse_usage <- function(mstr){
                status = j[3], stringsAsFactors = F)}))
   # remove jobs that have exited
   status <- status[status$status != "x", ]
+
+  # default for jobs in queue
   if(is.null(status)){
     # grab the sge_task id
     task_str <- grep("job-array tasks", mstr, value=TRUE)
@@ -164,7 +168,7 @@ parse_usage <- function(mstr){
   vmem$mem[vmem$unit %in% "M"] <- vmem$mem[vmem$unit %in% "M"]/1000
   maxvmem$mem[maxvmem$unit %in% "M"] <- maxvmem$mem[maxvmem$unit %in% "M"]/1000
 
-  if(!any(is.na(status$status))){
+  if(!any(is.na(status$status)) & nrow(status) > 0){
     wallclock <- gsub(",", "", gsub("wallclock=", "",
                                     strsplit(get_info("wallclock", usage), "\\s+")))
     cpu <- gsub(",", "", gsub("cpu=", "",
@@ -180,8 +184,12 @@ parse_usage <- function(mstr){
                        wallclock=wall_sec,
                        cpu=cpu_sec)
   } else {
-    meta = data.frame(job_id, status, maxvmem=NA,
+    if(nrow(status) > 0) {
+      meta = data.frame(job_id, status, maxvmem=NA,
                       mem=NA, vmem=NA, wallclock=NA, cpu=NA)
+    } else {
+      meta <- data.frame()
+    }
   }
   return(meta)
 }

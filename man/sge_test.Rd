@@ -5,10 +5,12 @@
 \title{sge_test
 Simple test SGE configuration}
 \usage{
-sge_test(dir = getwd(), wait = 0.2, ntasks = 12)
+sge_test(dir = getwd(), queue = "long", wait = 0.2, ntasks = 12)
 }
 \arguments{
 \item{dir}{directory in which to run test}
+
+\item{queue}{queue to submit jobs on (default: \code{"long"})}
 
 \item{wait}{number of seconds a job sould take (default is .2)}
 
