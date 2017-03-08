@@ -178,7 +178,7 @@ parse_usage <- function(mstr){
     mem <- as.numeric(sapply(strsplit(get_info("^mem", usage), "="), `[`, 2))
     wall_sec <- clock_to_sec(wallclock)
     cpu_sec <- clock_to_sec(cpu)
-    meta <- data.frame(job_id,
+    meta <- data.frame(jid=job_id,
                        status,
                        maxvmem=maxvmem$mem,
                        mem=mem,
@@ -187,7 +187,7 @@ parse_usage <- function(mstr){
                        cpu=cpu_sec)
   } else {
     if(nrow(status) > 0) {
-      meta = data.frame(job_id, status, maxvmem=NA,
+      meta = data.frame(jid=job_id, status, maxvmem=NA,
                       mem=NA, vmem=NA, wallclock=NA, cpu=NA)
     } else {
       meta <- data.frame()
