@@ -91,79 +91,46 @@ print.qstat <- function(x, ...){
   invisible(obj)
 }
 
+#' Parse qst(xml=T) to data frame
+#' @param jstr xml string from \code{qst()}
+#' @importFrom xml2 read_xml xml_find_all xml_children xml_text xml_name
+#' @export
 parse_qstat <- function(jstr){
-  lines <- strsplit(jstr, "\n")
-  # Sample job string:
-  #"job-ID     prior   name       user         state submit/start at     queue                          jclass   slots ja-task-ID ",
-  #"------------------------------------------------------------------------------------------------------------------------------------------------",
-  #"    740473 0.60142 sleep_ss_l pmille13     r     02/08/2017 15:38:00 long@q16copt036.crc.nd.edu               24 1",
-  #"    740473 0.60142 sleep_ss_l pmille13     r     02/08/2017 15:38:00 long@q16copt036.crc.nd.edu               24 2",
-  #"    743563 0.00000 distributr pmille13     qw    02/11/2017 14:10:31
+  info <- read_xml(paste0(jstr, collapse=""))
+  job_list <- xml_find_all(info, ".//job_list")
 
-  lines[[2]] <- NULL
-  var_names <- strsplit(lines[[1]], "\\s+")[[1]]
-  lines[[1]] <- NULL
-  job_list <- lapply(lines, function(l){ strsplit(l[[1]], "\\s+")[[1]]})
-  job_stand <- lapply(job_list, standardize_cols, names=var_names)
-  df <- data.frame(do.call(rbind, job_stand))
+  node_names <- unique(xml_name(xml_children(job_list)))
+  get_all_node_text <- function(nn){ xml_text(xml_find_all(job_list, nn))}
 
-  # types of columns
-  is_numeric <- which(colnames(df) %in% c("job-ID", "prior", "slots", "ja.task.ID"))
-  df[, is_numeric] <- lapply(df[, is_numeric], as.numeric)
-  date_str <- paste0(df[,"submit.start"], " ", df[,"at"])
-  df$start <- as.POSIXct(strptime(date_str, format("%m/%d/%Y %H:%M:%S")))
-  df[,"at"] <- NULL
-  df[,"submit.start"] <- NULL
+  text_cols <- lapply(node_names, get_all_node_text)
+  names(text_cols) <- node_names
+  info_df <- data.frame(text_cols, stringsAsFactors = F)
 
-  # reorder
-  df <- df[,c(1:5, 10, 6:9)]
-  colnames(df)[c(1, 10)] <- c("job_id", ".sge_id")
-  return(df)
-}
-
-# confine all the hacks to here!
-#var_names
-#[1,] "X1"  "job-ID"
-#[2,] "X2"  "prior"
-#[3,] "X3"  "name"
-#[4,] "X4"  "user"
-#[5,] "X5"  "state"
-#[6,] "X6"  "submit/start"
-#[7,] "X7"  "at"
-#[8,] "X8"  "queue"
-#[9,] "X9"  "jclass"
-#[10,] "X10" "slots"
-#[11,] "X11" "ja-task-ID"
-# Todo: add suport for job classes...
-standardize_cols <- function(x, names){
-  x <- data.frame(t(x[-1]), stringsAsFactors = F)
-  df <- NULL
-  if(any(grepl("qw", x))){
-    if(ncol(x) == 8){
-      # not a task array (use 1 as default)
-      df <- data.frame(cbind(x[1:7], X8=NA, X9=NA, X10=x[8], X11=1), stringsAsFactors = F)
-    } else {
-      # is a task array (use lower for qw)
-      task_str <- x[[9]]
-      arange <- regmatches(task_str, regexpr("(\\d*-\\d*:\\d)", task_str))
-      task_range <- as.numeric(regmatches(arange, gregexpr("\\d*", arange))[[1]])
-      task_low <- task_range[1]
-      #task_up <- task_range[3]
-      df <- data.frame(cbind(x[1:7], X8=NA, X9=NA, X10=x[8], X11=task_low), stringsAsFactors = F)
+  # do additional parsing if not empty
+  if(nrow(info_df) > 0){
+    # convert tasks in qw state to min(task)
+    min_task <- function(x){
+      min(as.numeric(regmatches(x, gregexpr("\\d*", x))[[1]]), na.rm=T)
     }
-  } else {
-    if(ncol(x) == 10){
-      # no jclass, assign NA
-      df <- data.frame(cbind(x[1:8], X9=NA, x[9:10]), stringsAsFactors = F)
-    } else if(ncol(x) == 9){
-      # not a task array
-      # default task id is 1
-      df <- data.frame(cbind(x[1:8], X9=NA, x[9], X11=1), stringsAsFactors = F)
-    }
+    info_df[info_df$state == "qw", "tasks"] <-
+      sapply(info_df[info_df$state == "qw", "tasks"], min_task)
+
+    new_names <- c("jid","prior","name","user","state", "start","queue","jclass",
+                   "slots", ".sge_id")
+    colnames(info_df) <- new_names
+
+    # Get types of cols correct
+    numeric_cols <- c("jid", "prior", "slots", ".sge_id")
+    info_df[numeric_cols] <- lapply(info_df[numeric_cols], as.numeric)
+
+    # Parse time from string
+    date_str <- gsub("T", " ", info_df$start)
+    info_df$start <- as.POSIXct(strptime(date_str, format("%Y-%m-%d %H:%M:%S")))
   }
-  colnames(df) <- names
-  return(df)
+
+  return(info_df)
 }
+
 
 parse_usage <- function(mstr){
   job_id <- as.numeric(strsplit(grep("job_number", mstr, value=T), "\\s+")[[1]][2])
