@@ -1,5 +1,6 @@
 
 
+
 #' Run and \code{cat} a call to \code{system}
 #' @param cmd string of the command to run
 #' @export

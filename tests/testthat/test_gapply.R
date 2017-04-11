@@ -158,6 +158,13 @@ test_that("grid_apply data frame returns unequal returns", {
   expect_true(all(out$value == rep(1:5, 1:5)))
   expect_equivalent(out, out1)
 
+  # different rows works without .stack=T
+  do.one <- function(a){
+    return(data.frame(x=rep(a, a)))
+  }
+  out <- gapply(do.one, a=1:5)
+  expect_true(all(out$x == rep(1:5, 1:5)))
+
   # output returns named and un-unamed elements
   do.one <- function(a = 1, b = 2) {
     if (a == 1)
