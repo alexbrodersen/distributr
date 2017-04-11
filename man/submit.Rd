@@ -12,4 +12,3 @@ submit(dir = getwd())
 \description{
 Submit jobs to SGE
 }
-

@@ -12,4 +12,3 @@ err(object)
 \description{
 Errors from collected results
 }
-

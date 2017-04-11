@@ -14,4 +14,3 @@ estimate_time(object, nreps = NULL)
 \description{
 Estimate time for a given number of reps
 }
-

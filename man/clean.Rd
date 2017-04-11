@@ -16,4 +16,3 @@ Removes all files and folders created by \code{setup} and their contents
 Removes \code{results/*}, \code{SGE_Output/*}, \code{arg_grid.Rdata},
 \code{submit}, \code{seeds.Rdata}, and \code{doone.R}.
 }
-

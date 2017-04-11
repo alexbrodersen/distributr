@@ -27,4 +27,3 @@ should be submitted to the cluster as usual.
 \seealso{
 \code{submit}, \code{filter}
 }
-

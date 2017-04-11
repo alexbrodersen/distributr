@@ -12,4 +12,3 @@ mysys(cmd)
 \description{
 Run and \code{cat} a call to \code{system}
 }
-

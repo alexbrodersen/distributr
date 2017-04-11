@@ -47,7 +47,7 @@ further details.
 \itemize{
 \item \code{gapply}: Tidy an object from \code{grid_apply} or \code{collect}
 }}
+
 \seealso{
 \code{\link{stack_list}}
 }
-

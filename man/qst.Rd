@@ -12,4 +12,3 @@ qst(xml = FALSE)
 \description{
 Return running jobs as a string
 }
-

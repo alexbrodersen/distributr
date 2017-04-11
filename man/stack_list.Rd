@@ -26,4 +26,3 @@ Stacks a list of vectors into \code{key} and \code{value} columns, where \code{k
 Stacks a data frame or list of vectors of the same length into \code{key}, \code{key2}, and \code{value} columns,
  where \code{key} and \code{key2} are the column and row names of the first element of \code{xl}. If names are null, assigns names.
 }
-

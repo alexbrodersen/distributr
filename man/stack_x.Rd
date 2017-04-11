@@ -19,4 +19,3 @@ Stacks a list of vectors into \code{key} and \code{value} columns, where key nam
 Stacks a data frame into \code{key} (key2) and \code{value} columns, where key and key2 are the column
 and row names of x.
 }
-

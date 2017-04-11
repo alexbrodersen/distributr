@@ -12,4 +12,3 @@ parse_qstat(jstr)
 \description{
 Parse qst(xml=T) to data frame
 }
-

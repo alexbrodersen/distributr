@@ -12,4 +12,3 @@ warn(object)
 \description{
 Warnings from collected results
 }
-

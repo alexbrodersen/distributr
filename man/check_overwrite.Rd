@@ -14,4 +14,3 @@ check_overwrite(object, .dir)
 \description{
 Asks for user input if overwrite would invalidate .sge_id
 }
-

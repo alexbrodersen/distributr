@@ -57,8 +57,8 @@ are distributed in parallel via \code{mclapply} and will not work in Windows.
 \item \code{grid_apply}: same as \code{gapply}, but does not simplify results,
 leaving results as a list of vectors, lists, or data frames.
 }}
+
 \examples{
 do.one <- function(a=1,b=2){c(sum=a+b,sub=a-b)}
 gapply(do.one, a=1:4,b=2:3, .reps=5)
 }
-

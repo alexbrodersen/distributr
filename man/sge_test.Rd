@@ -23,4 +23,3 @@ A \code{gresults} object with the submitted plan
 sge_test
 Simple test SGE configuration
 }
-

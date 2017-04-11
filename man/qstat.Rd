@@ -44,4 +44,3 @@ sge_test(wait=20)
 qstat()
 }
 }
-

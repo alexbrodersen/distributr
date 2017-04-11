@@ -28,4 +28,3 @@ If \code{3}, prints the arguments and results of the completed condition.}
 This idiom is really useful to carry out simulations, which are essentially
 repeated evaluations of a function over a grid of parameter values.
 }
-

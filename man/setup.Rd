@@ -121,6 +121,7 @@ if not run interactively.
 \itemize{
 \item \code{gapply}: Setup sge files from \code{gapply, grid_apply}
 }}
+
 \examples{
 \dontrun{
 do.one <- function(a, b){c(sum=a+b, sub=a-b)}
@@ -138,4 +139,3 @@ completed results with the argument grid.
  \link{filter_jobs} writes a submission script for jobs matching conditions as in \code{dplyr::filter}
  \link{sge_env} can be used to access environmental variables.
 }
-

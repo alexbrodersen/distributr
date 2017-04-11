@@ -37,4 +37,3 @@ filter_jobs(object, ..., .mc.cores = 1, .dir = getwd(), .queue = "long",
 \description{
 Requires \code{dplyr}.
 }
-

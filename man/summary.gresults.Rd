@@ -20,4 +20,3 @@ Prints the first few conditions, a summary of conditions, and estimated time to 
 \description{
 Print a summary of \code{gresults}
 }
-

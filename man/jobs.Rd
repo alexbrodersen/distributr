@@ -12,4 +12,3 @@ jobs(object)
 \description{
 Returns the parameter grid from grid_apply
 }
-

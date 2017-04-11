@@ -15,4 +15,3 @@ wrapWE(fun)
 \description{
 Wraps a function so that it catches and returns warnings and errors as attributes
 }
-
